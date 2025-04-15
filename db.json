@@ -1,0 +1,19 @@
+{
+    "products": [
+     {
+        "id":1,
+        "title": "Celular Samsung",
+        "description":"Buen estado",
+        "categoria": "Electronico",
+        "image":"https://via.placeholder.com/150"
+     },
+     {
+        "id":2,
+        "title":"Cafetera Samsung",
+        "description":"Buen estado",
+        "categoria":"Electronico",
+        "image":"https://via.placeholder.com/150"
+     }
+    ]
+  }
+  
