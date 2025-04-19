@@ -1,25 +1,13 @@
-import React, { useEffect, useState } from "react";
-import ProductCard from "./ProductCard";
+import React from 'react';
+import ProductCard from './ProductCard';
 
-const ProductList = () => {
-  const [products, setProducts] = useState([]);
-  
-  useEffect(() => {
-    // Aquí reemplazas con la URL de tu API o archivo JSON
-    fetch("http://localhost:3000/products")
-      .then((response) => response.json())
-      .then((data) => setProducts(data))
-      .catch((error) => console.error("Error al cargar los productos:", error));
-  }, []);
-
+const ProductList = ({ products }) => {
   return (
-    <div className="product-list">
+    <div>
       {products.length > 0 ? (
-        products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))
+        products.map((product) => <ProductCard key={product.id} product={product} />)
       ) : (
-        <p>Cargando productos...</p>
+        <p>No se encontraron productos</p>
       )}
     </div>
   );

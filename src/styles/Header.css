@@ -1,0 +1,17 @@
+/* src/styles/header.css */
+.header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+body {
+  margin: 0;
+  padding-top: 0px; /* Ajusta este valor según el tamaño de tu header */
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  min-height: 100vh;
+}

@@ -1,0 +1,24 @@
+.product-card {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 1rem;
+    max-width: 200px;
+    background-color: white;
+    color: black;
+  }
+  
+  .product-img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+  }
+  
+  .product-info h3 {
+    margin: 0.5rem 0;
+  }
+  
+  .categoria {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  

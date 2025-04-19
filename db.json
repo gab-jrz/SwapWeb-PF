@@ -1,19 +1,61 @@
 {
-    "products": [
+   "products": [
      {
-        "id":1,
-        "title": "Celular Samsung",
-        "description":"Buen estado",
-        "categoria": "Electronico",
-        "image":"https://via.placeholder.com/150"
+       "id": 1,
+       "title": "Celular Samsung",
+       "description": "Buen estado",
+       "categoria": "Electronico",
+       "image": "/images/samsung-flip-6-blue-img_1.png"
      },
      {
-        "id":2,
-        "title":"Cafetera Samsung",
-        "description":"Buen estado",
-        "categoria":"Electronico",
-        "image":"https://via.placeholder.com/150"
+       "id": 2,
+       "title": "Cafetera Samsung",
+       "description": "Buen estado",
+       "categoria": "Electronico",
+       "image": "/images/OIP4.jpg"
+     },
+     {
+       "id": 3,
+       "title": "Laptop HP",
+       "description": "Buen estado, usada",
+       "categoria": "Tecnologia",
+       "image": "/images/OIP2.jpg"
+     },
+     {
+       "id": 4,
+       "title": "Cámara Sony",
+       "description": "Excelente calidad",
+       "categoria": "Tecnologia",
+       "image": "/images/OIP3.jpg"
+     },
+     {
+       "id": 5,
+       "title": "Silla de oficina",
+       "description": "Ergonómica, casi nueva",
+       "categoria": "Electrodomesticos",
+       "image": "/images/silla1.jpg"
+     },
+     {
+       "id": 6,
+       "title": "Zapatillas Nike",
+       "description": "Tamaño 42, usados",
+       "categoria": "Ropa",
+       "image": "/images/OIP5.jpg"
+     },
+     {
+       "id": 7,
+       "title": "Cargador inalámbrico",
+       "description": "Compatible con varios modelos",
+       "categoria": "Tecnologia",
+       "image": "/images/cargador1.jpg"
+     },
+     {
+       "id": 8,
+       "title": "Micrófono de estudio",
+       "description": "Para grabación profesional",
+       "categoria": "Tecnologia",
+       "image": "/images/microfono1.jpg"
      }
-    ]
-  }
-  
+   ]
+ }
+ 
