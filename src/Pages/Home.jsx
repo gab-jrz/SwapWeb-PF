@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Header from "../src/Component/Header";
-import ProductCard from "../src/Component/ProductCard";
-import Footer from "../src/Component/Footer";
+import Header from "../Component/Header";
+import ProductCard from "../Component/ProductCard";
+import Footer from "../Component/Footer";
+import "../styles/Home.css";
 
 const Home = () => {
   const [productos, setProductos] = useState([]);
@@ -28,7 +29,7 @@ const Home = () => {
     return matchSearch && matchCategoria;
   });
 
-  // Lógica para mostrar solo 4 productos al principio
+  // Lógica para mostrar 4 productos al principio, y luego más si se presiona "Mostrar más"
   const productosParaMostrar = mostrarTodos
     ? productosFiltrados
     : productosFiltrados.slice(0, 4);
@@ -43,12 +44,14 @@ const Home = () => {
         setSelectedCategory={setSelectedCategory}
       />
 
-      <main style={{ flex: 1, paddingTop: "80px" }}>
-        <div className="product-list d-flex flex-wrap justify-content-center gap-4">
+      <main className="main-content">
+        {/* Mostrar los productos */}
+        <div className="product-list">
           {productosParaMostrar.length > 0 ? (
             productosParaMostrar.map((producto) => (
               <ProductCard
                 key={producto.id}
+                id={producto.id}
                 title={producto.title}
                 description={producto.description}
                 categoria={producto.categoria}
@@ -60,7 +63,7 @@ const Home = () => {
           )}
         </div>
 
-        {/* Botón "Explorá más" solo si no se muestran todos */}
+        {/* Botón "Explorá más" solo si no se muestran todos los productos */}
         {productosFiltrados.length > 4 && !mostrarTodos && (
           <div className="d-flex justify-content-center my-4">
             <button

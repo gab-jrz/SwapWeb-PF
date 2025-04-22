@@ -1,24 +1,53 @@
 .product-card {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 1rem;
-    max-width: 200px;
-    background-color: white;
-    color: black;
-  }
-  
-  .product-img {
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-  }
-  
-  .product-info h3 {
-    margin: 0.5rem 0;
-  }
-  
-  .categoria {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
+  width: 250px; /* Ancho de la tarjeta */
+  height: auto; /* Altura automática, dependiendo del contenido */
+  overflow: hidden; /* Esconde el contenido que sobresale */
+  border: 1px solid #ddd; /* Borde sutil */
+  border-radius: 8px; /* Bordes redondeados */
+  display: flex;
+  flex-direction: column; /* Hace que los elementos se acomoden de arriba hacia abajo */
+  justify-content: space-between; /* Distribuye los elementos de manera que no se solapen */
+  padding: 15px;
+}
+
+.product-card img {
+  width: 100%; /* Hace que la imagen ocupe todo el ancho del contenedor */
+  height: 180px; /* Altura fija para la imagen */
+  object-fit: contain; /* Recorta la imagen si es necesario para ajustarse */
+  border-radius: 8px; /* Bordes redondeados para la imagen */
+  margin-bottom: 10px; /* Espacio entre la imagen y el texto */
+}
+
+.product-info {
+  flex: 1;
+  display: flex;              /* <-- Para usar flexbox dentro */
+  flex-direction: column;     /* <-- Organiza en columna */
+  align-items: center;        /* <-- Centra horizontalmente */
+  justify-content: center;    /* <-- Centra verticalmente si hay espacio */
+  text-align: center;    /* Hace que el contenido ocupe todo el espacio disponible en la tarjeta */
+}
+
+.product-info h3 {
+  font-size: 1.2em; /* Tamaño adecuado para el título */
+  margin: 0 0 10px; /* Margen debajo del título */
+  text-align: center; /* Centra el título */
+  color: #333;
+}
+
+.product-info p {
+  font-size: 1em; /* Tamaño del texto de la descripción */
+  color: #555;
+  text-align: justify; /* Justifica el texto de la descripción */
+  margin-bottom: 10px;
+}
+
+.product-info .categoria {
+  display: inline-block;
+  padding: 5px 10px;
+  font-size: 0.9em;
+  text-align: center;
+  background-color: #f4f4f4;
+  border-radius: 5px;
+  text-align: center;
+  color: #777;
+}

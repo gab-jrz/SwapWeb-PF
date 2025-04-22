@@ -19,16 +19,7 @@
   padding: 1rem;
   justify-items: center;
 }
-.product-card {
-  border: 1px solid #ddd;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: white;
-  color: black;
-  width: 100%;  /* Asegura que ocupe todo el espacio disponible */
-  max-width: 300px
-  text-align: center;
-}
+
 
 .product-image {
   width: 100%;

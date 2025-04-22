@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Asegúrate de tener esto
+import { useParams, useNavigate } from "react-router-dom"; // ⬅️ agregamos useNavigate
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import "../styles/DetalleProducto.css";
 
 const DetalleProducto = () => {
-  const { id } = useParams(); // Obtiene el id del producto
-  const navigate = useNavigate(); 
+  const { id } = useParams();
+  const navigate = useNavigate(); // ⬅️ usamos navigate para redireccionar
   const [producto, setProducto] = useState(null);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const DetalleProducto = () => {
   }, [id]);
 
   const manejarChat = () => {
-    const usuarioAutenticado = localStorage.getItem("usuario");
+    const usuarioAutenticado = localStorage.getItem("usuario"); // puede ser "token" si usás JWT
     if (usuarioAutenticado) {
       alert("Funcionalidad de chat en desarrollo");
     } else {
@@ -44,7 +44,7 @@ const DetalleProducto = () => {
           <strong>Categoría:</strong> {producto.categoria}
         </p>
         <div className="detalle-botones">
-          <button className="btn-volver" onClick={() => navigate("/")}>
+          <button className="btn-volver" onClick={() => window.location.href = "/"}>
             ← Volver al inicio
           </button>
           <button className="btn-chat" onClick={manejarChat}>

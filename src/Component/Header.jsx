@@ -1,7 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/Header.css";
 
 const Header = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCategory }) => {
+  const navigate = useNavigate();
+
   const handleSearchChange = (e) => setSearchTerm(e.target.value);
   const handleCategoryChange = (e) => setSelectedCategory(e.target.value);
 
@@ -40,9 +43,15 @@ const Header = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCatego
           </div>
 
           <div className="col-md-3 d-flex justify-content-end gap-2">
-            <button className="btn btn-outline-primary">Crear cuenta</button>
-            <button className="btn btn-outline-success">Ingresar</button>
-            <button className="btn btn-outline-dark">Mis transacciones</button>
+            <button className="btn btn-outline-primary" onClick={() => navigate("/register")}>
+              Crear cuenta
+            </button>
+            <button className="btn btn-outline-success" onClick={() => navigate("/login")}>
+              Ingresar
+            </button>
+            <button className="btn btn-outline-dark" onClick={() => navigate("/transacciones")}>
+              Mis transacciones
+            </button>
           </div>
         </div>
       </div>

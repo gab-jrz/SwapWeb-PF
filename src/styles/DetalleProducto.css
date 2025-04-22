@@ -1,0 +1,109 @@
+/* Contenedor principal para detalle */
+.detalle-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa; /* Fondo suave */
+  }
+  
+  /* Contenido principal */
+  .detalle-contenido {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem; /* Reducción del padding */
+    text-align: center;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Sombras para mejorar el contraste */
+    margin: 2rem auto;
+    max-width: 1000px; /* Reducir el ancho máximo */
+  }
+  
+  /* Título del producto */
+  .detalle-titulo {
+    font-size: 2rem; /* Reducir tamaño del título */
+    font-weight: bold;
+    margin-bottom: 1.2rem; /* Reducir margen inferior */
+    color: #333;
+    letter-spacing: 0.5px; /* Reducir espaciado de letras */
+  }
+  
+  /* Estilo de la imagen del producto */
+  .detalle-imagen {
+    max-width: 450px; /* Reducir tamaño de la imagen */
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Añadir sombra a la imagen */
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Descripción del producto */
+  .detalle-descripcion {
+    max-width: 600px;
+    font-size: 1rem; /* Reducir tamaño de fuente */
+    line-height: 1.5;
+    color: #555;
+    margin-bottom: 1.5rem; /* Reducir margen inferior */
+    text-align: justify;
+  }
+  
+  /* Añadir categorías con estilo */
+  .categoria {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 10px; /* Reducir padding */
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 25px;
+    font-size: 1rem; /* Reducir tamaño de fuente */
+    font-weight: bold;
+  }
+  
+  /* Botón animado de acción (Ejemplo: chat con el vendedor) */
+  .btn-accion {
+    padding: 8px 20px; /* Reducir padding */
+    font-size: 1rem; /* Reducir tamaño de fuente */
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px; /* Reducir el tamaño máximo del botón */
+    display: block;
+    text-align: center;
+    margin-top: 15px; /* Reducir margen superior */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Efecto de hover en el botón */
+  .btn-accion:hover {
+    background-color: #218838;
+    transform: scale(1.03); /* Reducir escala de hover */
+  }
+  
+  /* Detalles adicionales (como precio, estado, etc.) */
+  .producto-detalles {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 600px; /* Reducir el ancho máximo */
+    margin-top: 20px;
+  }
+  
+  .producto-detalles p {
+    font-size: 0.9rem; /* Reducir tamaño de fuente */
+    color: #555;
+    margin: 5px 0;
+  }
+  
+  .producto-detalles strong {
+    font-weight: bold;
+    color: #333;
+  }
+  
