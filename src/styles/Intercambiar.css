@@ -1,0 +1,81 @@
+.intercambiar-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #f9f9f9;
+  }
+  
+  .intercambiar-header {
+    background: #ffffff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .app-name {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #3498db;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Arial', sans-serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .btn-menu {
+    background-color: #fff;
+    color: #3498db;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #3498db;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .btn-menu:hover {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .intercambiar-formulario {
+    flex: 1;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .intercambiar-formulario h3 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .intercambiar-formulario label {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  
+  .intercambiar-formulario input,
+  .intercambiar-formulario textarea {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.3rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .btn-enviar {
+    background: #00c853;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .btn-enviar:hover {
+    background: #00bcd4;
+  }
+  

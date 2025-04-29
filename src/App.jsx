@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './Pages/Home'; // Correcto
-import DetalleProducto from './Pages/DetalleProducto'; // Correcto
-import Login from './Pages/Login'; // Correcto
-import Register from './Pages/Register'; // Correcto
+import Home from './Pages/Home';
+import DetalleProducto from './Pages/DetalleProducto';
+import Login from './Pages/Login';
+import Register from './Pages/Register';
+import Intercambiar from './Pages/Intercambiar';
+import Transacciones from './Pages/Transacciones';
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
         <Route path="/producto/:id" element={<DetalleProducto />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/intercambiar" element={<Intercambiar />} />
+        <Route path="/transacciones" element={<Transacciones />} />
       </Routes>
     </Router>
   );

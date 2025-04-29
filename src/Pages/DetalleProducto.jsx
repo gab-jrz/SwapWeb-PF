@@ -17,10 +17,15 @@ const DetalleProducto = () => {
   }, [id]);
 
   const manejarChat = () => {
-    const usuarioAutenticado = localStorage.getItem("usuario"); // puede ser "token" si usás JWT
-    if (usuarioAutenticado) {
-      alert("Funcionalidad de chat en desarrollo");
+    const usuarioAutenticado = localStorage.getItem("isLoggedIn"); // Verificamos si el usuario está logueado
+
+    if (usuarioAutenticado === "true") {
+      // Si está logueado, lo redirigimos a la página de intercambio de productos
+      // Aquí estamos usando una página temporal hasta que la página de intercambio esté lista
+      navigate("/intercambiar"); // O redirigir a una página de "En desarrollo"
     } else {
+      // Si no está logueado, redirigimos al login
+      localStorage.setItem("ultimaRuta", window.location.pathname); // Guardamos la ruta actual para redirigirlo después del login
       navigate("/login");
     }
   };

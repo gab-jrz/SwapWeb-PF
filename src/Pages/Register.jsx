@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import '../styles/Register.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom"; // Importamos useNavigate para redirigir
+import "../styles/Register.css";
 
 const Register = () => {
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate(); // Usamos navigate para redirigir
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,13 +17,11 @@ const Register = () => {
       return;
     }
 
-    // Aquí puedes enviar los datos al backend
-    console.log('Registrado con:', {
-      nombre,
-      apellido,
-      email,
-      password,
-    });
+    // Aquí podemos simular un proceso de registro, por ejemplo, guardar en el localStorage
+    localStorage.setItem("isLoggedIn", "false"); // Aseguramos que el usuario no esté logueado al principio
+
+    // Redirigimos al login
+    navigate("/login");
   };
 
   return (
@@ -70,7 +69,9 @@ const Register = () => {
           required
         />
 
-        <button type="submit" className="btn-register">Registrar</button>
+        <button type="submit" className="btn-register">
+          Registrar
+        </button>
 
         <p className="redirect-login">
           ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
