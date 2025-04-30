@@ -71,6 +71,9 @@ const Header = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCatego
                   </>
                 ) : (
                   <>
+                  <button className="dropdown-item" onClick={() => { navigate("/PerfilUsuario"); setMenuOpen(false); }}>
+                      Mi Perfil
+                    </button>
                     <button className="dropdown-item" onClick={() => { navigate("/transacciones"); setMenuOpen(false); }}>
                       Mis transacciones
                     </button>
