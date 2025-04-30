@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Header.css";
+import { FaUserCircle } from "react-icons/fa";
+
 
 const Header = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCategory }) => {
   const navigate = useNavigate();
@@ -54,12 +56,12 @@ const Header = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCatego
           </div>
 
           <div className="col-md-3 d-flex justify-content-end position-relative">
-            <button className="btn btn-outline-secondary" onClick={() => setMenuOpen(!menuOpen)}>
-              ☰ Menú
+            <button className="user-icon-button" onClick={() => setMenuOpen(!menuOpen)}>
+            <FaUserCircle size={24}  />
             </button>
 
             {menuOpen && (
-              <div className="dropdown-menu d-block position-absolute top-100 end-0 mt-2 p-2 shadow bg-white rounded" style={{ zIndex: 999 }}>
+              <div className="dropdown-menu d-block position-absolute top-100 user-dropdown" style={{ zIndex: 999 }}>
                 {!isLoggedIn ? (
                   <>
                     <button className="dropdown-item" onClick={() => { navigate("/register"); setMenuOpen(false); }}>
