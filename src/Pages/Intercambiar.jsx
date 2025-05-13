@@ -97,7 +97,7 @@ const Intercambiar = () => {
         </label>
 
         <label>
-          Condiciones del intercambio:
+         Lugar de intercambio:
           <textarea name="condiciones" value={formData.condiciones} onChange={handleChange} required />
         </label>
 
