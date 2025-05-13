@@ -3,20 +3,31 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Header.css";
 import { FaUserCircle } from "react-icons/fa";
 
-
-const Header = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCategory }) => {
+const Header = ({
+  searchTerm,
+  setSearchTerm,
+  selectedCategory,
+  setSelectedCategory,
+  search = true
+}) => {
   const navigate = useNavigate();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [nombreUsuario, setNombreUsuario] = useState("");
 
   useEffect(() => {
-    const storedLogin = localStorage.getItem("isLoggedIn");
-    setIsLoggedIn(storedLogin === "true");
+    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+    if (usuario) {
+      setIsLoggedIn(true);
+      const primerNombre = usuario.nombre?.split(" ")[0] || "";
+      setNombreUsuario(primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1));
+    }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("usuarioActual");
     setIsLoggedIn(false);
     navigate("/");
   };
@@ -32,58 +43,95 @@ const Header = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCatego
             </h2>
           </div>
 
-          <div className="col-md-6">
-            <div className="d-flex flex-column align-items-center">
-              <div className="input-group mb-2">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Buscar productos, marcas y más..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <button className="btn btn-outline-secondary" type="button">
-                  🔍
-                </button>
+          {search && (
+            <div className="col-md-6">
+              <div className="d-flex flex-column align-items-center">
+                <div className="input-group mb-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Buscar productos, marcas y más..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <select
+                  className="form-select w-100"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  <option value="">Categorías</option>
+                  <option value="tecnologia">Tecnología</option>
+                  <option value="electrodomesticos">Electrodomésticos</option>
+                  <option value="ropa">Ropa</option>
+                </select>
               </div>
-              <select className="form-select w-100" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                <option value="">Categorías</option>
-                <option value="tecnologia">Tecnología</option>
-                <option value="electrodomesticos">Electrodomésticos</option>
-                <option value="ropa">Ropa</option>
-              </select>
             </div>
-          </div>
+          )}
 
-          <div className="col-md-3 d-flex justify-content-end position-relative">
+          <div className="col-md-3 d-flex justify-content-end align-items-center position-relative">
+            {isLoggedIn && (
+              <span className="me-2 fw-semibold">Hola, {nombreUsuario}</span>
+            )}
             <button className="user-icon-button" onClick={() => setMenuOpen(!menuOpen)}>
-            <FaUserCircle size={24}  />
+              <FaUserCircle size={24} />
             </button>
 
             {menuOpen && (
               <div className="dropdown-menu d-block position-absolute top-100 user-dropdown" style={{ zIndex: 999 }}>
                 {!isLoggedIn ? (
                   <>
-                    <button className="dropdown-item" onClick={() => { navigate("/register"); setMenuOpen(false); }}>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        navigate("/register");
+                        setMenuOpen(false);
+                      }}
+                    >
                       Crear cuenta
                     </button>
-                    <button className="dropdown-item" onClick={() => { navigate("/login"); setMenuOpen(false); }}>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        navigate("/login");
+                        setMenuOpen(false);
+                      }}
+                    >
                       Ingresar
                     </button>
                   </>
                 ) : (
                   <>
-                  <button className="dropdown-item" onClick={() => { navigate("/PerfilUsuario"); setMenuOpen(false); }}>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+                        if (usuario && usuario.id) {
+                          navigate(`/perfil/${usuario.id}`);
+                        }
+                        setMenuOpen(false);
+                      }}
+                    >
                       Mi Perfil
                     </button>
-                    <button className="dropdown-item" onClick={() => { navigate("/transacciones"); setMenuOpen(false); }}>
-                      Mis transacciones
-                    </button>
-                    <button className="dropdown-item" onClick={() => { navigate("/intercambiar"); setMenuOpen(false); }}>
+
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        navigate("/intercambiar");
+                        setMenuOpen(false);
+                      }}
+                    >
                       Intercambiar producto
                     </button>
                     <hr />
-                    <button className="dropdown-item text-danger" onClick={() => { handleLogout(); setMenuOpen(false); }}>
+                    <button
+                      className="dropdown-item text-danger"
+                      onClick={() => {
+                        handleLogout();
+                        setMenuOpen(false);
+                      }}
+                    >
                       Cerrar sesión
                     </button>
                   </>

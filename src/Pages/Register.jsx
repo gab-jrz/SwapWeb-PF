@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Importamos useNavigate para redirigir
-import "../styles/Register.css";
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/Register.css"; // Asegúrate de tener el archivo CSS
 
 const Register = () => {
   const [nombre, setNombre] = useState("");
@@ -8,20 +8,58 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const navigate = useNavigate(); // Usamos navigate para redirigir
+
+  const navigate = useNavigate();
+
+  const capitalizar = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!nombre.trim() || !apellido.trim() || !email.trim()) {
+      alert("Todos los campos son obligatorios");
+      return;
+    }
+
     if (password !== confirmPassword) {
       alert("Las contraseñas no coinciden");
       return;
     }
 
-    // Aquí podemos simular un proceso de registro, por ejemplo, guardar en el localStorage
-    localStorage.setItem("isLoggedIn", "false"); // Aseguramos que el usuario no esté logueado al principio
+    const usuariosExistentes = JSON.parse(localStorage.getItem("usuarios")) || [];
+    const usuarioDuplicado = usuariosExistentes.find(user => user.email === email);
 
-    // Redirigimos al login
-    navigate("/login");
+    if (usuarioDuplicado) {
+      alert("Este correo electrónico ya está registrado");
+      return;
+    }
+
+    const idUsuario = Date.now();
+
+    const nuevoUsuario = {
+      id: idUsuario,
+      nombre: capitalizar(nombre),
+      apellido: capitalizar(apellido),
+      email,
+      password, // ⚠️ En producción deberías hashear la contraseña
+      nombre_formateado: nombre.toLowerCase().replace(/\s+/g, "_"),
+      telefono: "011-555-46522",
+      imagen: "https://via.placeholder.com/150",
+      ubicacion: "Argentina Buenos Aires",
+      fechaRegistro: new Date().toLocaleDateString(),
+      calificacion: 1,
+      transacciones: [],
+      productos: [],
+      mensajes: []
+    };
+
+    usuariosExistentes.push(nuevoUsuario);
+    localStorage.setItem("usuarios", JSON.stringify(usuariosExistentes));
+    localStorage.setItem("usuarioActual", JSON.stringify(nuevoUsuario));
+
+    navigate("/login"); // o cambiar a "/perfil" si querés redirigir directamente al perfil
   };
 
   return (

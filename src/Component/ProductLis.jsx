@@ -16,18 +16,7 @@ const DetalleProducto = () => {
       .catch((error) => console.error("Error al obtener el producto:", error));
   }, [id]);
 
-  const manejarChat = () => {
-    const usuarioAutenticado = localStorage.getItem("usuario");
-    if (usuarioAutenticado) {
-      alert("Funcionalidad de chat en desarrollo");
-    } else {
-      navigate("/login");
-    }
-  };
 
-  if (!producto) {
-    return <div>Cargando...</div>;
-  }
 
   return (
     <div className="detalle-container">

@@ -1,60 +1,125 @@
 {
+  "usuarios": [
+    {
+      "id": "1",
+      "nombre": "Juan",
+      "apellido": "Pérez",
+      "username": "juan_perez",
+      "email": "juanperez01@gmail.com",
+      "password": "hola",
+      "imagen": "/images/juan.jpg",
+      "calificacion": 4.9,
+      "productos": [
+        1,
+        3,
+        5,
+        7
+      ],
+      "mensajes": [],
+      "transacciones": [],
+      "mostrarContacto": true,
+      "zona": "Tucumán"
+    },
+    {
+      "id": "2",
+      "nombre": "María",
+      "apellido": "Lopez",
+      "username": "maria_lopez",
+      "email": "maria.lopez@example.com",
+      "password": "contraseña456",
+      "imagen": "/images/maria.jpg",
+      "calificacion": 4.8,
+      "productos": [
+        2,
+        4,
+        6,
+        8
+      ],
+      "mensajes": [],
+      "transacciones": []
+    }
+  ],
   "products": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Celular Samsung Galaxy Flip 6",
       "description": "Smartphone plegable en excelente estado, pantalla AMOLED, ideal para quienes buscan diseño y funcionalidad. Incluye cargador original.",
       "categoria": "Electronico",
-      "image": "/images/samsung-flip-6-blue-img_1.png"
+      "image": "/images/samsung-flip-6-blue-img_1.png",
+      "ownerId": 1
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "Cafetera Eléctrica Samsung",
       "description": "Cafetera automática con función de programación y apagado automático. Poco uso, funciona perfectamente. Ideal para café filtrado diario.",
       "categoria": "Electronico",
-      "image": "/images/OIP4.jpg"
+      "image": "/images/OIP4.jpg",
+      "ownerId": 2
     },
     {
-      "id": 3,
-      "title": "Laptop HP 15'' i5 8GB RAM",
-      "description": "Notebook HP en muy buen estado, ideal para tareas de oficina y estudio. Procesador Intel i5, disco de 500GB, batería funcional. Incluye cargador.",
-      "categoria": "Tecnologia",
-      "image": "/images/OIP2.jpg"
+      "id": "3",
+      "title": "Computadora Samsung",
+      "description": "Computadora C/ Procesador i5 Ram 12gb 512gb Almacenamiento Interno, LISTA PARA USO LABORAL",
+      "categoria": "Electronico",
+      "image": "/images/OIP2.jpg",
+      "ownerId": 1
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "Cámara Digital Sony HD",
       "description": "Cámara compacta con excelente calidad de imagen. Ideal para fotos y videos Full HD. Incluye funda y tarjeta de memoria de 16GB.",
       "categoria": "Tecnologia",
-      "image": "/images/OIP3.jpg"
+      "image": "/images/OIP3.jpg",
+      "ownerId": 2
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "Silla de Oficina Ergonómica",
       "description": "Silla giratoria con respaldo alto y soporte lumbar. Ideal para largas jornadas de trabajo o estudio. Muy poco uso, como nueva.",
       "categoria": "Electrodomesticos",
-      "image": "/images/silla1.jpg"
+      "image": "/images/silla1.jpg",
+      "ownerId": 1
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "Zapatillas Nike Air Max Talla 42",
       "description": "Zapatillas deportivas originales, en buen estado. Color blanco con detalles en azul. Excelente amortiguación, ideal para uso diario.",
       "categoria": "Ropa",
-      "image": "/images/OIP5.jpg"
+      "image": "/images/OIP5.jpg",
+      "ownerId": 2
     },
     {
-      "id": 7,
+      "id": "7",
       "title": "Cargador Inalámbrico Qi",
       "description": "Base de carga rápida compatible con la mayoría de los smartphones modernos. Diseño compacto, ideal para escritorio o mesa de noche.",
       "categoria": "Tecnologia",
-      "image": "/images/cargador1.jpg"
+      "image": "/images/cargador1.jpg",
+      "ownerId": 1
     },
     {
-      "id": 8,
+      "id": "8",
       "title": "Micrófono Condensador de Estudio",
       "description": "Micrófono profesional ideal para grabaciones, podcast o streaming. Sonido nítido, incluye soporte de escritorio. Poco uso.",
       "categoria": "Tecnologia",
-      "image": "/images/microfono1.jpg"
+      "image": "/images/microfono1.jpg",
+      "ownerId": 2
     }
-  ]
+  ],
+  "mensajes": [
+    {
+      "id": "6034",
+      "de": "Juan Pérez",
+      "para": "Juan Pérez",
+      "paraId": 1,
+      "productoId": "3",
+      "productoTitle": "Computadora Samsung",
+      "productoOfrecido": "aaaaaaaaaaaaaaaaaaaaaaaaa",
+      "descripcion": "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "condiciones": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "imagenNombre": "FOTO-TRAJE.jpeg",
+      "fecha": "2025-05-13T02:03:37.938Z"
+    }
+    
+  ],
+  "transacciones": []
 }

@@ -1,31 +1,53 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // ⬅️ agregamos useNavigate
+import { useParams, useNavigate } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import "../styles/DetalleProducto.css";
 
 const DetalleProducto = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // ⬅️ usamos navigate para redireccionar
+  const navigate = useNavigate();
   const [producto, setProducto] = useState(null);
+  const [usuarioPropietario, setUsuarioPropietario] = useState(null);
 
   useEffect(() => {
     fetch(`http://localhost:3000/products/${id}`)
-      .then((response) => response.json())
-      .then((data) => setProducto(data))
-      .catch((error) => console.error("Error al obtener el producto:", error));
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Producto no encontrado");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setProducto(data);
+        // Buscar al usuario propietario con el ownerId
+        return fetch(`http://localhost:3000/usuarios/${data.ownerId}`);
+      })
+      .then((res) => {
+        if (!res.ok) throw new Error("Usuario no encontrado");
+        return res.json();
+      })
+      .then((usuario) => setUsuarioPropietario(usuario))
+      .catch((error) =>
+        console.error("Error al obtener el producto o usuario:", error)
+      );
   }, [id]);
 
   const manejarChat = () => {
-    const usuarioAutenticado = localStorage.getItem("isLoggedIn"); // Verificamos si el usuario está logueado
+    const usuarioAutenticado = localStorage.getItem("isLoggedIn");
 
     if (usuarioAutenticado === "true") {
-      // Si está logueado, lo redirigimos a la página de intercambio de productos
-      // Aquí estamos usando una página temporal hasta que la página de intercambio esté lista
-      navigate("/intercambiar"); // O redirigir a una página de "En desarrollo"
+      navigate("/intercambiar", {
+    state: {
+    productoId: producto.id,
+    productoTitle: producto.title,
+    ownerId: producto.ownerId,
+    ownerNombre: usuarioPropietario?.nombre,
+    ownerApellido: usuarioPropietario?.apellido,
+            },
+    });
     } else {
-      // Si no está logueado, redirigimos al login
-      localStorage.setItem("ultimaRuta", window.location.pathname); // Guardamos la ruta actual para redirigirlo después del login
+      localStorage.setItem("ultimaRuta", window.location.pathname);
       navigate("/login");
     }
   };
@@ -36,7 +58,7 @@ const DetalleProducto = () => {
 
   return (
     <div className="detalle-container">
-      <Header />
+      <Header search={false} />
       <div className="detalle-contenido">
         <h2 className="detalle-titulo">{producto.title}</h2>
         <img
@@ -48,9 +70,16 @@ const DetalleProducto = () => {
         <p className="detalle-descripcion">
           <strong>Categoría:</strong> {producto.categoria}
         </p>
+        <p className="detalle-descripcion">
+          <strong>Propietario/a:</strong>{" "}
+          {usuarioPropietario
+            ? `${usuarioPropietario.nombre} ${usuarioPropietario.apellido}`
+            : "Cargando usuario..."}
+        </p>
+
         <div className="detalle-botones">
-          <button className="btn-volver" onClick={() => window.location.href = "/"}>
-            ← Volver al inicio
+          <button className="btn-volver" onClick={() => navigate("/")}>
+            ← Inicio
           </button>
           <button className="btn-chat" onClick={manejarChat}>
             💬 Consultar por este artículo

@@ -1,0 +1,227 @@
+/* Contenedor principal para el formulario de edición */
+.editar-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Título del formulario */
+.editar-container h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+/* Estilos para el formulario */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Estilo para las etiquetas de los campos */
+.form-group label {
+  font-weight: 500;
+  color: #555;
+  font-size: 1rem;
+}
+
+/* Estilo para los inputs */
+.form-group input {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+/* Efecto al hacer foco en los inputs */
+.form-group input:focus {
+  border-color: #4a6cfa;
+  box-shadow: 0 0 5px rgba(74, 108, 250, 0.3);
+}
+
+/* Estilo para los botones */
+.btn-editar {
+  padding: 0.75rem 1.5rem;
+  background-color: #4a6cfa;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  
+}
+
+/* Efecto hover en el botón de editar */
+.btn-editar:hover {
+  background-color: #3a5cd8;
+}
+
+/* Estilo para los botones de cancelación o reset */
+.btn-cancelar {
+  padding: 0.75rem 1.5rem;
+  background-color: #ccc;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+/* Efecto hover en el botón cancelar */
+.btn-cancelar:hover {
+  background-color: #aaa;
+}
+
+/* Estilo para los campos de tipo file (si se cambia la imagen) */
+.form-group input[type="file"] {
+  padding: 0.75rem;
+  border-radius: 6px;
+  background-color: #f0f0f0;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  
+}
+
+/* Efecto al pasar el ratón por encima del input tipo file */
+.form-group input[type="file"]:hover {
+  border-color: #4a6cfa;
+  background-color: #e0e0e0;
+ 
+}
+
+/* Estilos para las secciones del formulario (como la imagen) */
+.editar-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.editar-imagen {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajuste para cuando la pantalla es más pequeña (responsive) */
+@media (max-width: 768px) {
+  .editar-container {
+    padding: 1rem;
+  }
+
+  .editar-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .form-group input {
+    padding: 0.8rem;
+  }
+  
+  .btn-editar, .btn-cancelar {
+    width: 100%;
+  }
+}
+
+.titulo-editar{
+    display: flex;
+    justify-content: center;
+}
+
+.imagen-container{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+    border-bottom-width: 10px;
+    margin-top: 1px;
+    height: 30px;
+}
+.perfil-content{
+    display: flex;
+    margin: 30px;
+    
+    text-align: center;       
+    justify-content: center;
+    align-items: flex-start;
+     gap: 35px;
+    flex-wrap: wrap;
+     margin: 2rem auto;
+    max-width: 900px;
+     padding: 1rem;
+          
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 10px;
+    border-bottom-width: 10px;
+    margin-top: 1px;
+    
+}
+.imagen-container {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  width: 450px;
+  height: 450px;
+}
+.cambiar-imagen {
+    position: absolute;
+    bottom: -10px; /* O poné "top: 0" si lo querés arriba */
+    left: 50%;
+    transform: translateY(-3000%);
+    left:750px;
+    z-index: 1;
+  }
+.actions{
+    position: absolute;
+    top:80%;
+    left: 880px;
+
+    transform: translate(-50%, -50%);
+    margin:auto;
+    height: 30px;
+    
+}
+.edit-form{
+    max-width: 400px;
+  width: 100%;
+  background-color: #f8f9fa;
+  padding: 20px 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  align-self: center;
+  
+ 
+}
+.alert {
+    height: 30px; /* Siempre reserva espacio */
+    margin-bottom: 1rem;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: absolute;
+    top:auto;          /* Eje Y: centro */
+    right: auto;
+  }
+  
+  .alert.success {
+    color: green;
+  }
+  
+  .alert.error {
+    color: red;
+  }
+  
