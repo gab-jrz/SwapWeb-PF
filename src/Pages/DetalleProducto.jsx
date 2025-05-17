@@ -2,63 +2,46 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
+import { getProduct } from "../services/api";
 import "../styles/DetalleProducto.css";
 
 const DetalleProducto = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [producto, setProducto] = useState(null);
-  const [usuarioPropietario, setUsuarioPropietario] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/products/${id}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Producto no encontrado");
-        }
-        return response.json();
-      })
-      .then((data) => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const data = await getProduct(id);
         setProducto(data);
-        // Buscar al usuario propietario con el ownerId
-        return fetch(`http://localhost:3000/usuarios/${data.ownerId}`);
-      })
-      .then((res) => {
-        if (!res.ok) throw new Error("Usuario no encontrado");
-        return res.json();
-      })
-      .then((usuario) => setUsuarioPropietario(usuario))
-      .catch((error) =>
-        console.error("Error al obtener el producto o usuario:", error)
-      );
+        setError(null);
+      } catch (err) {
+        setError('Error al cargar el producto. Por favor, intenta de nuevo más tarde.');
+        console.error("Error al obtener el producto:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
-  const manejarChat = () => {
-    const usuarioAutenticado = localStorage.getItem("isLoggedIn");
-
-    if (usuarioAutenticado === "true") {
-      navigate("/intercambiar", {
-    state: {
-    productoId: producto.id,
-    productoTitle: producto.title,
-    ownerId: producto.ownerId,
-    ownerNombre: usuarioPropietario?.nombre,
-    ownerApellido: usuarioPropietario?.apellido,
-            },
-    });
-    } else {
-      localStorage.setItem("ultimaRuta", window.location.pathname);
-      navigate("/login");
-    }
+  const handleChat = () => {
+    // Implementar la lógica del chat aquí
+    console.log("Iniciar chat para el producto:", id);
   };
 
-  if (!producto) {
-    return <div>Cargando...</div>;
-  }
+  if (loading) return <div className="detalle-container"><Header /><p className="text-center">Cargando producto...</p><Footer /></div>;
+  if (error) return <div className="detalle-container"><Header /><p className="text-center text-danger">{error}</p><Footer /></div>;
+  if (!producto) return <div className="detalle-container"><Header /><p className="text-center">Producto no encontrado</p><Footer /></div>;
 
   return (
     <div className="detalle-container">
-      <Header search={false} />
+      <Header />
       <div className="detalle-contenido">
         <h2 className="detalle-titulo">{producto.title}</h2>
         <img
@@ -70,18 +53,11 @@ const DetalleProducto = () => {
         <p className="detalle-descripcion">
           <strong>Categoría:</strong> {producto.categoria}
         </p>
-        <p className="detalle-descripcion">
-          <strong>Propietario/a:</strong>{" "}
-          {usuarioPropietario
-            ? `${usuarioPropietario.nombre} ${usuarioPropietario.apellido}`
-            : "Cargando usuario..."}
-        </p>
-
         <div className="detalle-botones">
           <button className="btn-volver" onClick={() => navigate("/")}>
-            ← Inicio
+            ← Volver al inicio
           </button>
-          <button className="btn-chat" onClick={manejarChat}>
+          <button className="btn-chat" onClick={handleChat}>
             💬 Consultar por este artículo
           </button>
         </div>

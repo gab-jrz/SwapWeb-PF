@@ -1,0 +1,43 @@
+const mongoose = require('mongoose');
+
+let productCounter = 1;
+
+const productSchema = new mongoose.Schema({
+  id: {
+    type: Number,
+    unique: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  categoria: {
+    type: String,
+    required: true
+  },
+  image: {
+    type: String,
+    required: true
+  },
+  ownerId: {
+    type: Number,
+    required: true
+  }
+}, {
+  timestamps: true
+});
+
+// Middleware pre-save para asignar ID automáticamente
+productSchema.pre('save', async function(next) {
+  if (!this.id) {
+    const lastProduct = await this.constructor.findOne({}, {}, { sort: { 'id': -1 } });
+    this.id = lastProduct ? lastProduct.id + 1 : 1;
+  }
+  next();
+});
+
+module.exports = mongoose.model('Product', productSchema); 

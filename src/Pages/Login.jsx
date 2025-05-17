@@ -1,42 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Login.css"; // Asegúrate de tener el archivo CSS
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [usuarios, setUsuarios] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch("http://localhost:3000/usuarios")
-      .then((res) => res.json())
-      .then((data) => setUsuarios(data))
-      .catch((err) => console.error("Error al cargar usuarios:", err));
-  }, []);
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const usuarioGuardado = usuarios.find((user) => user.email === email);
+    try {
+      const response = await fetch("http://localhost:3001/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (usuarioGuardado) {
-      if (usuarioGuardado.password === password) {
-        // Guardar estado de sesión y usuario actual
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("usuarioActual", JSON.stringify(usuarioGuardado)); /* Guardando USUARIO DE MANERA CORRECTA*/
+      const data = await response.json();
 
-        // Depuración
-        console.log("✅ Usuario logueado correctamente:", usuarioGuardado);
-        console.log("🆔 ID del usuario logueado:", usuarioGuardado?.id);
-
-        navigate(`/perfil/${usuarioGuardado.id}`);
-
-      } else {
-        alert("Contraseña incorrecta. Intenta nuevamente.");
+      if (!response.ok) {
+        throw new Error(data.message || "Error al iniciar sesión");
       }
-    } else {
-      alert("Usuario no encontrado. Verifica tus credenciales.");
+
+      // Guardar estado de sesión y usuario actual
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("usuarioActual", JSON.stringify(data));
+
+      // Depuración
+      console.log("✅ Usuario logueado correctamente:", data);
+      console.log("🆔 ID del usuario logueado:", data?.id);
+
+      navigate(`/perfil/${data.id}`);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error al iniciar sesión:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,6 +50,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-form">
         <h2>Iniciar sesión</h2>
+        {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
           <input
             type="email"
@@ -51,6 +58,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
           <input
             type="password"
@@ -58,8 +66,11 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
-          <button type="submit">Iniciar sesión</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Iniciando sesión..." : "Iniciar sesión"}
+          </button>
         </form>
         <div className="redirect-register">
           <p>¿No tienes cuenta? <Link to="/register">Crear una cuenta aquí</Link></p>

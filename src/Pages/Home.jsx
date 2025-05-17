@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../Component/Header";
 import ProductCard from "../Component/ProductCard";
 import Footer from "../Component/Footer";
+import { getProducts } from "../services/api";
 import "../styles/Home.css";
 
 const Home = () => {
@@ -9,13 +10,26 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [mostrarTodos, setMostrarTodos] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Cargar productos desde db.json
+  // Cargar productos desde la API
   useEffect(() => {
-    fetch("http://localhost:3000/products")
-      .then((response) => response.json())
-      .then((data) => setProductos(data))
-      .catch((error) => console.error("Error al obtener productos:", error));
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await getProducts();
+        setProductos(data);
+        setError(null);
+      } catch (err) {
+        setError('Error al cargar los productos. Por favor, intenta de nuevo más tarde.');
+        console.error("Error al obtener productos:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   // Filtrado por búsqueda y categoría
@@ -45,26 +59,32 @@ const Home = () => {
       />
 
       <main className="main-content">
+        {/* Mostrar mensaje de carga o error */}
+        {loading && <p className="text-center">Cargando productos...</p>}
+        {error && <p className="text-center text-danger">{error}</p>}
+
         {/* Mostrar los productos */}
-        <div className="product-list">
-          {productosParaMostrar.length > 0 ? (
-            productosParaMostrar.map((producto) => (
-              <ProductCard
-                key={producto.id}
-                id={producto.id}
-                title={producto.title}
-                description={producto.description}
-                categoria={producto.categoria}
-                image={producto.image}
-              />
-            ))
-          ) : (
-            <p>No se encontraron productos</p>
-          )}
-        </div>
+        {!loading && !error && (
+          <div className="product-list">
+            {productosParaMostrar.length > 0 ? (
+              productosParaMostrar.map((producto) => (
+                <ProductCard
+                  key={producto.id}
+                  id={producto.id}
+                  title={producto.title}
+                  description={producto.description}
+                  categoria={producto.categoria}
+                  image={producto.image}
+                />
+              ))
+            ) : (
+              <p>No se encontraron productos</p>
+            )}
+          </div>
+        )}
 
         {/* Botón "Explorá más" solo si no se muestran todos los productos */}
-        {productosFiltrados.length > 4 && !mostrarTodos && (
+        {!loading && !error && productosFiltrados.length > 4 && !mostrarTodos && (
           <div className="d-flex justify-content-center my-4">
             <button
               className="btn btn-outline-primary"
@@ -76,7 +96,7 @@ const Home = () => {
         )}
 
         {/* Botón "Mostrar menos" solo si se están mostrando todos los productos */}
-        {mostrarTodos && productosFiltrados.length > 4 && (
+        {!loading && !error && mostrarTodos && productosFiltrados.length > 4 && (
           <div className="d-flex justify-content-center my-4">
             <button
               className="btn btn-outline-secondary"
