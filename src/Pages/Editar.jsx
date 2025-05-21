@@ -18,7 +18,10 @@ const Editar = () => {
     email: '',
     telefono: '0381-5088-999',  // Teléfono predeterminado
     ubicacion: 'Argentina, Tucumán',  // Ubicación predeterminada
-    imagen: 'images/fotoperfil.jpeg',
+    imagen: userData.imagen
+  ? `/images/${userData.imagen}`
+  : '/images/fotoperfil.jpg',
+
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -34,7 +37,7 @@ const Editar = () => {
         email: userData.email,
         telefono: userData.telefono || '0381-5088-999', 
         ubicacion: userData.ubicacion || 'Argentina, Tucumán',  
-        imagen: 'images/fotoperfil.jpeg',
+        imagen: userData.imagen || 'images/fotoperfil.jpg',
       });
     }
   }, [userData, navigate]);
@@ -47,16 +50,15 @@ const Editar = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setFormData(prev => ({
-        ...prev,
-        imagen: imageUrl,
-      }));
-    }
-  };
+ const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setFormData(prev => ({
+      ...prev,
+      imagen: file.name, // Guardamos solo el nombre del archivo
+    }));
+  }
+};
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -79,7 +81,8 @@ const Editar = () => {
     // 🔐 Conservamos el ID original y otros campos no editables
     const usuarioConId = {
       ...userData,
-      ...formData
+      ...formData,
+      imagen: formData.imagen.replace('/images/', '')
     };
 
     // 🧠 Actualizamos usuarioActual en localStorage
@@ -129,9 +132,9 @@ const Editar = () => {
           <div className="perfil-header">
             <div className="imagen-container">
               <img
-                src={formData.imagen}
+               src={`/images/${formData.imagen.replace('/images/', '')}`}
                 alt="Foto de perfil"
-                className="perfil-imagen"
+               className="perfil-imagen"
               />
               {isEditing && (
                 <div className="cambiar-imagen">

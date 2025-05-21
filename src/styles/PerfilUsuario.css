@@ -77,6 +77,14 @@
   margin: 8px 0;
   font-size: 22px;
 }
+.acciones-producto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+
+  align-items: center; /* CENTRA las cajas (botones) horizontalmente */
+}
 
 .perfil-acciones .btn-editar,
 .perfil-acciones .btn-configuracion {

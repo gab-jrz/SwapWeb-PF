@@ -60,10 +60,11 @@ const Header = ({
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                 >
-                  <option value="">Categorías</option>
+                  <option value="">---Seleccione una Categoria---</option>
                   <option value="tecnologia">Tecnología</option>
                   <option value="electrodomesticos">Electrodomésticos</option>
                   <option value="ropa">Ropa</option>
+                  <option value="">Otros</option>
                 </select>
               </div>
             </div>
@@ -115,7 +116,7 @@ const Header = ({
                       Mi Perfil
                     </button>
 
-                    <button
+                    {/* <button
                       className="dropdown-item"
                       onClick={() => {
                         navigate("/intercambiar");
@@ -123,7 +124,7 @@ const Header = ({
                       }}
                     >
                       Intercambiar producto
-                    </button>
+                    </button> */}
                     <hr />
                     <button
                       className="dropdown-item text-danger"

@@ -8,6 +8,8 @@ import Intercambiar from './Pages/Intercambiar';
 import PerfilUsuario from './Pages/PerfilUsuario';
 import Editar from './Pages/Editar';
 import Configuracion from './Pages/Configuracion';
+import PublicarProducto from './Pages/PublicarProducto';
+import EditarProducto from './Pages/EditarProducto';
 function App() {
   return (
     <Router>
@@ -21,6 +23,8 @@ function App() {
 
         <Route path="/perfil/:id" element={<PerfilUsuario />} />
         <Route path="/configuracion" element={<Configuracion />} />
+        <Route path="/publicarproducto" element={<PublicarProducto />} />
+        <Route path="/editar-producto/:id" element={<EditarProducto />} />
       </Routes>
     </Router>
   );
