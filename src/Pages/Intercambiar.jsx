@@ -4,6 +4,8 @@ import "../styles/Intercambiar.css";
 import Footer from "../Component/Footer";
 import Header from "../Component/Header";
 
+const API_URL = 'http://localhost:3001/api';
+
 const Intercambiar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,8 +17,14 @@ const Intercambiar = () => {
     condiciones: "",
   });
 
-  const [imagen, setImagen] = useState(null);
-  const [imagenBase64, setImagenBase64] = useState(null);  // Para guardar la imagen en Base64
+  const [imagenNombre, setImagenNombre] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Lista de imágenes disponibles en public/images
+  const opcionesImagenes = [
+    { nombre: "bici-de-montana.jpg", etiqueta: "Bici de Montaña" },
+    { nombre: "otra-imagen.jpg", etiqueta: "Otra Imagen" }, // ejemplo para agregar más
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,38 +34,41 @@ const Intercambiar = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagenBase64(reader.result);  // Guardar la imagen en Base64
-      };
-      reader.readAsDataURL(file);  // Convertir la imagen a Base64
-      setImagen(file);  // Guardar el archivo también para la vista previa
-    }
+  const handleSelectChange = (e) => {
+    setImagenNombre(e.target.value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
-
-    const mensaje = {
-      de: `${usuarioActual.nombre} ${usuarioActual.apellido}`,
-      para: `${ownerNombre} ${ownerApellido}`,
-      paraId: ownerId,
-      productoId,
-      productoTitle,
-      productoOfrecido: formData.productoOfrecido,
-      descripcion: formData.descripcion,
-      condiciones: formData.condiciones,
-      imagenBase64,  // Enviar la imagen como Base64
-      fecha: new Date().toISOString(),
-    };
+    if (isSubmitting) {
+      return; // Evitar múltiples envíos
+    }
 
     try {
-      await fetch("http://localhost:3000/mensajes", {
+      setIsSubmitting(true);
+      const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+
+      if (!usuarioActual) {
+        alert("Debes iniciar sesión para enviar una propuesta");
+        navigate("/login");
+        return;
+      }
+
+      const mensaje = {
+        de: `${usuarioActual.nombre} ${usuarioActual.apellido}`,
+        deId: usuarioActual.id,
+        paraId: ownerId,
+        paraNombre: `${ownerNombre} ${ownerApellido}`,
+        productoId,
+        productoTitle,
+        productoOfrecido: formData.productoOfrecido,
+        descripcion: formData.descripcion,
+        condiciones: formData.condiciones,
+        imagenNombre
+      };
+
+      const response = await fetch(`${API_URL}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,22 +76,58 @@ const Intercambiar = () => {
         body: JSON.stringify(mensaje),
       });
 
+      if (!response.ok) {
+        throw new Error("Error al enviar la propuesta");
+      }
+
+      await response.json();
       alert("¡Propuesta enviada con éxito!");
-      setFormData({ productoOfrecido: "", descripcion: "", condiciones: "" });
-      setImagen(null);
-      setImagenBase64(null);
+
+      // Redirigir al perfil después de enviar
+      navigate("/perfil");
+
     } catch (error) {
       console.error("Error al enviar el mensaje:", error);
+      alert("Error al enviar la propuesta. Por favor, intenta nuevamente.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (!location.state) {
+    return (
+      <div className="intercambiar-container">
+        <Header search={false} />
+        <div className="intercambiar-error">
+          <h2>Error: No se encontró la información del producto</h2>
+          <button className="btn-menu" onClick={() => navigate("/")}>
+            Volver al inicio
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="intercambiar-container">
       <Header search={false} />
+
       <div className="intercambiar-detalles">
-        <h2>Estás enviando una propuesta a <span className="resaltado">{ownerNombre} {ownerApellido}</span></h2>
-        <p>Producto de interés: <strong>{productoTitle}</strong></p>
-        <p>Propuesta enviada por: <strong>{JSON.parse(localStorage.getItem("usuarioActual")).nombre} {JSON.parse(localStorage.getItem("usuarioActual")).apellido}</strong></p>
+        <h2>
+          Estás enviando una propuesta a{" "}
+          <span className="resaltado">{ownerNombre} {ownerApellido}</span>
+        </h2>
+        <p>
+          Producto de interés: <strong>{productoTitle}</strong>
+        </p>
+        <p>
+          Propuesta enviada por:{" "}
+          <strong>
+            {JSON.parse(localStorage.getItem("usuarioActual"))?.nombre || ""}{" "}
+            {JSON.parse(localStorage.getItem("usuarioActual"))?.apellido || ""}
+          </strong>
+        </p>
       </div>
 
       <form className="intercambiar-formulario" onSubmit={handleSubmit}>
@@ -88,33 +135,77 @@ const Intercambiar = () => {
 
         <label>
           Producto ofrecido:
-          <input type="text" name="productoOfrecido" value={formData.productoOfrecido} onChange={handleChange} required />
+          <input
+            type="text"
+            name="productoOfrecido"
+            value={formData.productoOfrecido}
+            onChange={handleChange}
+            required
+          />
         </label>
 
         <label>
           Descripción del producto:
-          <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} required />
+          <textarea
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={handleChange}
+            required
+          />
         </label>
 
         <label>
-         Lugar de intercambio:
-          <textarea name="condiciones" value={formData.condiciones} onChange={handleChange} required />
+          Lugar de intercambio:
+          <textarea
+            name="condiciones"
+            value={formData.condiciones}
+            onChange={handleChange}
+            required
+          />
         </label>
 
         <label>
           Imagen del producto ofrecido:
-          <input type="file" accept="image/*" onChange={handleImageChange} />
+          <select value={imagenNombre} onChange={handleSelectChange} required>
+            <option value="" disabled>
+              -- Selecciona una imagen --
+            </option>
+            {opcionesImagenes.map(({ nombre, etiqueta }) => (
+              <option key={nombre} value={nombre}>
+                {etiqueta}
+              </option>
+            ))}
+          </select>
         </label>
 
-        {imagen && (
+        {imagenNombre && (
           <div className="preview-imagen">
             <p>Vista previa:</p>
-            <img src={URL.createObjectURL(imagen)} alt="Previsualización" />
+            <img
+              src={`/images/${imagenNombre}`}
+              alt="Imagen seleccionada"
+              style={{ maxWidth: "200px", maxHeight: "200px" }}
+            />
           </div>
         )}
 
-        <button type="button" className="btn-menu" onClick={() => navigate(`/producto/${productoId}`)}>← Regresar al producto</button>
-        <button type="submit" className="btn-enviar">Enviar propuesta</button>
+        <div className="botones-intercambio">
+          <button
+            type="button"
+            className="btn-menu"
+            onClick={() => navigate(`/producto/${productoId}`)}
+          >
+            ← Regresar al producto
+          </button>
+
+          <button 
+            type="submit" 
+            className="btn-enviar"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Enviando..." : "Enviar propuesta"}
+          </button>
+        </div>
       </form>
 
       <Footer />

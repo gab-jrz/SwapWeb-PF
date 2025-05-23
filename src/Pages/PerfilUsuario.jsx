@@ -1,9 +1,10 @@
-// PerfilUsuario.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/PerfilUsuario.css';
 import Header from '../Component/Header.jsx';
 import Footer from '../Component/Footer.jsx';
+
+const API_URL = 'http://localhost:3001/api'; // Backend URL
 
 const PerfilUsuario = () => {
   const navigate = useNavigate();
@@ -13,8 +14,9 @@ const PerfilUsuario = () => {
     transacciones: [],
     nombre: "",
     apellido: "",
-    zona: "",
+    ubicacion: "",
     email: "",
+    telefono: "",
     calificacion: 0,
     id: null
   });
@@ -22,105 +24,175 @@ const PerfilUsuario = () => {
   const [userListings, setUserListings] = useState([]);
   const [mensajes, setMensajes] = useState([]);
   const [activeTab, setActiveTab] = useState('articulos');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [respuestaMensaje, setRespuestaMensaje] = useState({}); // nuevo estado para las respuestas por mensaje
 
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
     if (!usuario) {
       navigate("/login");
     } else {
+      const imagenUrl = usuario.imagen
+        ? usuario.imagen.startsWith("/images/")
+          ? usuario.imagen
+          : `/images/${usuario.imagen}`
+        : '/images/fotoperfil.jpg';
+
       setUserData({
         nombre: usuario.nombre,
         apellido: usuario.apellido,
-        zona: usuario.zona,
+        ubicacion: usuario.zona || 'Tucumán',
         email: usuario.email,
-        calificacion: usuario.calificacion || 0,
+        imagen: imagenUrl,
+        telefono: usuario.telefono,
+        calificacion: usuario.calificacion,
         transacciones: usuario.transacciones || [],
         id: usuario.id,
       });
 
-      // Obtener productos del usuario desde la API de MongoDB
-      fetch(`http://localhost:3001/api/products`)
+      fetch(`${API_URL}/products/user/${usuario.id}`)
         .then((res) => res.json())
         .then((data) => {
-          const productosDelUsuario = data.filter((producto) => Number(producto.ownerId) === Number(usuario.id));
-          setUserListings(productosDelUsuario);
-          setError(null);
+          setUserListings(data);
         })
         .catch((error) => {
           console.error("❌ Error al obtener productos:", error);
-          setError("Error al cargar los productos. Por favor, intenta de nuevo.");
-        })
-        .finally(() => {
-          setLoading(false);
         });
 
-      // Por ahora, los mensajes se manejarán más adelante
-      setMensajes([]);
+      fetch(`${API_URL}/messages/${usuario.id}`)
+        .then(res => res.json())
+        .then(mensajesData => {
+          const mensajesFiltrados = mensajesData.map(mensaje => ({
+            ...mensaje,
+            nombreRemitente: mensaje.de || 'Usuario desconocido',
+            productoTitle: mensaje.productoTitle || '',
+            imagenNombre: mensaje.imagenNombre || '',
+            fecha: mensaje.createdAt || '',
+          }));
+          setMensajes(mensajesFiltrados);
+        })
+        .catch(error => {
+          console.error("❌ Error al obtener mensajes:", error);
+        });
     }
-  }, [navigate]);
+  }, [navigate, location]);
+
+  useEffect(() => {
+    if (location.state?.nuevoMensaje) {
+      const nuevoMensaje = location.state.nuevoMensaje;
+      setMensajes((prevMensajes) => {
+        const existe = prevMensajes.some(msg =>
+          msg.productoOfrecido === nuevoMensaje.productoOfrecido &&
+          msg.descripcion === nuevoMensaje.descripcion &&
+          msg.condiciones === nuevoMensaje.condiciones &&
+          msg.imagen === nuevoMensaje.imagen
+        );
+        return existe ? prevMensajes : [...prevMensajes, nuevoMensaje];
+      });
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+    if (usuarioActual) {
+      localStorage.setItem("usuarioActual", JSON.stringify({
+        ...usuarioActual,
+        transacciones: userData.transacciones
+      }));
+    }
+  }, [userData.transacciones]);
 
   const capitalize = (text) => text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : '';
 
   const handleTabChange = (tab) => setActiveTab(tab);
 
-  const handleMarcarComoIntercambiado = async (producto) => {
-    try {
-      const response = await fetch(`http://localhost:3001/api/products/${producto.id}`, {
-        method: "DELETE"
-      });
-
-      if (!response.ok) {
-        throw new Error("Error al marcar como intercambiado");
-      }
-
-      const nuevaTransaccion = {
-        id: producto.id,
-        title: producto.title,
-        descripcion: producto.description,
-        fecha: new Date().toLocaleDateString(),
-      };
-
-      setUserData(prev => ({
-        ...prev,
-        transacciones: [...prev.transacciones, nuevaTransaccion],
-      }));
-      setUserListings(prev => prev.filter(p => p.id !== producto.id));
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error al marcar como intercambiado. Por favor, intenta de nuevo.");
-    }
+  const handleMarcarComoIntercambiado = (producto) => {
+    const nuevaTransaccion = {
+      id: producto.id,
+      title: producto.title,
+      descripcion: producto.description,
+      fecha: new Date().toLocaleDateString(),
+    };
+    setUserData(prev => ({
+      ...prev,
+      transacciones: [...prev.transacciones, nuevaTransaccion],
+    }));
+    setUserListings(prev => prev.filter(p => p.id !== producto.id));
   };
 
-  const handleEliminarProducto = async (id) => {
+  const handleEliminarProducto = (id) => {
     const confirmacion = window.confirm("¿Estás seguro de que quieres eliminar este producto?");
     if (confirmacion) {
-      try {
-        const response = await fetch(`http://localhost:3001/api/products/${id}`, {
-          method: "DELETE"
+      fetch(`${API_URL}/products/${id}`, {
+        method: "DELETE",
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Error al eliminar el producto");
+          }
+          setUserListings(prev => prev.filter(p => p.id !== id));
+          alert("Producto eliminado correctamente");
+        })
+        .catch((err) => {
+          console.error("❌ Error al eliminar producto:", err);
+          alert("Error al eliminar el producto. Por favor, intenta nuevamente.");
         });
-
-        if (!response.ok) {
-          throw new Error("Error al eliminar");
-        }
-
-        setUserListings(prev => prev.filter(p => p.id !== id));
-      } catch (error) {
-        console.error("❌ Error al eliminar producto:", error);
-        alert("Error al eliminar el producto. Por favor, intenta de nuevo.");
-      }
     }
   };
 
   const handleEditarProducto = (producto) => {
-    const confirmacion = window.confirm("¿Estás seguro de que quieres editar este producto?");
-    if (confirmacion) {
-      navigate(`/editar-producto/${producto.id}`);
-    }
+    navigate(`/editar-producto/${producto.id}`);
   };
 
   const handleEditClick = () => navigate('/editar');
+
+  // Maneja el cambio de texto en la respuesta de un mensaje
+  const handleRespuestaChange = (id, texto) => {
+    setRespuestaMensaje(prev => ({ ...prev, [id]: texto }));
+  };
+
+  // Maneja el envío de la respuesta a un mensaje
+  const handleEnviarRespuesta = (id) => {
+    const respuesta = respuestaMensaje[id];
+    if (!respuesta || respuesta.trim() === '') {
+      alert("Por favor, escribe una respuesta antes de enviar.");
+      return;
+    }
+
+    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+    const mensajeOriginal = mensajes.find(m => m.id === id);
+
+    const nuevoMensaje = {
+      de: usuario.nombre + ' ' + usuario.apellido,
+      deId: usuario.id,
+      paraId: mensajeOriginal.deId,
+      paraNombre: mensajeOriginal.de,
+      productoOfrecido: `Respuesta a: ${mensajeOriginal.productoOfrecido}`,
+      descripcion: respuesta,
+      condiciones: '',
+      imagenNombre: '',
+    };
+
+    fetch(`${API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(nuevoMensaje)
+    })
+    .then(response => response.json())
+    .then(data => {
+      setMensajes(prev => [...prev, {
+        ...data,
+        nombreRemitente: nuevoMensaje.de,
+        fecha: new Date().toLocaleString()
+      }]);
+      setRespuestaMensaje(prev => ({ ...prev, [id]: '' }));
+    })
+    .catch(error => {
+      console.error('Error al enviar mensaje:', error);
+      alert('Error al enviar el mensaje. Por favor, intenta nuevamente.');
+    });
+  };
 
   return (
     <div className="perfil-usuario-container">
@@ -132,7 +204,7 @@ const PerfilUsuario = () => {
       <div className="perfil-usuario-content">
         <div className="perfil-header">
           <div className="perfil-imagen">
-            <img src={userData.imagen || "/images/default.jpg"} alt="Foto de perfil" />
+            <img src={userData.imagen} alt="Foto de perfil" />
           </div>
           <div className="perfil-info">
             <h1>{`${capitalize(userData.nombre)} ${capitalize(userData.apellido)}`}</h1>
@@ -147,8 +219,9 @@ const PerfilUsuario = () => {
               </div>
             </div>
             <div className="perfil-detalles">
-              <p><strong>Ubicación:</strong> {userData.zona || 'No especificada'}</p>
+              <p><strong>Ubicación:</strong> {userData.ubicacion || 'Argentina, Tucumán'}</p>
               <p><strong>Email:</strong> {userData.email || 'No disponible'}</p>
+              <p><strong>Teléfono:</strong> {userData.telefono || '0381-5088-999'}</p>
             </div>
             <div className="perfil-acciones">
               <button className="btn-editar" onClick={handleEditClick}>Editar Perfil</button>
@@ -167,14 +240,10 @@ const PerfilUsuario = () => {
           {activeTab === 'articulos' && (
             <div className="mis-articulos">
               <h2>Mis Artículos</h2>
-              <button className="btn-publicar" onClick={() => navigate("/publicar-producto")} style={{ marginBottom: '1rem' }}>
+              <button className="btn-publicar" onClick={() => navigate("/publicarproducto")} style={{ marginBottom: '1rem' }}>
                 + Publicar Nuevo Producto
               </button>
-              {loading ? (
-                <p>Cargando tus artículos...</p>
-              ) : error ? (
-                <p className="error-message">{error}</p>
-              ) : userListings.length === 0 ? (
+              {userListings.length === 0 ? (
                 <p>No has publicado ningún artículo aún.</p>
               ) : (
                 <div className="articulos-grid">
@@ -186,11 +255,11 @@ const PerfilUsuario = () => {
                       <div className="articulo-info">
                         <h3>{producto.title}</h3>
                         <p>{producto.description}</p>
-                        <p><strong>Categoría:</strong> {producto.categoria}</p>
-                        <div className="articulo-acciones">
-                          <button onClick={() => handleMarcarComoIntercambiado(producto)}>Marcar como Intercambiado</button>
-                          <button onClick={() => handleEditarProducto(producto)}>Editar</button>
-                          <button onClick={() => handleEliminarProducto(producto.id)}>Eliminar</button>
+                        <span className="categoria">{producto.categoria}</span>
+                        <div className="acciones-producto" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
+                          <button className="btn-intercambio" onClick={() => handleMarcarComoIntercambiado(producto)}>✅ Marcar como Intercambiado</button>
+                          <button className="btn-editar-producto" onClick={() => handleEditarProducto(producto)}>✏️ Editar</button>
+                          <button className="btn-eliminar-producto" onClick={() => handleEliminarProducto(producto.id)}>🗑️ Eliminar</button>
                         </div>
                       </div>
                     </div>
@@ -204,42 +273,58 @@ const PerfilUsuario = () => {
             <div className="mis-transacciones">
               <h2>Mis Transacciones</h2>
               {userData.transacciones.length === 0 ? (
-                <p>No tienes transacciones realizadas.</p>
+                <p>No tienes transacciones aún.</p>
               ) : (
-                <div className="transacciones-lista">
+                <ul>
                   {userData.transacciones.map((transaccion, index) => (
-                    <div key={index} className="transaccion-card">
-                      <h3>{transaccion.title}</h3>
-                      <p>{transaccion.descripcion}</p>
-                      <p><strong>Fecha:</strong> {transaccion.fecha}</p>
-                    </div>
+                    <li key={index}>
+                      <strong>{transaccion.title}</strong> - {transaccion.descripcion} - Fecha: {transaccion.fecha}
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
           )}
 
           {activeTab === 'mensajes' && (
             <div className="mis-mensajes">
-              <h2>Mis Mensajes</h2>
+              <h2>Mensajes</h2>
               {mensajes.length === 0 ? (
-                <p>No tienes mensajes.</p>
+                <p>No tienes mensajes nuevos.</p>
               ) : (
-                <div className="mensajes-lista">
-                  {mensajes.map((mensaje, index) => (
-                    <div key={index} className="mensaje-card">
-                      <h3>De: {mensaje.nombreRemitente}</h3>
-                      <p><strong>Producto:</strong> {mensaje.productoTitle}</p>
-                      <p>{mensaje.descripcion}</p>
-                      <p><strong>Fecha:</strong> {mensaje.fecha}</p>
-                    </div>
-                  ))}
-                </div>
+                mensajes.map((mensaje) => (
+                  <div key={mensaje.id} className="mensaje-card" style={{ border: '1px solid #ccc', marginBottom: '1rem', padding: '1rem', borderRadius: '8px' }}>
+                    
+                    <p><strong>De:</strong> {mensaje.nombreRemitente}</p>
+                    <p><strong>Producto de Interes :</strong> {mensaje.productoTitle}</p>
+                    <p><strong>Producto ofrecido:</strong> {mensaje.productoOfrecido}</p>
+                    <p><strong>Caracteristicas:</strong> {mensaje.descripcion}</p>
+                    
+                    <p><strong>Fecha:</strong> {mensaje.fecha}</p>
+                    {mensaje.imagenNombre && (
+                      <img
+                        src={`/images/${mensaje.imagenNombre}`}
+                        alt={`Imagen de ${mensaje.productoOfrecido}`}
+                        style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px' }}
+                      />
+                    )}
+                    <textarea
+                      placeholder="Escribe tu respuesta aquí..."
+                      value={respuestaMensaje[mensaje.id] || ''}
+                      onChange={(e) => handleRespuestaChange(mensaje.id, e.target.value)}
+                      style={{ width: '100%', marginTop: '10px' }}
+                    />
+                    <button onClick={() => handleEnviarRespuesta(mensaje.id)} style={{ marginTop: '5px' }}>
+                      Enviar respuesta
+                    </button>
+                  </div>
+                ))
               )}
             </div>
           )}
         </div>
       </div>
+
       <Footer />
     </div>
   );

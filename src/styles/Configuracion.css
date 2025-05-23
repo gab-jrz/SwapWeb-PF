@@ -1,13 +1,4 @@
-/* General Styles */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Arial', sans-serif;
-  background-color: #f7f7f7;
-}
-
-/* Contenedor principal (configuración) */
+/* Contenedor principal */
 .configuracion-container {
   display: flex;
   flex-direction: column;
@@ -17,18 +8,20 @@ html, body {
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  margin: 20px;
+  margin: 20px auto;
+  max-width: 800px;
+  font-family: 'Arial', sans-serif;
 }
 
-h2 {
+.configuracion-container h2 {
   font-size: 1.8em;
   color: #333;
   text-align: center;
   margin-bottom: 20px;
 }
 
-/* Botón de Retorno */
-.btn-menu {
+/* Botón de Volver */
+.configuracion-container .btn-menu {
   background-color: #4CAF50;
   color: white;
   padding: 10px 20px;
@@ -41,37 +34,44 @@ h2 {
   text-align: center;
 }
 
-.btn-menu:hover {
+.configuracion-container .btn-menu:hover {
   background-color: #45a049;
 }
 
-/* Sección de opciones de configuración */
-.config-options {
+/* Sección de opciones */
+.configuracion-container .config-options {
   display: flex;
   flex-direction: column;
   gap: 25px;
 }
 
-.config-option {
+.configuracion-container .config-section-title {
+  font-size: 1.4em;
+  color: #222;
+  margin-bottom: 10px;
+}
+
+.configuracion-container .config-option {
   background-color: #fff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.config-option label {
+.configuracion-container .config-option label {
   font-size: 1.1em;
   color: #333;
   display: block;
   margin-bottom: 15px;
 }
 
-.config-option input[type="checkbox"] {
+.configuracion-container .config-option input[type="checkbox"] {
   margin-right: 10px;
   cursor: pointer;
 }
 
-.config-option select {
+.configuracion-container .config-option select,
+.configuracion-container .config-password-input {
   font-size: 1em;
   padding: 10px;
   width: 100%;
@@ -79,18 +79,21 @@ h2 {
   border: 1px solid #ccc;
 }
 
-.config-option select:focus {
+.configuracion-container .config-option select:focus,
+.configuracion-container .config-password-input:focus {
   border-color: #4CAF50;
 }
 
-/* Botones de acción */
-.config-action-buttons {
+/* Botones */
+.configuracion-container .config-action-buttons {
   display: flex;
   gap: 20px;
   justify-content: space-between;
+  margin-top: 20px;
 }
 
-.config-action-buttons button {
+.configuracion-container .btn-guardar,
+.configuracion-container .btn-eliminar {
   padding: 12px 20px;
   font-size: 1.1em;
   cursor: pointer;
@@ -98,37 +101,23 @@ h2 {
   transition: all 0.3s ease;
   width: 48%;
   text-align: center;
-}
-
-.btn-guardar {
-  background-color: #4CAF50;
-  color: white;
   border: none;
 }
 
-.btn-guardar:hover {
+.configuracion-container .btn-guardar {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.configuracion-container .btn-guardar:hover {
   background-color: #45a049;
 }
 
-.btn-eliminar {
+.configuracion-container .btn-eliminar {
   background-color: #f44336;
   color: white;
-  border: none;
 }
 
-.btn-eliminar:hover {
+.configuracion-container .btn-eliminar:hover {
   background-color: #e53935;
-}
-
-/* Footer Styles */
-footer {
-  background-color: #333;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  font-size: 0.9em;
-  position: relative;
-  width: 100%;
-  margin-top: auto;  /* Asegura que el footer esté pegado al fondo */
-  border-radius: 8px;
 }

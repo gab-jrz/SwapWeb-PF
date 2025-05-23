@@ -26,11 +26,13 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/swapweb')
 const userRoutes = require('./routes/users');
 const productRoutes = require('./routes/products');
 const swapRoutes = require('./routes/swaps');
+const messageRoutes = require('./routes/messages');
 
 // Use routes
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/swaps', swapRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

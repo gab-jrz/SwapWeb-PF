@@ -73,4 +73,53 @@ router.post('/batch', async (req, res) => {
   }
 });
 
+// Get products by user ID
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const products = await Product.find({ ownerId: Number(req.params.userId) })
+      .select('-_id -__v')
+      .sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete product
+router.delete('/:id', async (req, res) => {
+  try {
+    const product = await Product.findOne({ id: Number(req.params.id) });
+    if (!product) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    await product.deleteOne();
+    res.json({ message: 'Producto eliminado' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update product
+router.put('/:id', async (req, res) => {
+  try {
+    const product = await Product.findOne({ id: Number(req.params.id) });
+    if (!product) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    if (req.body.title) product.title = req.body.title;
+    if (req.body.description) product.description = req.body.description;
+    if (req.body.categoria) product.categoria = req.body.categoria;
+    if (req.body.image) product.image = req.body.image;
+
+    const updatedProduct = await product.save();
+    const productResponse = updatedProduct.toObject();
+    delete productResponse._id;
+    delete productResponse.__v;
+    res.json(productResponse);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router; 

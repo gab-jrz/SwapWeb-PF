@@ -5,12 +5,15 @@ import Footer from "../Component/Footer";
 import { getProduct } from "../services/api";
 import "../styles/DetalleProducto.css";
 
+const API_URL = 'http://localhost:3001/api';
+
 const DetalleProducto = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [owner, setOwner] = useState(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -18,6 +21,14 @@ const DetalleProducto = () => {
         setLoading(true);
         const data = await getProduct(id);
         setProducto(data);
+        
+        // Obtener información del dueño del producto
+        const ownerResponse = await fetch(`${API_URL}/users/${data.ownerId}`);
+        if (ownerResponse.ok) {
+          const ownerData = await ownerResponse.json();
+          setOwner(ownerData);
+        }
+        
         setError(null);
       } catch (err) {
         setError('Error al cargar el producto. Por favor, intenta de nuevo más tarde.');
@@ -31,8 +42,28 @@ const DetalleProducto = () => {
   }, [id]);
 
   const handleChat = () => {
-    // Implementar la lógica del chat aquí
-    console.log("Iniciar chat para el producto:", id);
+    const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+    
+    if (!usuarioActual) {
+      alert("Debes iniciar sesión para consultar por este artículo");
+      navigate("/login");
+      return;
+    }
+
+    if (usuarioActual.id === producto.ownerId) {
+      alert("No puedes consultar por tu propio producto");
+      return;
+    }
+
+    navigate("/intercambiar", {
+      state: {
+        productoId: producto.id,
+        productoTitle: producto.title,
+        ownerId: producto.ownerId,
+        ownerNombre: owner?.nombre || "",
+        ownerApellido: owner?.apellido || ""
+      }
+    });
   };
 
   if (loading) return <div className="detalle-container"><Header /><p className="text-center">Cargando producto...</p><Footer /></div>;
@@ -53,6 +84,11 @@ const DetalleProducto = () => {
         <p className="detalle-descripcion">
           <strong>Categoría:</strong> {producto.categoria}
         </p>
+        {owner && (
+          <p className="detalle-descripcion">
+            <strong>Propietario:</strong> {owner.nombre} {owner.apellido}
+          </p>
+        )}
         <div className="detalle-botones">
           <button className="btn-volver" onClick={() => navigate("/")}>
             ← Volver al inicio
