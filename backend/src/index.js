@@ -13,10 +13,18 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// MongoDB connection options
+const mongooseOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  retryWrites: true,
+  w: 'majority'
+};
+
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/swapweb')
+mongoose.connect(process.env.MONGODB_URI, mongooseOptions)
   .then(() => {
-    console.log('Connected to MongoDB');
+    console.log('Connected to MongoDB Atlas');
   })
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error);
@@ -36,7 +44,10 @@ app.use('/api/messages', messageRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+  res.status(200).json({ 
+    status: 'ok',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
 });
 
 // Start server
