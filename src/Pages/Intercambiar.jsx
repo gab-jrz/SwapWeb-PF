@@ -152,11 +152,11 @@ const Intercambiar = () => {
     <>
       <Header search={false} />
       <div className="intercambiar-container">
-        <div className="intercambiar-detalles">
-          <h2>
-            Estás enviando una propuesta a{" "}
-            <span className="resaltado">{ownerNombre} {ownerApellido}</span>
-          </h2>
+      <div className="intercambiar-detalles">
+        <h2>
+          Estás enviando una propuesta a{" "}
+          <span className="resaltado">{ownerNombre} {ownerApellido}</span>
+        </h2>
           <div className="producto-interes">
             <div className="producto-interes-imagen">
               <img src={productoImage} alt={productoTitle} />
@@ -166,73 +166,73 @@ const Intercambiar = () => {
               <p className="producto-descripcion">{productoDescription}</p>
             </div>
           </div>
-        </div>
+      </div>
 
-        <form className="intercambiar-formulario" onSubmit={handleSubmit}>
-          <h3>Selecciona un producto para intercambiar</h3>
+      <form className="intercambiar-formulario" onSubmit={handleSubmit}>
+        <h3>Selecciona un producto para intercambiar</h3>
 
-          {loading ? (
-            <p>Cargando tus productos...</p>
-          ) : error ? (
-            <p className="error-message">{error}</p>
-          ) : userProducts.length === 0 ? (
-            <div className="no-products">
-              <p>No tienes productos disponibles para intercambiar.</p>
-              <button type="button" className="btn-menu" onClick={() => navigate("/publicar")}>
-                Publicar un producto
-              </button>
-            </div>
-          ) : (
-            <div className="productos-grid">
-              {userProducts.map((product) => (
-                <div 
-                  key={product.id} 
-                  className={`producto-card ${selectedProductId === product.id ? 'selected' : ''}`}
-                  onClick={() => handleProductSelect(product)}
-                >
-                  <div className="producto-imagen">
-                    <img src={product.image} alt={product.title} />
+        {loading ? (
+          <p>Cargando tus productos...</p>
+        ) : error ? (
+          <p className="error-message">{error}</p>
+        ) : userProducts.length === 0 ? (
+          <div className="no-products">
+            <p>No tienes productos disponibles para intercambiar.</p>
+            <button type="button" className="btn-menu" onClick={() => navigate("/publicar")}>
+              Publicar un producto
+            </button>
+          </div>
+        ) : (
+          <div className="productos-grid">
+            {userProducts.map((product) => (
+              <div 
+                key={product.id} 
+                className={`producto-card ${selectedProductId === product.id ? 'selected' : ''}`}
+                onClick={() => handleProductSelect(product)}
+              >
+                <div className="producto-imagen">
+                  <img src={product.image} alt={product.title} />
                   </div>
                   <div className="producto-info">
                     <h4>{product.title}</h4>
                     <p>{product.description}</p>
-                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {selectedProductId && (
-            <label>
-              Lugar y condiciones de intercambio:
-              <textarea
-                name="condiciones"
-                value={formData.condiciones}
-                onChange={(e) => setFormData(prev => ({ ...prev, condiciones: e.target.value }))}
-                required
-                placeholder="Especifica el lugar y las condiciones para realizar el intercambio"
-              />
-            </label>
-          )}
-
-          <div className="botones-intercambio">
-            <button
-              type="button"
-              className="btn-menu"
-              onClick={() => navigate(`/producto/${productoId}`)}
-            >
-              ← Regresar al producto
-            </button>
-
-            <button 
-              type="submit" 
-              className="btn-enviar"
-              disabled={isSubmitting || !selectedProductId}
-            >
-              {isSubmitting ? "Enviando..." : "Enviar propuesta"}
-            </button>
+              </div>
+            ))}
           </div>
-        </form>
+        )}
+
+        {selectedProductId && (
+          <label>
+            Lugar y condiciones de intercambio:
+            <textarea
+              name="condiciones"
+              value={formData.condiciones}
+              onChange={(e) => setFormData(prev => ({ ...prev, condiciones: e.target.value }))}
+              required
+              placeholder="Especifica el lugar y las condiciones para realizar el intercambio"
+            />
+          </label>
+        )}
+
+        <div className="botones-intercambio">
+          <button
+            type="button"
+            className="btn-menu"
+            onClick={() => navigate(`/producto/${productoId}`)}
+          >
+            ← Regresar al producto
+          </button>
+
+          <button 
+            type="submit" 
+            className="btn-enviar"
+            disabled={isSubmitting || !selectedProductId}
+          >
+            {isSubmitting ? "Enviando..." : "Enviar propuesta"}
+          </button>
+        </div>
+      </form>
       </div>
       <Footer />
     </>

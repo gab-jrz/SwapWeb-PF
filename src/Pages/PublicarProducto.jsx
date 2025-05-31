@@ -1,59 +1,181 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../Component/Header';
 import Footer from '../Component/Footer';
 import "../styles/PublicarProducto.css";
+
+const API_URL = 'http://localhost:3001/api';
+
+const Modal = ({ isOpen, onClose, onConfirm, title, message, isLoading }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h3>{title}</h3>
+        <p>{message}</p>
+        <div className="modal-actions">
+          <button 
+            className="btn-confirmar" 
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Publicando...' : 'Confirmar'}
+          </button>
+          <button 
+            className="btn-cancelar-modal" 
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PublicarProducto = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     categoria: '',
-    image: '',
+    image: null,
   });
 
-  const [imagenNombre, setImagenNombre] = useState(''); // Para el select
-
-  const opcionesImagenes = [
-    { nombre: "bici-de-montana.jpg", etiqueta: "Bici de Montaña" },
-    { nombre: "otra-imagen.jpg", etiqueta: "Otra Imagen" },
-    // agregá más imágenes si querés
-  ];
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('usuario'));
+  const user = JSON.parse(localStorage.getItem('usuarioActual')) || {};
 
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSelectChange = (e) => {
-    setImagenNombre(e.target.value);
-    // También actualizar el campo image para guardar la ruta seleccionada
-    setFormData({...formData, image: `/images/${e.target.value}`});
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files[0];
+    handleFileSelect(file);
+  };
+
+  const handleFileSelect = (file) => {
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        showNotification('Por favor selecciona un archivo de imagen válido', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result);
+        setFormData(prev => ({ ...prev, image: file }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.title || !formData.description || !formData.categoria) {
+      showNotification('Por favor completa todos los campos requeridos', 'error');
+      return;
+    }
+    if (!formData.image) {
+      showNotification('Por favor selecciona una imagen para tu producto', 'error');
+      return;
+    }
+    setIsModalOpen(true);
+  };
 
-    const nuevoProducto = {
-      ...formData,
-      ownerId: user?.id || 1,
-    };
+  const handleConfirmPublish = async () => {
+    setIsLoading(true);
+    console.log('Iniciando publicación del producto...');
 
-    fetch('http://localhost:3000/productos', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(nuevoProducto)
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Error al guardar producto');
-        return res.json();
-      })
-      .then(() => {
-        navigate('/');
-      })
-      .catch(err => console.error("Error al guardar producto:", err));
+    try {
+      const reader = new FileReader();
+      const imageBase64Promise = new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(formData.image);
+      });
+
+      const imageBase64 = await imageBase64Promise;
+      console.log('Imagen convertida a Base64');
+
+      const productoData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.categoria,
+        image: imageBase64,
+        ownerId: user.id,
+        date: new Date().toISOString(),
+        status: 'available'
+      };
+
+      console.log('Enviando datos al servidor:', productoData);
+
+      const response = await fetch(`${API_URL}/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productoData)
+      });
+
+      console.log('Respuesta del servidor:', response);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      const savedProduct = await response.json();
+      console.log('Producto guardado exitosamente:', savedProduct);
+      
+      showNotification('¡Producto publicado exitosamente!', 'success');
+      setTimeout(() => {
+        setIsModalOpen(false);
+        navigate(`/perfil/${user.id}`);
+      }, 1500);
+    } catch (err) {
+      console.error("Error detallado:", err);
+      let errorMessage = 'Error al publicar el producto';
+      
+      if (err.message === 'Failed to fetch') {
+        errorMessage = 'No se pudo conectar con el servidor. Verifica que el servidor esté funcionando.';
+      } else if (err.message.includes('NetworkError')) {
+        errorMessage = 'Error de red. Verifica tu conexión a internet.';
+      }
+      
+      showNotification(errorMessage, 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -61,84 +183,121 @@ const PublicarProducto = () => {
       <Header search={false} />
 
       <button
-        className="btn-menu"
-        style={{ margin: 10 }}
-        onClick={() => navigate("/perfil/2")}
+        className="btn-regresar"
+        onClick={() => navigate(`/perfil/${user.id}`)}
       >
-        ← Retornar
+        ← Volver
       </button>
 
       <div className="publicar-producto-container">
         <h2>Publicar Nuevo Producto</h2>
+        
+        {notification.show && (
+          <div className={`notification ${notification.type}`}>
+            {notification.message}
+          </div>
+        )}
+
         <form className="publicar-producto-form" onSubmit={handleSubmit}>
-          <label htmlFor="title">Título</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            placeholder="Ej: Celular Samsung Galaxy Flip 6"
-            value={formData.title}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <label htmlFor="title">Título del Producto</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              placeholder="Ej: Celular Samsung Galaxy Flip 6"
+              value={formData.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <label htmlFor="description">Descripción</label>
-          <textarea
-            id="description"
-            name="description"
-            rows="4"
-            placeholder="Descripción del producto..."
-            value={formData.description}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <label htmlFor="description">Descripción</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="4"
+              placeholder="Describe tu producto en detalle..."
+              value={formData.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-         <label htmlFor="categoria">Categoría</label>
-          <select
-          id="categoria"
-         name="categoria"
-          value={formData.categoria}
-            onChange={handleChange}
-          required
-          >     
-        <option value="" disabled>-- Selecciona una categoría --</option>
-          <option value="categorías">Otros</option>
-        <option value="tecnologia">Tecnología</option>
-        <option value="electrodomesticos">Electrodomésticos</option>
-          <option value="ropa">Ropa</option>
-        </select>
+          <div className="form-group">
+            <label htmlFor="categoria">Categoría</label>
+            <select
+              id="categoria"
+              name="categoria"
+              value={formData.categoria}
+              onChange={handleChange}
+              required
+            >
+              <option value="" disabled>-- Selecciona una categoría --</option>
+              <option value="otros">Otros</option>
+              <option value="tecnologia">Tecnología</option>
+              <option value="electrodomesticos">Electrodomésticos</option>
+              <option value="ropa">Ropa</option>
+            </select>
+          </div>
 
-          {/* Select para elegir imagen */}
-          <label htmlFor="imageSelect">Selecciona una imagen</label>
-          <select
-            id="imageSelect"
-            value={imagenNombre}
-            onChange={handleSelectChange}
-            required
-          >
-            <option value="" disabled>-- Selecciona una imagen --</option>
-            {opcionesImagenes.map(({ nombre, etiqueta }) => (
-              <option key={nombre} value={nombre}>
-                {etiqueta}
-              </option>
-            ))}
-          </select>
-
-          {/* Preview de la imagen seleccionada */}
-          {imagenNombre && (
-            <div className="preview-imagen" style={{ marginTop: '10px' }}>
-              <p>Vista previa:</p>
-              <img
-                src={`/images/${imagenNombre}`}
-                alt="Imagen seleccionada"
-                style={{ maxWidth: "200px", maxHeight: "200px" }}
+          <div className="form-group">
+            <label>Imagen del Producto</label>
+            <div
+              className={`upload-area ${isDragging ? 'dragging' : ''}`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {previewImage ? (
+                <div className="preview-container">
+                  <img src={previewImage} alt="Vista previa" className="preview-image" />
+                  <button
+                    type="button"
+                    className="remove-image"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewImage(null);
+                      setFormData(prev => ({ ...prev, image: null }));
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <div className="upload-placeholder">
+                  <i className="fas fa-cloud-upload-alt"></i>
+                  <p>Arrastra y suelta tu imagen aquí o haz clic para seleccionar</p>
+                  <span>Formatos aceptados: JPG, PNG, GIF</span>
+                </div>
+              )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept="image/*"
+                onChange={(e) => handleFileSelect(e.target.files[0])}
               />
             </div>
-          )}
+          </div>
 
-          <button type="submit" className="btn-publicar">Publicar Producto</button>
+          <button type="submit" className="btn-publicar">
+            Publicar Producto
+          </button>
         </form>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmPublish}
+        title="Confirmar Publicación"
+        message="¿Estás seguro de que deseas publicar este producto?"
+        isLoading={isLoading}
+      />
 
       <Footer />
     </div>

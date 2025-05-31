@@ -220,7 +220,7 @@
   .acciones-formulario {
     flex-direction: column;
   }
-
+  
   .btn-guardar-edicion,
   .btn-cancelar-edicion {
     width: 100%;
@@ -478,5 +478,5 @@
     transform: translateX(0);
     opacity: 1;
   }
-}
+  }
   

@@ -57,8 +57,8 @@ const Editar = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!userData) {
-        navigate("/login");
+    if (!userData) {
+      navigate("/login");
         return;
       }
 
@@ -67,14 +67,14 @@ const Editar = () => {
         if (!response.ok) throw new Error('Error al obtener datos del usuario');
         
         const userDataFromDB = await response.json();
-        setFormData({
+      setFormData({
           nombre: userDataFromDB.nombre,
           apellido: userDataFromDB.apellido,
           email: userDataFromDB.email,
           telefono: userDataFromDB.telefono || '0381-5088-999',
           ubicacion: userDataFromDB.ubicacion || 'Argentina, Tucumán',
           imagen: userDataFromDB.imagen || '/images/fotoperfil.jpg',
-        });
+      });
       } catch (error) {
         console.error('Error:', error);
         setNotification({
@@ -95,15 +95,15 @@ const Editar = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(prev => ({
-        ...prev,
+ const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setFormData(prev => ({
+      ...prev,
         imagen: file.name,
-      }));
-    }
-  };
+    }));
+  }
+};
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -146,8 +146,8 @@ const Editar = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
-          imagen: formData.imagen.replace('/images/', '')
+      ...formData,
+      imagen: formData.imagen.replace('/images/', '')
         }),
       });
 
@@ -166,16 +166,16 @@ const Editar = () => {
       localStorage.setItem('usuarioActual', JSON.stringify(usuarioActualizado));
       setUserData(usuarioActualizado);
 
-      setIsEditing(false);
+    setIsEditing(false);
       setIsModalOpen(false);
       setNotification({
         message: '¡Cambios guardados correctamente!',
         type: 'success'
       });
 
-      setTimeout(() => {
+    setTimeout(() => {
         setNotification({ message: '', type: '' });
-      }, 3000);
+    }, 3000);
 
     } catch (error) {
       console.error('Error:', error);
@@ -200,7 +200,7 @@ const Editar = () => {
           }}
         >
           ← Volver
-        </button>
+      </button>
 
         <Notification 
           message={notification.message} 
@@ -211,7 +211,7 @@ const Editar = () => {
           <div className="seccion-imagen">
             <div className="contenedor-imagen-edicion">
               <img
-                src={`/images/${formData.imagen.replace('/images/', '')}`}
+               src={`/images/${formData.imagen.replace('/images/', '')}`}
                 alt="Foto de perfil"
                 className="imagen-perfil-edicion"
               />

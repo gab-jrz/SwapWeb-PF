@@ -1,76 +1,330 @@
 .publicar-producto-container {
-  max-width: 500px;
+  max-width: 800px;
   margin: 2rem auto;
-  padding: 1.5rem 2rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
 }
 
 .publicar-producto-container h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #333;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-bottom: 2rem;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 .publicar-producto-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
-.publicar-producto-form label {
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 0.3rem;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.publicar-producto-form input[type="text"],
-.publicar-producto-form textarea {
-  padding: 0.5rem 0.8rem;
+.form-group label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select {
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  border: 1.5px solid #ccc;
-  border-radius: 4px;
-  transition: border-color 0.3s ease;
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+  color: #333;
 }
 
-.publicar-producto-form input[type="text"]:focus,
-.publicar-producto-form textarea:focus {
+.form-group input[type="text"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 5px #007bffaa;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* SOLO para el botón dentro de publicar-producto-container */
-.publicar-producto-container .btn-publicar {
-  padding: 0.75rem;
-  background-color: #007bff;
+.form-group input[type="text"]::placeholder,
+.form-group textarea::placeholder {
+  color: #9ca3af;
+}
+
+.upload-area {
+  border: 2px dashed #e1e1e1;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f9fafb;
+}
+
+.upload-area:hover,
+.upload-area.dragging {
+  border-color: #2563eb;
+  background-color: rgba(255, 33, 33, 0.05);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #000714;
+}
+
+.upload-placeholder i {
+  font-size: 2.5rem;
+  color: #2563eb;
+}
+
+.upload-placeholder p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.upload-placeholder span {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.remove-image {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.remove-image:hover {
+  background-color: #dc2626;
+  transform: scale(1.1);
+}
+
+.btn-publicar {
+  padding: 1rem;
+  background-color: #2563eb;
   color: white;
   font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  width: 100%;
   margin-top: 1rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 10px 20px;
 }
 
-.publicar-producto-container .btn-publicar:hover {
-  background-color: #0056b3;
+.btn-publicar:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
 }
-.publicar-producto-container .preview-imagen {
+
+.btn-publicar:active {
+  transform: translateY(0);
+}
+
+.btn-regresar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin: 1rem 2rem;
+}
+
+.btn-regresar:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+  z-index: 1000;
+}
+
+.notification.success {
+  background-color: #10b981;
+}
+
+.notification.error {
+  background-color: #ef4444;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .publicar-producto-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .publicar-producto-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .btn-regresar {
+    margin: 1rem;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  margin-top: 1rem; /* opcional para separar de otros elementos */
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
-.publicar-producto-container .preview-imagen img {
-  max-width: 100%;
-  height: auto;
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  animation: slideUp 0.3s ease;
+}
+
+.modal-content h3 {
+  margin: 0 0 1rem 0;
+  color: #1a1a1a;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.modal-content p {
+  margin: 0 0 1.5rem 0;
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-confirmar {
+  padding: 0.75rem 1.5rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
   border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-confirmar:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.btn-confirmar:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.btn-cancelar-modal {
+  padding: 0.75rem 1.5rem;
+  background-color: #e5e7eb;
+  color: #4b5563;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancelar-modal:hover:not(:disabled) {
+  background-color: #d1d5db;
+  color: #1f2937;
+}
+
+.btn-cancelar-modal:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
