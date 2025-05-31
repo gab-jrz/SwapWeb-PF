@@ -59,6 +59,8 @@ const DetalleProducto = () => {
       state: {
         productoId: producto.id,
         productoTitle: producto.title,
+        productoImage: producto.image,
+        productoDescription: producto.description,
         ownerId: producto.ownerId,
         ownerNombre: owner?.nombre || "",
         ownerApellido: owner?.apellido || ""

@@ -38,7 +38,8 @@ const EditarProducto = () => {
       } catch (error) {
         console.error("Error al cargar el producto:", error);
         alert("Error al cargar el producto. Por favor, intenta nuevamente.");
-        navigate("/perfil");
+        const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+        navigate(`/perfil/${usuarioActual.id}`);
       }
     };
 
@@ -75,7 +76,8 @@ const EditarProducto = () => {
       
       const updatedProduct = await response.json();
       alert("Producto actualizado correctamente");
-      navigate("/perfil");
+      const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+      navigate(`/perfil/${usuarioActual.id}`);
     } catch (error) {
       console.error("Error al actualizar el producto:", error);
       alert("Error al actualizar el producto. Por favor, intenta nuevamente.");
@@ -106,7 +108,10 @@ const EditarProducto = () => {
       <div className="editar-producto-content">
         <button 
           className="btn-volver"
-          onClick={() => navigate("/perfil")}
+          onClick={() => {
+            const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+            navigate(`/perfil/${usuarioActual.id}`);
+          }}
         >
           ← Volver al perfil
         </button>
@@ -211,7 +216,10 @@ const EditarProducto = () => {
               <button 
                 type="button" 
                 className="btn-cancelar"
-                onClick={() => navigate("/perfil")}
+                onClick={() => {
+                  const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+                  navigate(`/perfil/${usuarioActual.id}`);
+                }}
               >
                 Cancelar
               </button>
