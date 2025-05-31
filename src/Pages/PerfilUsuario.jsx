@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/PerfilUsuario.css';
 import Header from '../Component/Header.jsx';
 import Footer from '../Component/Footer.jsx';
+import DeleteModal from '../Component/DeleteModal.jsx';
 
 const API_URL = 'http://localhost:3001/api'; // Backend URL
 
@@ -25,6 +26,11 @@ const PerfilUsuario = () => {
   const [mensajes, setMensajes] = useState([]);
   const [activeTab, setActiveTab] = useState('articulos');
   const [respuestaMensaje, setRespuestaMensaje] = useState({}); // nuevo estado para las respuestas por mensaje
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    productId: null,
+    productTitle: ''
+  });
 
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
@@ -119,24 +125,29 @@ const PerfilUsuario = () => {
     setUserListings(prev => prev.filter(p => p.id !== producto.id));
   };
 
-  const handleEliminarProducto = (id) => {
-    const confirmacion = window.confirm("¿Estás seguro de que quieres eliminar este producto?");
-    if (confirmacion) {
-      fetch(`${API_URL}/products/${id}`, {
-        method: "DELETE",
+  const handleEliminarProducto = (producto) => {
+    setDeleteModal({
+      isOpen: true,
+      productId: producto.id,
+      productTitle: producto.title
+    });
+  };
+
+  const confirmDelete = () => {
+    const id = deleteModal.productId;
+    fetch(`${API_URL}/products/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error al eliminar el producto");
+        }
+        setUserListings(prev => prev.filter(p => p.id !== id));
+        setDeleteModal({ isOpen: false, productId: null, productTitle: '' });
       })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Error al eliminar el producto");
-          }
-          setUserListings(prev => prev.filter(p => p.id !== id));
-          alert("Producto eliminado correctamente");
-        })
-        .catch((err) => {
-          console.error("❌ Error al eliminar producto:", err);
-          alert("Error al eliminar el producto. Por favor, intenta nuevamente.");
-        });
-    }
+      .catch((err) => {
+        console.error("❌ Error al eliminar producto:", err);
+      });
   };
 
   const handleEditarProducto = (producto) => {
@@ -259,7 +270,7 @@ const PerfilUsuario = () => {
                         <div className="acciones-producto" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
                           <button className="btn-intercambio" onClick={() => handleMarcarComoIntercambiado(producto)}>✅ Marcar como Intercambiado</button>
                           <button className="btn-editar-producto" onClick={() => handleEditarProducto(producto)}>✏️ Editar</button>
-                          <button className="btn-eliminar-producto" onClick={() => handleEliminarProducto(producto.id)}>🗑️ Eliminar</button>
+                          <button className="btn-eliminar-producto" onClick={() => handleEliminarProducto(producto)}>🗑️ Eliminar</button>
                         </div>
                       </div>
                     </div>
@@ -326,6 +337,12 @@ const PerfilUsuario = () => {
       </div>
 
       <Footer />
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, productId: null, productTitle: '' })}
+        onConfirm={confirmDelete}
+        productTitle={deleteModal.productTitle}
+      />
     </div>
   );
 };

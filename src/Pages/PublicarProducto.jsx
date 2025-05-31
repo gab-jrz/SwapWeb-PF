@@ -6,6 +6,52 @@ import "../styles/PublicarProducto.css";
 
 const API_URL = 'http://localhost:3001/api';
 
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Máximo tamaño permitido
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convertir a JPEG con calidad 0.7 (70%)
+        canvas.toBlob(
+          (blob) => {
+            resolve(blob);
+          },
+          'image/jpeg',
+          0.7
+        );
+      };
+    };
+  });
+};
+
 const Modal = ({ isOpen, onClose, onConfirm, title, message, isLoading }) => {
   if (!isOpen) return null;
 
@@ -78,19 +124,25 @@ const PublicarProducto = () => {
     handleFileSelect(file);
   };
 
-  const handleFileSelect = (file) => {
+  const handleFileSelect = async (file) => {
     if (file) {
       if (!file.type.startsWith('image/')) {
         showNotification('Por favor selecciona un archivo de imagen válido', 'error');
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result);
-        setFormData(prev => ({ ...prev, image: file }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedImage = await compressImage(file);
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPreviewImage(reader.result);
+          setFormData(prev => ({ ...prev, image: compressedImage }));
+        };
+        reader.readAsDataURL(compressedImage);
+      } catch (error) {
+        console.error('Error al comprimir la imagen:', error);
+        showNotification('Error al procesar la imagen', 'error');
+      }
     }
   };
 
@@ -130,7 +182,7 @@ const PublicarProducto = () => {
       const productoData = {
         title: formData.title,
         description: formData.description,
-        category: formData.categoria,
+        categoria: formData.categoria,
         image: imageBase64,
         ownerId: user.id,
         date: new Date().toISOString(),
