@@ -7,7 +7,14 @@ import "../styles/PublicarProducto.css";
 const API_URL = 'http://localhost:3001/api';
 
 const compressImage = (file) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    // Check file size first (max 5MB)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      reject(new Error('El archivo es demasiado grande. El tamaño máximo permitido es 5MB.'));
+      return;
+    }
+
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = (event) => {
@@ -18,9 +25,24 @@ const compressImage = (file) => {
         let width = img.width;
         let height = img.height;
 
-        // Máximo tamaño permitido
-        const MAX_WIDTH = 800;
-        const MAX_HEIGHT = 800;
+        // Máximo tamaño permitido - reduced for larger images
+        let MAX_WIDTH = 800;
+        let MAX_HEIGHT = 800;
+        let quality = 0.7;
+
+        // If image is larger than 2MB, use more aggressive compression
+        if (file.size > 2 * 1024 * 1024) {
+          MAX_WIDTH = 600;
+          MAX_HEIGHT = 600;
+          quality = 0.6;
+        }
+
+        // If image is larger than 4MB, compress even more
+        if (file.size > 4 * 1024 * 1024) {
+          MAX_WIDTH = 400;
+          MAX_HEIGHT = 400;
+          quality = 0.5;
+        }
 
         if (width > height) {
           if (width > MAX_WIDTH) {
@@ -39,15 +61,21 @@ const compressImage = (file) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convertir a JPEG con calidad 0.7 (70%)
+        // Convert to JPEG with dynamic quality
         canvas.toBlob(
           (blob) => {
             resolve(blob);
           },
           'image/jpeg',
-          0.7
+          quality
         );
       };
+      img.onerror = () => {
+        reject(new Error('Error al cargar la imagen'));
+      };
+    };
+    reader.onerror = () => {
+      reject(new Error('Error al leer el archivo'));
     };
   });
 };
@@ -141,7 +169,11 @@ const PublicarProducto = () => {
         reader.readAsDataURL(compressedImage);
       } catch (error) {
         console.error('Error al comprimir la imagen:', error);
-        showNotification('Error al procesar la imagen', 'error');
+        showNotification(error.message || 'Error al procesar la imagen', 'error');
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     }
   };

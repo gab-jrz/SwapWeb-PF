@@ -37,11 +37,21 @@ const PerfilUsuario = () => {
     if (!usuario) {
       navigate("/login");
     } else {
-      const imagenUrl = usuario.imagen
-        ? usuario.imagen.startsWith("/images/")
-          ? usuario.imagen
-          : `/images/${usuario.imagen}`
-        : '/images/fotoperfil.jpg';
+      let imagenUrl;
+      if (usuario.imagen) {
+        // Si la imagen es base64
+        if (usuario.imagen.startsWith('data:image')) {
+          imagenUrl = usuario.imagen;
+        }
+        // Si la imagen es una ruta
+        else {
+          imagenUrl = usuario.imagen.startsWith("/images/")
+            ? usuario.imagen
+            : `/images/${usuario.imagen}`;
+        }
+      } else {
+        imagenUrl = '/images/fotoperfil.jpg';
+      }
 
       setUserData({
         nombre: usuario.nombre,
@@ -215,7 +225,14 @@ const PerfilUsuario = () => {
       <div className="perfil-usuario-content">
         <div className="perfil-header">
           <div className="perfil-imagen">
-            <img src={userData.imagen} alt="Foto de perfil" />
+            <img 
+              src={userData.imagen || '/images/fotoperfil.jpg'} 
+              alt="Foto de perfil" 
+              onError={(e) => {
+                e.target.onerror = null; // Prevenir loop infinito
+                e.target.src = '/images/fotoperfil.jpg';
+              }}
+            />
           </div>
           <div className="perfil-info">
             <h1>{`${capitalize(userData.nombre)} ${capitalize(userData.apellido)}`}</h1>

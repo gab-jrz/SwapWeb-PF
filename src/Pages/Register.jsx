@@ -8,6 +8,8 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -15,57 +17,73 @@ const Register = () => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     if (!nombre.trim() || !apellido.trim() || !email.trim()) {
-      alert("Todos los campos son obligatorios");
+      setError("Todos los campos son obligatorios");
+      setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
+      setError("Las contraseñas no coinciden");
+      setLoading(false);
       return;
     }
 
-    const usuariosExistentes = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const usuarioDuplicado = usuariosExistentes.find(user => user.email === email);
+    try {
+      const nombreCapitalizado = capitalizar(nombre);
+      const apellidoCapitalizado = capitalizar(apellido);
+      
+      const nuevoUsuario = {
+        id: Date.now().toString(),
+        nombre: nombreCapitalizado,
+        apellido: apellidoCapitalizado,
+        username: `${nombreCapitalizado.toLowerCase()}${apellidoCapitalizado.toLowerCase()}`,
+        email,
+        password,
+        zona: "Argentina Buenos Aires",
+        telefono: "011-555-46522",
+        imagen: "https://via.placeholder.com/150",
+        ubicacion: "Argentina Buenos Aires"
+      };
 
-    if (usuarioDuplicado) {
-      alert("Este correo electrónico ya está registrado");
-      return;
+      const response = await fetch("http://localhost:3001/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(nuevoUsuario),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error en el registro");
+      }
+
+      // Guardar token y datos del usuario
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("usuarioActual", JSON.stringify(data.user));
+
+      navigate("/login");
+    } catch (error) {
+      setError(error.message);
+      console.error("Error en el registro:", error);
+    } finally {
+      setLoading(false);
     }
-
-    const idUsuario = Date.now();
-
-    const nuevoUsuario = {
-      id: idUsuario,
-      nombre: capitalizar(nombre),
-      apellido: capitalizar(apellido),
-      email,
-      password, // ⚠️ En producción deberías hashear la contraseña
-      nombre_formateado: nombre.toLowerCase().replace(/\s+/g, "_"),
-      telefono: "011-555-46522",
-      imagen: "https://via.placeholder.com/150",
-      ubicacion: "Argentina Buenos Aires",
-      fechaRegistro: new Date().toLocaleDateString(),
-      calificacion: 1,
-      transacciones: [],
-      productos: [],
-      mensajes: []
-    };
-
-    usuariosExistentes.push(nuevoUsuario);
-    localStorage.setItem("usuarios", JSON.stringify(usuariosExistentes));
-    localStorage.setItem("usuarioActual", JSON.stringify(nuevoUsuario));
-
-    navigate("/login"); // o cambiar a "/perfil" si querés redirigir directamente al perfil
   };
 
   return (
     <div className="register-container">
       <form onSubmit={handleSubmit} className="register-form">
         <h2>Crear cuenta</h2>
+        {error && <p className="error-message">{error}</p>}
 
         <input
           type="text"
@@ -73,6 +91,7 @@ const Register = () => {
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           required
+          disabled={loading}
         />
 
         <input
@@ -81,6 +100,7 @@ const Register = () => {
           value={apellido}
           onChange={(e) => setApellido(e.target.value)}
           required
+          disabled={loading}
         />
 
         <input
@@ -89,6 +109,7 @@ const Register = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          disabled={loading}
         />
 
         <input
@@ -97,6 +118,7 @@ const Register = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          disabled={loading}
         />
 
         <input
@@ -105,10 +127,11 @@ const Register = () => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
+          disabled={loading}
         />
 
-        <button type="submit" className="btn-register">
-          Registrar
+        <button type="submit" className="btn-register" disabled={loading}>
+          {loading ? "Registrando..." : "Registrar"}
         </button>
 
         <p className="redirect-login">

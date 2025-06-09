@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const morgan = require('morgan');
 
 // Load environment variables
 dotenv.config();
@@ -13,6 +14,12 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Setup Morgan logger
+app.use(morgan('dev')); // Logs HTTP requests
+
+// Setup Mongoose debug mode for detailed database operations
+mongoose.set('debug', true);
+
 // MongoDB connection options
 const mongooseOptions = {
   useNewUrlParser: true,
@@ -21,14 +28,30 @@ const mongooseOptions = {
   w: 'majority'
 };
 
-// MongoDB connection
+// MongoDB connection with enhanced logging
 mongoose.connect(process.env.MONGODB_URI, mongooseOptions)
   .then(() => {
-    console.log('Connected to MongoDB Atlas');
+    console.log('✅ Conexión exitosa a MongoDB Atlas');
+    console.log('📊 Base de datos lista para operaciones');
   })
   .catch((error) => {
-    console.error('Error connecting to MongoDB:', error);
+    console.error('❌ Error al conectar a MongoDB:');
+    console.error('   Detalles:', error.message);
+    console.error('   Código:', error.code || 'N/A');
   });
+
+// Monitor database events
+mongoose.connection.on('error', (err) => {
+  console.error('🔴 Error en la conexión de MongoDB:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('🔸 Desconectado de MongoDB');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('🔄 Reconectado a MongoDB');
+});
 
 // Import routes
 const userRoutes = require('./routes/users');
@@ -46,11 +69,13 @@ app.use('/api/messages', messageRoutes);
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'ok',
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
   });
 });
 
 // Start server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`🚀 Servidor iniciado en el puerto ${port}`);
+  console.log(`🌐 API disponible en http://localhost:${port}`);
 }); 

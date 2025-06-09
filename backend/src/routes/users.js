@@ -1,9 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../config/jwt');
 
-// Get all users
-router.get('/', async (req, res) => {
+// Middleware de autenticación
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Token inválido' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Get all users (protected route)
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const users = await User.find().select('-password');
     res.json(users);
@@ -25,24 +45,41 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create user
-router.post('/', async (req, res) => {
-  const user = new User({
-    id: req.body.id,
-    nombre: req.body.nombre,
-    apellido: req.body.apellido,
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-    imagen: req.body.imagen,
-    zona: req.body.zona
-  });
-
+// Register user
+router.post('/register', async (req, res) => {
   try {
+    // Verificar si el email ya existe
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'El email ya está registrado' });
+    }
+
+    const user = new User({
+      id: req.body.id,
+      nombre: req.body.nombre,
+      apellido: req.body.apellido,
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password,
+      imagen: req.body.imagen,
+      zona: req.body.zona
+    });
+
     const newUser = await user.save();
     const userResponse = newUser.toObject();
     delete userResponse.password;
-    res.status(201).json(userResponse);
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { id: userResponse.id, email: userResponse.email },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({
+      user: userResponse,
+      token
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -58,13 +95,25 @@ router.post('/login', async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    if (user.password !== password) {
+    const isValidPassword = await user.comparePassword(password);
+    if (!isValidPassword) {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
     }
 
     const userResponse = user.toObject();
     delete userResponse.password;
-    res.json(userResponse);
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { id: userResponse.id, email: userResponse.email },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      user: userResponse,
+      token
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

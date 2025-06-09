@@ -1,10 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Editar.css';
 import Header from '../Component/Header.jsx';
 import Footer from '../Component/Footer.jsx';
 
 const API_URL = 'http://localhost:3001/api';
+
+const compressImage = (file) => {
+  return new Promise((resolve, reject) => {
+    // Check file size first (max 5MB)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      reject(new Error('El archivo es demasiado grande. El tamaño máximo permitido es 5MB.'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Máximo tamaño permitido - reduced for larger images
+        let MAX_WIDTH = 800;
+        let MAX_HEIGHT = 800;
+        let quality = 0.7;
+
+        // If image is larger than 2MB, use more aggressive compression
+        if (file.size > 2 * 1024 * 1024) {
+          MAX_WIDTH = 600;
+          MAX_HEIGHT = 600;
+          quality = 0.6;
+        }
+
+        // If image is larger than 4MB, compress even more
+        if (file.size > 4 * 1024 * 1024) {
+          MAX_WIDTH = 400;
+          MAX_HEIGHT = 400;
+          quality = 0.5;
+        }
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to JPEG with dynamic quality
+        canvas.toBlob(
+          (blob) => {
+            resolve(blob);
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => {
+        reject(new Error('Error al cargar la imagen'));
+      };
+    };
+    reader.onerror = () => {
+      reject(new Error('Error al leer el archivo'));
+    };
+  });
+};
 
 const Modal = ({ isOpen, onClose, onConfirm, title, message }) => {
   if (!isOpen) return null;
@@ -38,6 +112,8 @@ const Editar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const fileInputRef = useRef(null);
 
   const [userData, setUserData] = useState(() => {
     const data = JSON.parse(localStorage.getItem('usuarioActual'));
@@ -50,15 +126,15 @@ const Editar = () => {
     email: '',
     telefono: '0381-5088-999',
     ubicacion: 'Argentina, Tucumán',
-    imagen: userData?.imagen || '/images/fotoperfil.jpg',
+    imagen: null,
   });
 
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
-    if (!userData) {
-      navigate("/login");
+      if (!userData) {
+        navigate("/login");
         return;
       }
 
@@ -67,14 +143,27 @@ const Editar = () => {
         if (!response.ok) throw new Error('Error al obtener datos del usuario');
         
         const userDataFromDB = await response.json();
-      setFormData({
+        setFormData({
           nombre: userDataFromDB.nombre,
           apellido: userDataFromDB.apellido,
           email: userDataFromDB.email,
           telefono: userDataFromDB.telefono || '0381-5088-999',
           ubicacion: userDataFromDB.ubicacion || 'Argentina, Tucumán',
-          imagen: userDataFromDB.imagen || '/images/fotoperfil.jpg',
-      });
+          imagen: userDataFromDB.imagen || null,
+        });
+        
+        if (userDataFromDB.imagen) {
+          if (userDataFromDB.imagen.startsWith('data:image')) {
+            setPreviewImage(userDataFromDB.imagen);
+          } else {
+            const imagePath = userDataFromDB.imagen.startsWith('/images/') 
+              ? userDataFromDB.imagen 
+              : `/images/${userDataFromDB.imagen}`;
+            setPreviewImage(imagePath);
+          }
+        } else {
+          setPreviewImage('/images/fotoperfil.jpg');
+        }
       } catch (error) {
         console.error('Error:', error);
         setNotification({
@@ -95,15 +184,37 @@ const Editar = () => {
     }));
   };
 
- const handleImageChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setFormData(prev => ({
-      ...prev,
-        imagen: file.name,
-    }));
-  }
-};
+  const handleImageChange = async (file) => {
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setNotification({
+          message: 'Por favor selecciona un archivo de imagen válido',
+          type: 'error'
+        });
+        return;
+      }
+
+      try {
+        const compressedImage = await compressImage(file);
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPreviewImage(reader.result);
+          setFormData(prev => ({ ...prev, imagen: compressedImage }));
+        };
+        reader.readAsDataURL(compressedImage);
+      } catch (error) {
+        console.error('Error al comprimir la imagen:', error);
+        setNotification({
+          message: error.message || 'Error al procesar la imagen',
+          type: 'error'
+        });
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -116,8 +227,13 @@ const Editar = () => {
       email: userData.email,
       telefono: userData.telefono || '0381-5088-999',
       ubicacion: userData.ubicacion || 'Argentina, Tucumán',
-      imagen: userData.imagen || '/images/fotoperfil.jpg',
+      imagen: userData.imagen || null,
     });
+    if (userData.imagen) {
+      setPreviewImage(`/images/${userData.imagen.replace('/images/', '')}`);
+    } else {
+      setPreviewImage(null);
+    }
     setIsEditing(false);
     setNotification({ message: '', type: '' });
   };
@@ -139,15 +255,27 @@ const Editar = () => {
     setIsLoading(true);
 
     try {
-      // Actualizar en la base de datos
+      let imageData = null;
+      
+      if (formData.imagen instanceof Blob) {
+        const reader = new FileReader();
+        imageData = await new Promise((resolve) => {
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(formData.imagen);
+        });
+      } 
+      else if (formData.imagen) {
+        imageData = formData.imagen;
+      }
+
       const response = await fetch(`${API_URL}/users/${userData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-      ...formData,
-      imagen: formData.imagen.replace('/images/', '')
+          ...formData,
+          imagen: imageData
         }),
       });
 
@@ -156,26 +284,37 @@ const Editar = () => {
       }
 
       const updatedUser = await response.json();
-
-      // Actualizar localStorage
+      
       const usuarioActualizado = {
         ...userData,
-        ...updatedUser
+        ...updatedUser,
+        imagen: updatedUser.imagen
       };
 
       localStorage.setItem('usuarioActual', JSON.stringify(usuarioActualizado));
       setUserData(usuarioActualizado);
 
-    setIsEditing(false);
+      setIsEditing(false);
       setIsModalOpen(false);
       setNotification({
         message: '¡Cambios guardados correctamente!',
         type: 'success'
       });
 
-    setTimeout(() => {
+      if (updatedUser.imagen) {
+        if (updatedUser.imagen.startsWith('data:image')) {
+          setPreviewImage(updatedUser.imagen);
+        } else {
+          const imagePath = updatedUser.imagen.startsWith('/images/') 
+            ? updatedUser.imagen 
+            : `/images/${updatedUser.imagen}`;
+          setPreviewImage(imagePath);
+        }
+      }
+
+      setTimeout(() => {
         setNotification({ message: '', type: '' });
-    }, 3000);
+      }, 3000);
 
     } catch (error) {
       console.error('Error:', error);
@@ -200,7 +339,7 @@ const Editar = () => {
           }}
         >
           ← Volver
-      </button>
+        </button>
 
         <Notification 
           message={notification.message} 
@@ -211,9 +350,13 @@ const Editar = () => {
           <div className="seccion-imagen">
             <div className="contenedor-imagen-edicion">
               <img
-               src={`/images/${formData.imagen.replace('/images/', '')}`}
+                src={previewImage || '/images/fotoperfil.jpg'}
                 alt="Foto de perfil"
                 className="imagen-perfil-edicion"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/images/fotoperfil.jpg';
+                }}
               />
               {isEditing && (
                 <div className="selector-imagen">
@@ -224,7 +367,8 @@ const Editar = () => {
                     type="file"
                     id="imagen-input"
                     accept="image/*"
-                    onChange={handleImageChange}
+                    onChange={(e) => handleImageChange(e.target.files[0])}
+                    ref={fileInputRef}
                     style={{ display: 'none' }}
                   />
                 </div>
