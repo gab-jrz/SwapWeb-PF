@@ -1,4 +1,8 @@
 import mongoose from 'mongoose';
+<<<<<<< HEAD
+=======
+
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 
 const productSchema = new mongoose.Schema({
   id: {

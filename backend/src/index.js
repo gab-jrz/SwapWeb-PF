@@ -5,6 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
 
+
 // Load environment variables
 dotenv.config();
 
@@ -57,7 +58,6 @@ mongoose.connection.on("disconnected", () => {
 mongoose.connection.on("reconnected", () => {
   console.log("🔄 Reconectado a MongoDB");
 });
-
 // Import routes
 import userRoutes from "./routes/users.js";
 import productRoutes from "./routes/products.js";

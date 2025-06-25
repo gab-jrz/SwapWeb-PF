@@ -86,11 +86,7 @@ const Header = ({
       <div className="container-fluid py-2 px-4">
         <div className="row align-items-center justify-content-between">
           <div className="col-md-3 d-flex align-items-center">
-            <h2
-              className="mb-0 fw-bold"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/")}
-            >
+            <h2 className="mb-0 fw-bold" style={{ cursor: "pointer" }} onClick={() => navigate("/")}>
               <span style={{ color: "#00c853" }}>Swap</span>
               <span style={{ color: "#00bcd4" }}>Web</span>
             </h2>

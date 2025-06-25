@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 import express from "express";
 import Product from "../models/Product.js";
 
+=======
+import express from 'express';
+import Product from '../models/Product.js';
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 const router = express.Router();
 
 // Get all products
@@ -123,4 +128,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 export default router;
+=======
+export default router;
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))

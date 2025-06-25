@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 import express from "express";
 import Swap from "../models/Swap.js";
 
+=======
+import express from 'express';
+import Swap from '../models/Swap.js';
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 const router = express.Router();
 
 // Get all swaps
@@ -82,4 +87,8 @@ router.delete(":/id", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 export default router;
+=======
+export default router; 
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))

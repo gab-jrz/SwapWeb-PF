@@ -4,13 +4,17 @@ import '../styles/PerfilUsuario.css';
 import Header from '../Component/Header.jsx';
 import Footer from '../Component/Footer.jsx';
 import DeleteModal from '../Component/DeleteModal.jsx';
+<<<<<<< HEAD
 import ConfirmModal from '../Component/ConfirmModal.jsx';
 import ChatBubble from '../Component/ChatBubble.jsx';
 import TransactionCard from '../Component/TransactionCard.jsx';
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 
 const API_URL = 'http://localhost:3001/api'; // Backend URL
 
 const PerfilUsuario = () => {
+<<<<<<< HEAD
   // Estado para eliminar transacción
   const [showConfirmDeleteTrans, setShowConfirmDeleteTrans] = useState(false);
   const [transToDelete, setTransToDelete] = useState(null);
@@ -20,6 +24,8 @@ const PerfilUsuario = () => {
   const [editText, setEditText] = useState('');
 
   const chatMessagesEndRef = React.useRef(null);
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,11 +37,15 @@ const PerfilUsuario = () => {
     email: "",
     telefono: "",
     calificacion: 0,
+<<<<<<< HEAD
     mostrarContacto: true,
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
     id: null
   });
 
   const [userListings, setUserListings] = useState([]);
+<<<<<<< HEAD
   const [mensajes, setMensajes] = React.useState([]);
   const [chatSeleccionado, setChatSeleccionado] = React.useState(null);
   // Estados globales para menús contextuales y confirmaciones
@@ -166,13 +176,21 @@ function handleEnviarMensaje() {
   const [activeTab, setActiveTab] = useState('articulos');
   const [respuestaMensaje, setRespuestaMensaje] = useState({}); // nuevo estado para las respuestas por mensaje
   const [nuevoTexto, setNuevoTexto] = useState('');
+=======
+  const [mensajes, setMensajes] = useState([]);
+  const [activeTab, setActiveTab] = useState('articulos');
+  const [respuestaMensaje, setRespuestaMensaje] = useState({}); // nuevo estado para las respuestas por mensaje
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     productId: null,
     productTitle: ''
   });
+<<<<<<< HEAD
   // Estado para imagen adjunta en barra de envío
   const [imagenAdjunta, setImagenAdjunta] = useState(null);
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
@@ -195,6 +213,7 @@ function handleEnviarMensaje() {
         imagenUrl = '/images/fotoperfil.jpg';
       }
 
+<<<<<<< HEAD
       // obtener datos frescos del backend
       fetch(`${API_URL}/users/${usuario.id}`)
         .then(res => res.json())
@@ -204,6 +223,8 @@ function handleEnviarMensaje() {
         })
         .catch(() => {});
 
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
       setUserData({
         nombre: usuario.nombre,
         apellido: usuario.apellido,
@@ -213,21 +234,46 @@ function handleEnviarMensaje() {
         telefono: usuario.telefono,
         calificacion: usuario.calificacion,
         transacciones: usuario.transacciones || [],
+<<<<<<< HEAD
         mostrarContacto: usuario.mostrarContacto !== undefined ? usuario.mostrarContacto : true,
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
         id: usuario.id,
       });
 
       fetch(`${API_URL}/products/user/${usuario.id}`)
         .then((res) => res.json())
         .then((data) => {
+<<<<<<< HEAD
           setUserListings(data.filter(p => !p.intercambiado));
+=======
+          setUserListings(data);
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
         })
         .catch((error) => {
           console.error("❌ Error al obtener productos:", error);
         });
 
+<<<<<<< HEAD
       fetchMensajes(usuario.id);
 
+=======
+      fetch(`${API_URL}/messages/${usuario.id}`)
+        .then(res => res.json())
+        .then(mensajesData => {
+          const mensajesFiltrados = mensajesData.map(mensaje => ({
+            ...mensaje,
+            nombreRemitente: mensaje.de || 'Usuario desconocido',
+            productoTitle: mensaje.productoTitle || '',
+            imagenNombre: mensaje.imagenNombre || '',
+            fecha: mensaje.createdAt || '',
+          }));
+          setMensajes(mensajesFiltrados);
+        })
+        .catch(error => {
+          console.error("❌ Error al obtener mensajes:", error);
+        });
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
     }
   }, [navigate, location]);
 
@@ -251,8 +297,12 @@ function handleEnviarMensaje() {
     if (usuarioActual) {
       localStorage.setItem("usuarioActual", JSON.stringify({
         ...usuarioActual,
+<<<<<<< HEAD
         transacciones: userData.transacciones,
         mostrarContacto: userData.mostrarContacto
+=======
+        transacciones: userData.transacciones
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
       }));
     }
   }, [userData.transacciones]);
@@ -268,13 +318,17 @@ function handleEnviarMensaje() {
       descripcion: producto.description,
       fecha: new Date().toLocaleDateString(),
     };
+<<<<<<< HEAD
 
     // 1. Actualizar UI inmediatamente
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
     setUserData(prev => ({
       ...prev,
       transacciones: [...prev.transacciones, nuevaTransaccion],
     }));
     setUserListings(prev => prev.filter(p => p.id !== producto.id));
+<<<<<<< HEAD
 
     // 2. Persistir en backend - paso A) marcar producto como intercambiado en BD
     fetch(`${API_URL}/products/${producto.id}`, {
@@ -306,6 +360,8 @@ function handleEnviarMensaje() {
         setUserData(prev => ({ ...prev, transacciones: user.transacciones }));
       })
       .catch(err => console.error('❌ Error al persistir transacción:', err));
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
   };
 
   const handleEliminarProducto = (producto) => {
@@ -388,6 +444,7 @@ function handleEnviarMensaje() {
     });
   };
 
+<<<<<<< HEAD
   function handleRefreshMensaje() {
     // Si tienes lógica para refrescar mensajes, ponla aquí. Por ahora, solo refresca mensajes del usuario actual si existe la función fetchMensajes
     if (userData && userData.id && typeof fetchMensajes === 'function') {
@@ -403,6 +460,8 @@ function handleEnviarMensaje() {
     setShowConfirmDeleteTrans(false);
   };
 
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
   return (
     <div className="perfil-usuario-container">
       <Header search={false} />
@@ -417,7 +476,11 @@ function handleEnviarMensaje() {
               src={userData.imagen || '/images/fotoperfil.jpg'} 
               alt="Foto de perfil" 
               onError={(e) => {
+<<<<<<< HEAD
                 e.target.onerror = null; 
+=======
+                e.target.onerror = null; // Prevenir loop infinito
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
                 e.target.src = '/images/fotoperfil.jpg';
               }}
             />
@@ -426,7 +489,11 @@ function handleEnviarMensaje() {
             <h1>{`${capitalize(userData.nombre)} ${capitalize(userData.apellido)}`}</h1>
             <div className="perfil-stats">
               <div className="stat">
+<<<<<<< HEAD
                 <button className="stat-value" style={{background:'none',border:'none',cursor:'pointer',color:'#0d6efd'}} onClick={()=>navigate(`/calificaciones/${userData.id}`)}>{userData.calificacion}</button>
+=======
+                <span className="stat-value">{userData.calificacion}</span>
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
                 <span className="stat-label">Calificación</span>
               </div>
               <div className="stat">
@@ -436,6 +503,7 @@ function handleEnviarMensaje() {
             </div>
             <div className="perfil-detalles">
               <p><strong>Ubicación:</strong> {userData.ubicacion || 'Argentina, Tucumán'}</p>
+<<<<<<< HEAD
               {userData.mostrarContacto ? (
                 <>
                   <p><strong>Email:</strong> {userData.email || 'No disponible'}</p>
@@ -444,6 +512,10 @@ function handleEnviarMensaje() {
               ) : (
                 <p><em>Información de contacto: Privada</em></p>
               )}
+=======
+              <p><strong>Email:</strong> {userData.email || 'No disponible'}</p>
+              <p><strong>Teléfono:</strong> {userData.telefono || '0381-5088-999'}</p>
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
             </div>
             <div className="perfil-acciones">
               <button className="btn-editar" onClick={handleEditClick}>Editar Perfil</button>
@@ -497,6 +569,7 @@ function handleEnviarMensaje() {
               {userData.transacciones.length === 0 ? (
                 <p>No tienes transacciones aún.</p>
               ) : (
+<<<<<<< HEAD
                 <div className="transacciones-grid">
                   {userData.transacciones.map((t, idx) => (
                     <TransactionCard
@@ -529,12 +602,23 @@ function handleEnviarMensaje() {
                 message={`¿Estás seguro que deseas eliminar este registro de intercambio? Esta acción no se puede deshacer.`}
                 confirmText="Eliminar"
               />
+=======
+                <ul>
+                  {userData.transacciones.map((transaccion, index) => (
+                    <li key={index}>
+                      <strong>{transaccion.title}</strong> - {transaccion.descripcion} - Fecha: {transaccion.fecha}
+                    </li>
+                  ))}
+                </ul>
+              )}
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
             </div>
           )}
 
           {activeTab === 'mensajes' && (
             <div className="mis-mensajes">
               <h2>Mensajes</h2>
+<<<<<<< HEAD
               {Object.keys(chats).length === 0 ? (
                 <p>No tienes mensajes nuevos.</p>
               ) : (
@@ -809,6 +893,38 @@ function handleEnviarMensaje() {
                   </div>
 
                 </div>
+=======
+              {mensajes.length === 0 ? (
+                <p>No tienes mensajes nuevos.</p>
+              ) : (
+                mensajes.map((mensaje) => (
+                  <div key={mensaje.id} className="mensaje-card" style={{ border: '1px solid #ccc', marginBottom: '1rem', padding: '1rem', borderRadius: '8px' }}>
+                    
+                    <p><strong>De:</strong> {mensaje.nombreRemitente}</p>
+                    <p><strong>Producto de Interes :</strong> {mensaje.productoTitle}</p>
+                    <p><strong>Producto ofrecido:</strong> {mensaje.productoOfrecido}</p>
+                    <p><strong>Caracteristicas:</strong> {mensaje.descripcion}</p>
+                    
+                    <p><strong>Fecha:</strong> {mensaje.fecha}</p>
+                    {mensaje.imagenNombre && (
+                      <img
+                        src={`/images/${mensaje.imagenNombre}`}
+                        alt={`Imagen de ${mensaje.productoOfrecido}`}
+                        style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px' }}
+                      />
+                    )}
+                    <textarea
+                      placeholder="Escribe tu respuesta aquí..."
+                      value={respuestaMensaje[mensaje.id] || ''}
+                      onChange={(e) => handleRespuestaChange(mensaje.id, e.target.value)}
+                      style={{ width: '100%', marginTop: '10px' }}
+                    />
+                    <button onClick={() => handleEnviarRespuesta(mensaje.id)} style={{ marginTop: '5px' }}>
+                      Enviar respuesta
+                    </button>
+                  </div>
+                ))
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
               )}
             </div>
           )}
@@ -822,6 +938,7 @@ function handleEnviarMensaje() {
         onConfirm={confirmDelete}
         productTitle={deleteModal.productTitle}
       />
+<<<<<<< HEAD
 
       {/* ConfirmModal para eliminar chat completo */}
       <ConfirmModal
@@ -860,6 +977,8 @@ function handleEnviarMensaje() {
         message="¿Estás seguro que deseas eliminar este mensaje? Esta acción no se puede deshacer."
         confirmText="Eliminar mensaje"
       />
+=======
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
     </div>
   );
 };

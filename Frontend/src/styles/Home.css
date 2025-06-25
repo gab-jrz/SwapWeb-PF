@@ -1,5 +1,6 @@
 /* Contenedor principal */
 .home-container {
+<<<<<<< HEAD
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -146,3 +147,99 @@ footer {
   background: rgba(30, 30, 30, 0.8) !important;
   color: #fff !important;
 }
+=======
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  /* Contenedor de productos y botones */
+  main {
+    flex: 1;
+    padding: 20px 0; /* Espaciado entre las tarjetas y los botones */
+  }
+  
+  /* Contenedor de las tarjetas de productos */
+  .product-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Estilos de la tarjeta de producto */
+  .product-card {
+    background-color: #f9f9f9;
+    padding: 50px;
+    border-radius: 8px;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-10px);
+  }
+  
+  /* Botones "Mostrar más" y "Mostrar menos" */
+  button {
+    width: 250px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-outline-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+  }
+  
+  .btn-outline-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+  }
+  
+  .d-flex {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  
+  /* Footer siempre al fondo */
+  footer {
+    margin-top: auto;
+  }
+  
+  /* Para asegurarnos de que la página sea responsive */
+  @media (max-width: 768px) {
+    .product-list {
+      grid-template-columns: repeat(2, 1fr); /* 2 columnas para pantallas más pequeñas */
+    }
+  
+    button {
+      width: 200px;
+      font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .product-list {
+      grid-template-columns: 1fr; /* 1 columna para pantallas muy pequeñas */
+    }
+  }
+  @media (max-width: 768px) {
+    .product-card {
+      margin-bottom: 15px; /* Espacio reducido en pantallas pequeñas */
+    }
+  }
+  
+  
+  /* Footer */
+  footer {
+    margin-top: auto; /* Esto asegura que el footer se mueva siempre al fondo */
+  }
+  
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))

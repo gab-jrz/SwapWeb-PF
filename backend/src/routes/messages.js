@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import express from "express";
 import Message from "../models/Message.js";
 import Product from "../models/Product.js";
@@ -32,6 +33,11 @@ router.put("/mark-read/:userId", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+=======
+import express from 'express';
+import Message from '../models/Message.js';
+const router = express.Router();
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 
 // Get messages for a user
 router.get("/:userId", async (req, res) => {
@@ -73,6 +79,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Confirm exchange by a user
 router.put("/:id/confirm", async (req, res) => {
   try {
@@ -193,3 +200,6 @@ router.put("/:id/rating", async (req, res) => {
 });
 
 export default router;
+=======
+export default router;
+>>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
