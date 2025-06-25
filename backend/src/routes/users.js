@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/jwt.js';
+
 const router = express.Router();
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config/jwt');
 
 // Middleware de autenticación
 const authenticateToken = (req, res, next) => {
@@ -161,4 +162,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router; 
+export default router; 

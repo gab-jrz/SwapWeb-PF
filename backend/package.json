@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "description": "Backend for SwapWeb application using MongoDB",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "mocha",
+    "test:watch": "mocha --watch",
+    "coverage": "nyc --reporter=text --reporter=html mocha",
+    "coverage:report": "nyc report --reporter=text --reporter=html"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -17,6 +22,12 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "chai": "^5.2.0",
+    "mocha": "^11.7.0",
+    "mongodb-memory-server": "^10.1.4",
+    "nodemon": "^3.1.0",
+    "nyc": "^17.1.0",
+    "sinon": "^21.0.0",
+    "supertest": "^7.1.1"
   }
 }

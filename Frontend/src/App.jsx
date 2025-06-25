@@ -10,6 +10,8 @@ import Editar from './Pages/Editar';
 import Configuracion from './Pages/Configuracion';
 import PublicarProducto from './Pages/PublicarProducto';
 import EditarProducto from './Pages/EditarProducto';
+import ProtectedRoute from './Component/ProtectedRoute';
+
 function App() {
   return (
     <Router>
@@ -23,8 +25,16 @@ function App() {
 
         <Route path="/perfil/:id" element={<PerfilUsuario />} />
         <Route path="/configuracion" element={<Configuracion />} />
-        <Route path="/publicarproducto" element={<PublicarProducto />} />
-        <Route path="/editar-producto/:id" element={<EditarProducto />} />
+        <Route path="/publicarproducto" element={
+          <ProtectedRoute>
+            <PublicarProducto />
+          </ProtectedRoute>
+        } />
+        <Route path="/editar-producto/:id" element={
+         <ProtectedRoute>
+            <EditarProducto />
+         </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

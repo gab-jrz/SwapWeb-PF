@@ -1,6 +1,5 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-let productCounter = 1;
 
 const productSchema = new mongoose.Schema({
   id: {
@@ -40,4 +39,4 @@ productSchema.pre('save', async function(next) {
   next();
 });
 
-module.exports = mongoose.model('Product', productSchema); 
+export default mongoose.model('Product', productSchema);

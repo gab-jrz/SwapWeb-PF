@@ -1,5 +1,1 @@
-const JWT_SECRET = 'swapweb-secret-key-2025';  // En producción, usar variables de entorno
-
-module.exports = {
-    JWT_SECRET
-}; 
+export const JWT_SECRET = 'swapweb-secret-key-2025';  // En producción, usar variables de entorno

@@ -1,0 +1,194 @@
+{
+	"info": {
+		"_postman_id": "615920a9-ddd7-404d-8874-267d1d31a69d",
+		"name": "SwapWeb_API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43032658"
+	},
+	"item": [
+		{
+			"name": "Petición de registro de usuario",
+			"item": [
+				{
+					"name": "Registrar usuario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "   {\r\n     \"id\": \"test123\",\r\n     \"nombre\": \"Juan\",\r\n     \"apellido\": \"Pérez\",\r\n     \"email\": \"juan@test.com\",\r\n     \"password\": \"password123\"\r\n     \"password\":\"password123\"\r\n   }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{swap_URL\n}}/api/users/register",
+							"host": [
+								"{{swap_URL\n}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Agregar una petición de login",
+			"item": [
+				{
+					"name": "petición de login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"     var jsonData = pm.response.json();\r",
+									"     pm.environment.set(\"token\", jsonData.token);\r",
+									"     pm.environment.set(\"user_id\", jsonData.user.id);\r",
+									"\r",
+									"     pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    });\r",
+									"    pm.test(\"Respuesta contiene token\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property(\"token\");\r",
+									"    });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "   {\r\n     \"email\": \"juan@test.com\",\r\n     \"password\": \"password123\"\r\n   }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{swap_URL\n}}/api/users/login",
+							"host": [
+								"{{swap_URL\n}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Swaps (intercambios)",
+			"item": [
+				{
+					"name": "obtener productos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Respuesta es un array\", function () {\r",
+									"    pm.expect(pm.response.json()).to.be.an(\"array\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{swap_URL\n}}}/api/products",
+							"host": [
+								"{{swap_URL\n}}}"
+							],
+							"path": [
+								"api",
+								"products"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Agregar petición para crear producto",
+			"item": [
+				{
+					"name": "crear producto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Respuesta contiene title\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.property(\"title\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "   {\r\n     \"title\": \"Bicicleta\",\r\n     \"description\": \"Bicicleta de montaña\",\r\n     \"categoria\": \"Deportes\",\r\n     \"image\": \"bici.jpg\",\r\n     \"ownerId\": 123\r\n   }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/products",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"products"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
