@@ -1,13 +1,12 @@
-import express from 'express';
-import Product from '../models/Product.js';
+import express from "express";
+import Product from "../models/Product.js";
+
 const router = express.Router();
 
 // Get all products
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const products = await Product.find()
-      .select('-_id -__v')
-      .sort({ id: 1 });
+    const products = await Product.find().select("-_id -__v").sort({ id: 1 });
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -15,12 +14,13 @@ router.get('/', async (req, res) => {
 });
 
 // Get one product
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findOne({ id: Number(req.params.id) })
-      .select('-_id -__v');
+    const product = await Product.findOne({ id: Number(req.params.id) }).select(
+      "-_id -__v"
+    );
     if (!product) {
-      return res.status(404).json({ message: 'Producto no encontrado' });
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
     res.json(product);
   } catch (error) {
@@ -29,19 +29,18 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create product
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const product = new Product({
     title: req.body.title,
     description: req.body.description,
     categoria: req.body.categoria,
     image: req.body.image,
-    ownerId: req.body.ownerId
+    ownerId: req.body.ownerId,
   });
 
   try {
     const newProduct = await product.save();
     const productResponse = newProduct.toObject();
-    delete productResponse._id;
     delete productResponse.__v;
     res.status(201).json(productResponse);
   } catch (error) {
@@ -50,18 +49,18 @@ router.post('/', async (req, res) => {
 });
 
 // Create multiple products
-router.post('/batch', async (req, res) => {
+router.post("/batch", async (req, res) => {
   try {
-    const products = req.body.map(product => ({
+    const products = req.body.map((product) => ({
       title: product.title,
       description: product.description,
       categoria: product.categoria,
       image: product.image,
-      ownerId: product.ownerId
+      ownerId: product.ownerId,
     }));
-    
+
     const newProducts = await Product.insertMany(products);
-    const productsResponse = newProducts.map(product => {
+    const productsResponse = newProducts.map((product) => {
       const p = product.toObject();
       delete p._id;
       delete p.__v;
@@ -74,10 +73,10 @@ router.post('/batch', async (req, res) => {
 });
 
 // Get products by user ID
-router.get('/user/:userId', async (req, res) => {
+router.get("/user/:userId", async (req, res) => {
   try {
     const products = await Product.find({ ownerId: Number(req.params.userId) })
-      .select('-_id -__v')
+      .select("-_id -__v")
       .sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
@@ -86,32 +85,33 @@ router.get('/user/:userId', async (req, res) => {
 });
 
 // Delete product
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const product = await Product.findOne({ id: Number(req.params.id) });
     if (!product) {
-      return res.status(404).json({ message: 'Producto no encontrado' });
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
     await product.deleteOne();
-    res.json({ message: 'Producto eliminado' });
+    res.json({ message: "Producto eliminado" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 // Update product
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const product = await Product.findOne({ id: Number(req.params.id) });
     if (!product) {
-      return res.status(404).json({ message: 'Producto no encontrado' });
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
 
     if (req.body.title) product.title = req.body.title;
     if (req.body.description) product.description = req.body.description;
     if (req.body.categoria) product.categoria = req.body.categoria;
     if (req.body.image) product.image = req.body.image;
-    if (req.body.intercambiado !== undefined) product.intercambiado = !!req.body.intercambiado;
+    if (req.body.intercambiado !== undefined)
+      product.intercambiado = !!req.body.intercambiado;
 
     const updatedProduct = await product.save();
     const productResponse = updatedProduct.toObject();

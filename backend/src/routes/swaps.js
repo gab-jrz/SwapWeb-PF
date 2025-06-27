@@ -1,15 +1,16 @@
-import express from 'express';
-import Swap from '../models/Swap.js';
+import express from "express";
+import Swap from "../models/Swap.js";
+
 const router = express.Router();
 
 // Get all swaps
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const swaps = await Swap.find()
-      .populate('itemOffered')
-      .populate('itemRequested')
-      .populate('offerUser', 'name email')
-      .populate('requestUser', 'name email');
+      .populate("itemOffered")
+      .populate("itemRequested")
+      .populate("offerUser", "name email")
+      .populate("requestUser", "name email");
     res.json(swaps);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -17,15 +18,15 @@ router.get('/', async (req, res) => {
 });
 
 // Get one swap
-router.get('/:id', async (req, res) => {
+router.get(":/id", async (req, res) => {
   try {
     const swap = await Swap.findById(req.params.id)
-      .populate('itemOffered')
-      .populate('itemRequested')
-      .populate('offerUser', 'name email')
-      .populate('requestUser', 'name email');
+      .populate("itemOffered")
+      .populate("itemRequested")
+      .populate("offerUser", "name email")
+      .populate("requestUser", "name email");
     if (!swap) {
-      return res.status(404).json({ message: 'Intercambio no encontrado' });
+      return res.status(404).json({ message: "Intercambio no encontrado" });
     }
     res.json(swap);
   } catch (error) {
@@ -34,13 +35,13 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create swap
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const swap = new Swap({
     itemOffered: req.body.itemOffered,
     itemRequested: req.body.itemRequested,
     offerUser: req.body.offerUser,
     requestUser: req.body.requestUser,
-    status: 'pendiente'
+    status: "pendiente",
   });
 
   try {
@@ -52,11 +53,11 @@ router.post('/', async (req, res) => {
 });
 
 // Update swap status
-router.put('/:id', async (req, res) => {
+router.put(":/id", async (req, res) => {
   try {
     const swap = await Swap.findById(req.params.id);
     if (!swap) {
-      return res.status(404).json({ message: 'Intercambio no encontrado' });
+      return res.status(404).json({ message: "Intercambio no encontrado" });
     }
 
     swap.status = req.body.status;
@@ -68,17 +69,17 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete swap
-router.delete('/:id', async (req, res) => {
+router.delete(":/id", async (req, res) => {
   try {
     const swap = await Swap.findById(req.params.id);
     if (!swap) {
-      return res.status(404).json({ message: 'Intercambio no encontrado' });
+      return res.status(404).json({ message: "Intercambio no encontrado" });
     }
     await swap.deleteOne();
-    res.json({ message: 'Intercambio eliminado' });
+    res.json({ message: "Intercambio eliminado" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-export default router; 
+export default router;
