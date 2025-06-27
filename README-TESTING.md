@@ -97,3 +97,4 @@ npm run coverage
 - **E2E**: Simulan el uso real de la aplicación desde el navegador
 
 Cada tipo de prueba tiene su propósito y complementa a las otras para asegurar que la aplicación funcione correctamente. 
+"# Rama de testeo Naila" 
