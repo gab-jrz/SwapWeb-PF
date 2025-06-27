@@ -13,7 +13,7 @@ const ProductCard = ({ id, title, description, categoria, image }) => {
 
   return (
     <div className="product-card" onClick={handleCardClick}>
-      <Link to={`/producto/${id}`} style={{ textDecoration: 'none' }}>
+      <Link to={`/producto/${id}`} style={{ textDecoration: "none" }}>
         <img src={image} alt={title} className="product-img" />
         <div className="product-info">
           <h3>{title}</h3>

@@ -20,11 +20,11 @@
 
 .product-info {
   flex: 1;
-  display: flex;              /* <-- Para usar flexbox dentro */
-  flex-direction: column;     /* <-- Organiza en columna */
-  align-items: center;        /* <-- Centra horizontalmente */
-  justify-content: center;    /* <-- Centra verticalmente si hay espacio */
-  text-align: center;    /* Hace que el contenido ocupe todo el espacio disponible en la tarjeta */
+  display: flex; /* <-- Para usar flexbox dentro */
+  flex-direction: column; /* <-- Organiza en columna */
+  align-items: center; /* <-- Centra horizontalmente */
+  justify-content: center; /* <-- Centra verticalmente si hay espacio */
+  text-align: center; /* Hace que el contenido ocupe todo el espacio disponible en la tarjeta */
 }
 
 .product-info h3 {

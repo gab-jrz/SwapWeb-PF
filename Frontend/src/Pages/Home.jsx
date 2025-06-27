@@ -22,7 +22,9 @@ const Home = () => {
         setProductos(data);
         setError(null);
       } catch (err) {
-        setError('Error al cargar los productos. Por favor, intenta de nuevo más tarde.');
+        setError(
+          "Error al cargar los productos. Por favor, intenta de nuevo más tarde."
+        );
         console.error("Error al obtener productos:", err);
       } finally {
         setLoading(false);
@@ -84,28 +86,34 @@ const Home = () => {
         )}
 
         {/* Botón "Explorá más" solo si no se muestran todos los productos */}
-        {!loading && !error && productosFiltrados.length > 4 && !mostrarTodos && (
-          <div className="d-flex justify-content-center my-4">
-            <button
-              className="btn btn-outline-primary"
-              onClick={() => setMostrarTodos(true)}
-            >
-              Explorá más
-            </button>
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          productosFiltrados.length > 4 &&
+          !mostrarTodos && (
+            <div className="d-flex justify-content-center my-4">
+              <button
+                className="btn btn-outline-primary"
+                onClick={() => setMostrarTodos(true)}
+              >
+                Explorá más
+              </button>
+            </div>
+          )}
 
         {/* Botón "Mostrar menos" solo si se están mostrando todos los productos */}
-        {!loading && !error && mostrarTodos && productosFiltrados.length > 4 && (
-          <div className="d-flex justify-content-center my-4">
-            <button
-              className="btn btn-outline-secondary"
-              onClick={() => setMostrarTodos(false)}
-            >
-              Mostrar menos
-            </button>
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          mostrarTodos &&
+          productosFiltrados.length > 4 && (
+            <div className="d-flex justify-content-center my-4">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setMostrarTodos(false)}
+              >
+                Mostrar menos
+              </button>
+            </div>
+          )}
       </main>
 
       <Footer />
