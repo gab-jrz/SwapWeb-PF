@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import Header from "../Component/Header";
 import ProductCard from "../Component/ProductCard";
 import Footer from "../Component/Footer";
+import Pagination from "../Component/Pagination";
+import ProductsPerPage from "../Component/ProductsPerPage";
+import QuienesSomos from "../Component/QuienesSomos";
 import { getProducts } from "../services/api";
 import "../styles/Home.css";
 import CustomCarousel from "../Component/Carousel";
@@ -10,17 +13,28 @@ const Home = () => {
   const [productos, setProductos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [mostrarTodos, setMostrarTodos] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [productsPerPage, setProductsPerPage] = useState(8); // Ahora es un estado variable
 
-  // Cargar productos desde la API
+  // Cargar productos desde la API con paginación
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await getProducts();
-        setProductos(data);
+        const data = await getProducts(currentPage, productsPerPage, searchTerm, selectedCategory);
+        setProductos(data.products);
+        setTotalPages(data.pagination.totalPages);
+        setTotalProducts(data.pagination.totalProducts);
+        setHasNextPage(data.pagination.hasNextPage);
+        setHasPrevPage(data.pagination.hasPrevPage);
         setError(null);
       } catch (err) {
         setError(
@@ -33,23 +47,27 @@ const Home = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [currentPage, productsPerPage, searchTerm, selectedCategory]);
 
-  // Filtrado por búsqueda y categoría
-  const productosFiltrados = productos.filter((producto) => {
-    const matchSearch = producto.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchCategoria = selectedCategory
-      ? producto.categoria.toLowerCase() === selectedCategory.toLowerCase()
-      : true;
-    return matchSearch && matchCategoria;
-  });
+  // Resetear a la primera página cuando cambien los filtros o productos por página
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, productsPerPage]);
 
-  // Lógica para mostrar 4 productos al principio, y luego más si se presiona "Mostrar más"
-  const productosParaMostrar = mostrarTodos
-    ? productosFiltrados
-    : productosFiltrados.slice(0, 4);
+  // Función para cambiar de página
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Scroll hacia arriba cuando cambia de página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Función para cambiar productos por página
+  const handleProductsPerPageChange = (newLimit) => {
+    setProductsPerPage(newLimit);
+  };
+
+  // Ya no necesitamos filtrar en el frontend porque se hace en el backend
+  const productosParaMostrar = productos;
 
   return (
     <div className="home-container">
@@ -74,23 +92,14 @@ const Home = () => {
 
         {/* Mostrar los productos */}
         {!loading && !error && (
-          <div className="product-list">
-            {productosParaMostrar.length > 0 ? (
-              productosParaMostrar.map((producto) => (
-                <ProductCard
-                  key={producto.id}
-                  id={producto.id}
-                  title={producto.title}
-                  description={producto.description}
-                  categoria={producto.categoria}
-                  image={producto.image}
-                />
-              ))
-            ) : (
-              <p>No se encontraron productos</p>
+          <>
+            {/* Selector de productos por página */}
+            {totalProducts > 0 && (
+              <ProductsPerPage
+                currentLimit={productsPerPage}
+                onLimitChange={handleProductsPerPageChange}
+              />
             )}
-          </div>
-        )}
 
         {/* Botón "Explorá más" solo si no se muestran todos los productos */}
         {!loading &&
@@ -121,8 +130,47 @@ const Home = () => {
               </button>
             </div>
           )}
+            <div className="product-list">
+              {productosParaMostrar.length > 0 ? (
+                productosParaMostrar.map((producto) => (
+                  <ProductCard
+                    key={producto.id}
+                    id={producto.id}
+                    title={producto.title}
+                    description={producto.description}
+                    categoria={producto.categoria}
+                    image={producto.image}
+                  />
+                ))
+              ) : (
+                <p>No se encontraron productos</p>
+              )}
+            </div>
+
+            {/* Información de paginación */}
+            {productosParaMostrar.length > 0 && (
+              <div className="pagination-info">
+                <p className="text-center text-muted">
+                  Mostrando {productosParaMostrar.length} de {totalProducts} productos
+                </p>
+              </div>
+            )}
+
+            {/* Componente de paginación */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                hasNextPage={hasNextPage}
+                hasPrevPage={hasPrevPage}
+              />
+            )}
+          </>
+        )}
       </main>
 
+      <QuienesSomos />
       <Footer />
     </div>
   );

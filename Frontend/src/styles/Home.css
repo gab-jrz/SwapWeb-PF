@@ -1,6 +1,5 @@
 /* Contenedor principal */
 .home-container {
-<<<<<<< HEAD
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -147,11 +146,7 @@ footer {
   background: rgba(30, 30, 30, 0.8) !important;
   color: #fff !important;
 }
-=======
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+
   
   /* Contenedor de productos y botones */
   main {
@@ -242,4 +237,23 @@ footer {
     margin-top: auto; /* Esto asegura que el footer se mueva siempre al fondo */
   }
   
->>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
+
+  /* Estilos para la información de paginación */
+  .pagination-info {
+    margin: 1rem 0;
+    padding: 0.5rem;
+  }
+  
+  .pagination-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  /* Ajustes responsive para paginación */
+  @media (max-width: 768px) {
+    .pagination-info p {
+      font-size: 0.8rem;
+    }
+  }
+  

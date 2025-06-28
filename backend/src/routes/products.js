@@ -1,18 +1,47 @@
-<<<<<<< HEAD
 import express from "express";
 import Product from "../models/Product.js";
-
-=======
-import express from 'express';
-import Product from '../models/Product.js';
->>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 const router = express.Router();
 
-// Get all products
+// Get all products (with paginación y filtros)
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find().select("-_id -__v").sort({ id: 1 });
-    res.json(products);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const categoria = req.query.categoria || "";
+    const skip = (page - 1) * limit;
+
+    // Construir filtros
+    let filter = {};
+    if (search) {
+      filter.title = { $regex: search, $options: "i" };
+    }
+    if (categoria) {
+      filter.categoria = { $regex: categoria, $options: "i" };
+    }
+
+    // Obtener productos con paginación y filtros
+    const products = await Product.find(filter)
+      .select("-_id -__v")
+      .sort({ id: 1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Obtener el total de productos para calcular el total de páginas
+    const totalProducts = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    res.json({
+      products,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalProducts,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        limit,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -128,8 +157,4 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 export default router;
-=======
-export default router;
->>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
