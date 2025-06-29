@@ -261,39 +261,97 @@
 
 /* Estilos para mensajes */
 .mensaje-card {
-  background: white;
+  background: linear-gradient(135deg, #f8fafc 80%, #e0e7ff 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(60, 60, 120, 0.08);
+  padding: 1.5rem 1.2rem;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s;
+  border: 1px solid #e0e7ff;
+  position: relative;
+}
+
+.mensaje-card:hover {
+  box-shadow: 0 8px 32px rgba(60, 60, 120, 0.18);
+}
+
+.mensaje-card .mensaje-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.mensaje-card .mensaje-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #c7d2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-right: 1rem;
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.10);
+}
+
+.mensaje-card .mensaje-info {
+  flex: 1;
+}
+
+.mensaje-card .mensaje-producto {
+  font-weight: 600;
+  color: #3730a3;
+  margin-bottom: 0.3rem;
+}
+
+.mensaje-card .mensaje-fecha {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.mensaje-card .mensaje-img {
+  max-width: 220px;
+  max-height: 220px;
   border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 0.7rem;
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.10);
+  border: 2px solid #c7d2fe;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.mensaje-card p {
-  margin: 5px 0;
+.mensaje-card .mensaje-campo {
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 1.05rem;
 }
 
-.mensaje-card textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  resize: vertical;
+.mensaje-card .mensaje-campo strong {
+  color: #6366f1;
+  min-width: 110px;
 }
 
-.mensaje-card button {
-  background-color: #3498db;
-  color: white;
-  padding: 8px 16px;
+.btn-conversar {
+  display: block;
+  margin: 1.5rem auto 0 auto;
+  padding: 0.3rem 1.1rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  background: #6366f1;
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.08);
   cursor: pointer;
-  margin-top: 10px;
-  transition: background-color 0.3s;
+  transition: background 0.2s, transform 0.2s;
 }
 
-.mensaje-card button:hover {
-  background-color: #2980b9;
+.btn-conversar:hover {
+  background: #4338ca;
+  transform: translateY(-2px) scale(1.04);
 }
 
 /* Estilos para transacciones */

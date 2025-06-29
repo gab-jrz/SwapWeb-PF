@@ -14,6 +14,18 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
+// Obtener mensajes enviados por un usuario
+router.get('/enviados/:userId', async (req, res) => {
+  try {
+    const mensajes = await Message.find({ deId: req.params.userId })
+      .select('-__v')
+      .sort({ createdAt: -1 });
+    res.json(mensajes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Create a new message
 router.post('/', async (req, res) => {
   const message = new Message({

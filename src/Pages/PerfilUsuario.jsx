@@ -23,7 +23,8 @@ const PerfilUsuario = () => {
   });
 
   const [userListings, setUserListings] = useState([]);
-  const [mensajes, setMensajes] = useState([]);
+  const [mensajesRecibidos, setMensajesRecibidos] = useState([]);
+  const [mensajesEnviados, setMensajesEnviados] = useState([]);
   const [activeTab, setActiveTab] = useState('articulos');
   const [respuestaMensaje, setRespuestaMensaje] = useState({}); // nuevo estado para las respuestas por mensaje
   const [deleteModal, setDeleteModal] = useState({
@@ -74,20 +75,24 @@ const PerfilUsuario = () => {
           console.error("❌ Error al obtener productos:", error);
         });
 
+      // Propuestas recibidas
       fetch(`${API_URL}/messages/${usuario.id}`)
         .then(res => res.json())
         .then(mensajesData => {
-          const mensajesFiltrados = mensajesData.map(mensaje => ({
-            ...mensaje,
-            nombreRemitente: mensaje.de || 'Usuario desconocido',
-            productoTitle: mensaje.productoTitle || '',
-            imagenNombre: mensaje.imagenNombre || '',
-            fecha: mensaje.createdAt || '',
-          }));
-          setMensajes(mensajesFiltrados);
+          setMensajesRecibidos(mensajesData);
         })
         .catch(error => {
-          console.error("❌ Error al obtener mensajes:", error);
+          console.error("❌ Error al obtener mensajes recibidos:", error);
+        });
+
+      // Propuestas enviadas
+      fetch(`${API_URL}/messages/enviados/${usuario.id}`)
+        .then(res => res.json())
+        .then(mensajesData => {
+          setMensajesEnviados(mensajesData);
+        })
+        .catch(error => {
+          console.error("❌ Error al obtener mensajes enviados:", error);
         });
     }
   }, [navigate, location]);
@@ -95,7 +100,7 @@ const PerfilUsuario = () => {
   useEffect(() => {
     if (location.state?.nuevoMensaje) {
       const nuevoMensaje = location.state.nuevoMensaje;
-      setMensajes((prevMensajes) => {
+      setMensajesRecibidos(prevMensajes => {
         const existe = prevMensajes.some(msg =>
           msg.productoOfrecido === nuevoMensaje.productoOfrecido &&
           msg.descripcion === nuevoMensaje.descripcion &&
@@ -180,7 +185,7 @@ const PerfilUsuario = () => {
     }
 
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
-    const mensajeOriginal = mensajes.find(m => m.id === id);
+    const mensajeOriginal = mensajesRecibidos.find(m => m.id === id);
 
     const nuevoMensaje = {
       de: usuario.nombre + ' ' + usuario.apellido,
@@ -202,7 +207,7 @@ const PerfilUsuario = () => {
     })
     .then(response => response.json())
     .then(data => {
-      setMensajes(prev => [...prev, {
+      setMensajesRecibidos(prev => [...prev, {
         ...data,
         nombreRemitente: nuevoMensaje.de,
         fecha: new Date().toLocaleString()
@@ -316,35 +321,57 @@ const PerfilUsuario = () => {
 
           {activeTab === 'mensajes' && (
             <div className="mis-mensajes">
-              <h2>Mensajes</h2>
-              {mensajes.length === 0 ? (
-                <p>No tienes mensajes nuevos.</p>
+              <h2>Propuestas recibidas</h2>
+              {mensajesRecibidos.length === 0 ? (
+                <p>No tienes propuestas recibidas.</p>
               ) : (
-                mensajes.map((mensaje) => (
-                  <div key={mensaje.id} className="mensaje-card" style={{ border: '1px solid #ccc', marginBottom: '1rem', padding: '1rem', borderRadius: '8px' }}>
-                    
-                    <p><strong>De:</strong> {mensaje.nombreRemitente}</p>
-                    <p><strong>Producto de Interes :</strong> {mensaje.productoTitle}</p>
-                    <p><strong>Producto ofrecido:</strong> {mensaje.productoOfrecido}</p>
-                    <p><strong>Caracteristicas:</strong> {mensaje.descripcion}</p>
-                    
-                    <p><strong>Fecha:</strong> {mensaje.fecha}</p>
+                mensajesRecibidos.map((mensaje) => (
+                  <div key={mensaje._id} className="mensaje-card">
+                    <div className="mensaje-header">
+                      <div className="mensaje-avatar">📩</div>
+                      <div className="mensaje-info">
+                        <div className="mensaje-campo"><strong>De:</strong> {mensaje.de}</div>
+                        <div className="mensaje-campo mensaje-producto"><strong>Producto de Interés:</strong> {mensaje.productoTitle}</div>
+                        <div className="mensaje-campo"><strong>Producto ofrecido:</strong> {mensaje.productoOfrecido}</div>
+                      </div>
+                    </div>
+                    <div className="mensaje-campo"><strong>Propuesta:</strong> {mensaje.condiciones}</div>
+                    <div className="mensaje-fecha">🗓️ {mensaje.createdAt ? new Date(mensaje.createdAt).toLocaleString() : ''}</div>
                     {mensaje.imagenNombre && (
                       <img
-                        src={`/images/${mensaje.imagenNombre}`}
+                        className="mensaje-img"
+                        src={mensaje.imagenNombre.startsWith('data:image') ? mensaje.imagenNombre : `/images/${mensaje.imagenNombre}`}
                         alt={`Imagen de ${mensaje.productoOfrecido}`}
-                        style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px' }}
                       />
                     )}
-                    <textarea
-                      placeholder="Escribe tu respuesta aquí..."
-                      value={respuestaMensaje[mensaje.id] || ''}
-                      onChange={(e) => handleRespuestaChange(mensaje.id, e.target.value)}
-                      style={{ width: '100%', marginTop: '10px' }}
-                    />
-                    <button onClick={() => handleEnviarRespuesta(mensaje.id)} style={{ marginTop: '5px' }}>
-                      Enviar respuesta
-                    </button>
+                    <button className="btn-conversar" style={{marginTop: '1rem'}}>Abrir Chat</button>
+                  </div>
+                ))
+              )}
+              <h2>Propuestas enviadas</h2>
+              {mensajesEnviados.length === 0 ? (
+                <p>No has enviado propuestas.</p>
+              ) : (
+                mensajesEnviados.map((mensaje) => (
+                  <div key={mensaje._id} className="mensaje-card">
+                    <div className="mensaje-header">
+                      <div className="mensaje-avatar">✉️</div>
+                      <div className="mensaje-info">
+                        <div className="mensaje-campo"><strong>Para:</strong> {mensaje.paraNombre}</div>
+                        <div className="mensaje-campo mensaje-producto"><strong>Producto de Interés:</strong> {mensaje.productoTitle}</div>
+                        <div className="mensaje-campo"><strong>Producto ofrecido:</strong> {mensaje.productoOfrecido}</div>
+                      </div>
+                    </div>
+                    <div className="mensaje-campo"><strong>Propuesta:</strong> {mensaje.condiciones}</div>
+                    <div className="mensaje-fecha">🗓️ {mensaje.createdAt ? new Date(mensaje.createdAt).toLocaleString() : ''}</div>
+                    {mensaje.imagenNombre && (
+                      <img
+                        className="mensaje-img"
+                        src={mensaje.imagenNombre.startsWith('data:image') ? mensaje.imagenNombre : `/images/${mensaje.imagenNombre}`}
+                        alt={`Imagen de ${mensaje.productoOfrecido}`}
+                      />
+                    )}
+                    <button className="btn-conversar" style={{marginTop: '1rem'}}>Conversar</button>
                   </div>
                 ))
               )}

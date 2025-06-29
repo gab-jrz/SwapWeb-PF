@@ -98,16 +98,19 @@ const Intercambiar = () => {
 
       const mensaje = {
         de: `${usuarioActual.nombre} ${usuarioActual.apellido}`,
-        deId: usuarioActual.id,
-        paraId: ownerId,
+        deId: usuarioActual.id.toString(),
+        paraId: ownerId.toString(),
         paraNombre: `${ownerNombre} ${ownerApellido}`,
-        productoId,
+        productoId: productoId.toString(),
         productoTitle,
         productoOfrecido: selectedProduct.title,
         descripcion: selectedProduct.description,
         condiciones: formData.condiciones,
-        imagenProductoOfrecido: selectedProduct.image
+        imagenNombre: selectedProduct.image
       };
+
+      console.log('Enviando mensaje:', mensaje);
+      console.log('URL:', `${API_URL}/messages`);
 
       const response = await fetch(`${API_URL}/messages`, {
         method: "POST",
@@ -117,17 +120,23 @@ const Intercambiar = () => {
         body: JSON.stringify(mensaje),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error("Error al enviar la propuesta");
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        throw new Error(`Error al enviar la propuesta: ${response.status} ${response.statusText}`);
       }
 
-      await response.json();
+      const result = await response.json();
+      console.log('Success response:', result);
       alert("¡Propuesta enviada con éxito!");
       navigate(`/perfil/${usuarioActual.id}`);
 
     } catch (error) {
       console.error("Error al enviar el mensaje:", error);
-      alert("Error al enviar la propuesta. Por favor, intenta nuevamente.");
+      alert(`Error al enviar la propuesta: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
