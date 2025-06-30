@@ -31,22 +31,26 @@
 }
 
 .btn-volver {
-  background-color: #6c757d;
+  background-color: #00bcd4;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   margin-bottom: 15px;
+  margin-left: 2rem;
   display: inline-flex;
   align-items: center;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 188, 212, 0.2);
 }
 
 .btn-volver:hover {
-  background-color: #5a6268;
+  background-color: #00c853;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
 }
 
 .producto-preview {

@@ -75,6 +75,9 @@ const DetalleProducto = () => {
   return (
     <div className="detalle-container">
       <Header />
+      <div className="back-arrow" onClick={() => navigate("/")}>
+        ← Volver al inicio
+      </div>
       <div className="detalle-contenido">
         <h2 className="detalle-titulo">{producto.title}</h2>
         <img
@@ -92,9 +95,6 @@ const DetalleProducto = () => {
           </p>
         )}
         <div className="detalle-botones">
-          <button className="btn-volver" onClick={() => navigate("/")}>
-            ← Volver al inicio
-          </button>
           <button className="btn-chat" onClick={handleChat}>
             💬 Consultar por este artículo
           </button>

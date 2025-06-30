@@ -88,22 +88,26 @@
 }
 
 .btn-regresar-edicion {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 8px 15px;
-  background: none;
+  position: relative;
+  padding: 10px 20px;
+  background-color: #00bcd4;
+  color: white;
   border: none;
-  color: #666;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.5rem;
+  margin: 1rem 2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 188, 212, 0.2);
 }
 
 .btn-regresar-edicion:hover {
-  color: #333;
+  background-color: #00c853;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
 }
 
 /* Contenedor de imagen */

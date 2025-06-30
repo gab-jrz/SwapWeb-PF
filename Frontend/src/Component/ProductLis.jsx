@@ -16,8 +16,7 @@ const DetalleProducto = () => {
       .catch((error) => console.error("Error al obtener el producto:", error));
   }, [id]);
 
-
-
+  
   return (
     <div className="detalle-container">
       <Header />
@@ -45,5 +44,4 @@ const DetalleProducto = () => {
     </div>
   );
 };
-
 export default DetalleProducto;
