@@ -4,6 +4,7 @@ import ProductCard from "../Component/ProductCard";
 import Footer from "../Component/Footer";
 import { getProducts } from "../services/api";
 import "../styles/Home.css";
+import CustomCarousel from "../Component/Carousel";
 
 const Home = () => {
   const [productos, setProductos] = useState([]);
@@ -60,6 +61,12 @@ const Home = () => {
         setSelectedCategory={setSelectedCategory}
       />
 
+      {/* Espaciador entre header y carrusel */}
+      <div style={{ height: 0 }} />
+
+      {/* Carrusel de imágenes */}
+      <CustomCarousel />
+
       <main className="main-content">
         {/* Mostrar mensaje de carga o error */}
         {loading && <p className="text-center">Cargando productos...</p>}
@@ -92,7 +99,7 @@ const Home = () => {
           !mostrarTodos && (
             <div className="d-flex justify-content-center my-4">
               <button
-                className="btn btn-outline-primary"
+                className="btn btn-outline-primary custom-btn"
                 onClick={() => setMostrarTodos(true)}
               >
                 Explorá más
@@ -107,7 +114,7 @@ const Home = () => {
           productosFiltrados.length > 4 && (
             <div className="d-flex justify-content-center my-4">
               <button
-                className="btn btn-outline-secondary"
+                className="btn btn-outline-secondary custom-btn"
                 onClick={() => setMostrarTodos(false)}
               >
                 Mostrar menos

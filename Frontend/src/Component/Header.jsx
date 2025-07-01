@@ -86,7 +86,11 @@ const Header = ({
       <div className="container-fluid py-2 px-4">
         <div className="row align-items-center justify-content-between">
           <div className="col-md-3 d-flex align-items-center">
-            <h2 className="mb-0 fw-bold">
+            <h2
+              className="mb-0 fw-bold"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/")}
+            >
               <span style={{ color: "#00c853" }}>Swap</span>
               <span style={{ color: "#00bcd4" }}>Web</span>
             </h2>
@@ -113,7 +117,7 @@ const Header = ({
                   <option value="tecnologia">Tecnología</option>
                   <option value="electrodomesticos">Electrodomésticos</option>
                   <option value="ropa">Ropa</option>
-                  <option value="">Otros</option>
+                  <option value="otros">Otros</option>
                 </select>
               </div>
             </div>
