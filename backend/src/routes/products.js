@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
+import Product from '../models/Product.js';
 const router = express.Router();
-const Product = require('../models/Product');
 
 // Get all products
 router.get('/', async (req, res) => {
@@ -111,6 +111,7 @@ router.put('/:id', async (req, res) => {
     if (req.body.description) product.description = req.body.description;
     if (req.body.categoria) product.categoria = req.body.categoria;
     if (req.body.image) product.image = req.body.image;
+    if (req.body.intercambiado !== undefined) product.intercambiado = !!req.body.intercambiado;
 
     const updatedProduct = await product.save();
     const productResponse = updatedProduct.toObject();
@@ -122,4 +123,4 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-module.exports = router; 
+export default router;

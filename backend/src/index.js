@@ -1,14 +1,15 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const morgan = require('morgan');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import morgan from 'morgan';
+import process from 'process';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = (typeof process !== 'undefined' && process.env && process.env.PORT) ? process.env.PORT : 3001;
 
 // Middleware
 app.use(cors());
@@ -54,16 +55,18 @@ mongoose.connection.on('reconnected', () => {
 });
 
 // Import routes
-const userRoutes = require('./routes/users');
-const productRoutes = require('./routes/products');
-const swapRoutes = require('./routes/swaps');
-const messageRoutes = require('./routes/messages');
+import userRoutes from './routes/users.js';
+import productRoutes from './routes/products.js';
+import swapRoutes from './routes/swaps.js';
+import messageRoutes from './routes/messages.js';
+import authRoutes from './routes/auth.js';
 
 // Use routes
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/swaps', swapRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -78,4 +81,6 @@ app.get('/health', (req, res) => {
 app.listen(port, () => {
   console.log(`🚀 Servidor iniciado en el puerto ${port}`);
   console.log(`🌐 API disponible en http://localhost:${port}`);
-}); 
+});
+
+export default app; 

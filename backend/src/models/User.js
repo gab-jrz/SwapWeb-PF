@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
   id: {
@@ -45,14 +45,24 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Message'
   }],
-  transacciones: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Transaction'
-  }],
+  transacciones: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
+  },
   mostrarContacto: {
     type: Boolean,
     default: true
   },
+  calificaciones: [{
+    deId: String,
+    deNombre: String,
+    rating: { type: Number, min:1, max:5 },
+    fecha: { type: Date, default: Date.now },
+    productoSolicitado: String,
+    productoOfrecido: String
+  }],
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   zona: {
     type: String,
     default: "Argentina Buenos Aires"
@@ -93,4 +103,4 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User; 
+export default User;

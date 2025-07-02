@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/jwt.js';
+
 const router = express.Router();
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config/jwt');
 
 // Middleware de autenticación
 const authenticateToken = (req, res, next) => {
@@ -129,12 +130,20 @@ router.put('/:id', async (req, res) => {
 
     const updateFields = [
       'nombre', 'apellido', 'username', 'email', 'password',
-      'imagen', 'zona', 'mostrarContacto'
+      'imagen', 'zona', 'mostrarContacto', 'transacciones'
     ];
 
     updateFields.forEach(field => {
       if (req.body[field] !== undefined) {
-        user[field] = req.body[field];
+        if (field === 'mostrarContacto') {
+          // Asegurar booleano real (maneja "false" string)
+          user[field] = req.body[field] === true || req.body[field] === 'true';
+        } else {
+          user[field] = req.body[field];
+          if (field === 'transacciones') {
+            user.markModified('transacciones');
+          }
+        }
       }
     });
 
@@ -161,4 +170,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router; 
+export default router; 
