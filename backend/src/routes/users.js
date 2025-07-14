@@ -1,15 +1,13 @@
-<<<<<<< HEAD
+
 import express from "express";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import jwtConfig from "../config/jwt.js";
 const JWT_SECRET = jwtConfig.JWT_SECRET;
-=======
 import express from 'express';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/jwt.js';
->>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
 
 const router = express.Router();
 
@@ -185,8 +183,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 export default router;
-=======
-export default router; 
->>>>>>> d75ec88 (Agrego pruebas unitarias(macha y chai), de integración(postman) y E2E(cypress))
