@@ -1,7 +1,10 @@
 import express from "express";
+import User from "../models/User.js";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config/jwt.js";
 import Message from "../models/Message.js";
 import Product from "../models/Product.js";
-import User from "../models/User.js";
+
 const router = express.Router();
 
 // Obtener cantidad de mensajes no leídos para un usuario

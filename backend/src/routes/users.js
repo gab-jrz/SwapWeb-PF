@@ -1,13 +1,8 @@
-
 import express from "express";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import jwtConfig from "../config/jwt.js";
-const JWT_SECRET = jwtConfig.JWT_SECRET;
-import express from 'express';
-import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../config/jwt.js';
+import { JWT_SECRET } from "../config/jwt.js";
 
 const router = express.Router();
 
