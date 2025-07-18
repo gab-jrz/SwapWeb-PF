@@ -47,7 +47,7 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-// Create a new message
+//crear nuevo mensaje
 router.post('/', async (req, res) => {
   const message = new Message({
     de: req.body.de,
@@ -56,6 +56,7 @@ router.post('/', async (req, res) => {
     paraNombre: req.body.paraNombre,
     productoId: req.body.productoId,
     productoTitle: req.body.productoTitle,
+    productoOfrecidoId: req.body.productoOfrecidoId,
     productoOfrecido: req.body.productoOfrecido,
     descripcion: req.body.descripcion,
     condiciones: req.body.condiciones,
@@ -73,7 +74,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Confirm exchange by a user
+//confirmar intercambio por un usuario
 router.put('/:id/confirm', async (req, res) => {
   try {
     const { userId } = req.body;
@@ -82,18 +83,32 @@ router.put('/:id/confirm', async (req, res) => {
     const message = await Message.findById(req.params.id);
     if (!message) return res.status(404).json({ message: 'Mensaje no encontrado' });
 
+    // Debug: log antes de modificar
+    console.log('Antes de confirmar:', { conf: message.confirmaciones, len: message.confirmaciones.length, completed: message.completed });
+
     if (!message.confirmaciones.includes(userId)) {
       message.confirmaciones.push(userId);
     }
 
+    // Debug: log después de modificar
+    console.log('Después de confirmar:', { conf: message.confirmaciones, len: message.confirmaciones.length });
+
     let completed = false;
     // cuando confirmen ambas partes
+    // Cuando confirmen ambas partes
+    console.log(`Check: ${message.confirmaciones.length} >= 2 && ${!message.completed}`);
     if (message.confirmaciones.length >= 2 && !message.completed) {
       message.completed = true;
       completed = true;
 
-      // Marcar productos como intercambiados
-      await Product.updateOne({ id: message.productoId }, { intercambiado: true });
+      // Marcar productos como intercambiados (ambos productos)
+      // Asegurarse de convertir los IDs a número, porque el campo "id" en Product es numérico
+      if (message.productoId !== undefined && message.productoId !== null) {
+        await Product.updateOne({ id: Number(message.productoId) }, { intercambiado: true });
+      }
+      if (message.productoOfrecidoId !== undefined && message.productoOfrecidoId !== null) {
+        await Product.updateOne({ id: Number(message.productoOfrecidoId) }, { intercambiado: true });
+      }
       // Agregar transacción detallada a ambos usuarios
       const fecha = new Date();
       const transDe = {
@@ -117,19 +132,20 @@ router.put('/:id/confirm', async (req, res) => {
       await User.updateOne({ id: message.deId }, { $push: { transacciones: transDe } });
       await User.updateOne({ id: message.paraId }, { $push: { transacciones: transPara } });
 
-      // Crear mensaje system
-      const sysMsg = new Message({
+      // Crear mensaje system para ambos usuarios
+      const sysTemplate = {
         de: 'system',
         deId: 'system',
-        paraId: message.deId,
-        paraNombre: 'system',
         productoId: message.productoId,
         productoTitle: message.productoTitle,
         productoOfrecido: message.productoOfrecido,
         descripcion: `Producto intercambiado entre usuarios. ¡Califiquen!`,
         system: true
-      });
-      await sysMsg.save();
+      };
+      await Message.create([
+        { ...sysTemplate, paraId: message.deId, paraNombre: 'system' },
+        { ...sysTemplate, paraId: message.paraId, paraNombre: 'system' }
+      ]);
     }
 
     await message.save();
@@ -140,6 +156,46 @@ router.put('/:id/confirm', async (req, res) => {
 });
 
 // Update rating on a message y guardarlo en usuario receptor
+// Delete message
+// Delete message permanently
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedMessage = await Message.findByIdAndDelete(req.params.id);
+    if (!deletedMessage) {
+      return res.status(404).json({ message: 'Mensaje no encontrado' });
+    }
+    res.json({ message: 'Mensaje eliminado permanentemente' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Edit message (update descripcion, imagen, etc.)
+router.put('/:id', async (req, res) => {
+  try {
+    const { descripcion, imagen } = req.body;
+    if (descripcion === undefined && imagen === undefined) {
+      return res.status(400).json({ message: 'Nada para actualizar' });
+    }
+    const updateFields = {};
+    if (descripcion !== undefined) updateFields.descripcion = descripcion;
+    if (imagen !== undefined) updateFields.imagen = imagen;
+    updateFields.updatedAt = new Date();
+
+    const updatedMessage = await Message.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateFields },
+      { new: true }
+    ).select('-__v');
+
+    if (!updatedMessage) return res.status(404).json({ message: 'Mensaje no encontrado' });
+
+    res.json(updatedMessage);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.put('/:id/rating', async (req, res) => {
   try {
     const { rating, raterId } = req.body;

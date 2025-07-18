@@ -40,6 +40,10 @@ router.get('/:id', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
+    // Filtrar transacciones eliminadas
+    if (Array.isArray(user.transacciones)) {
+      user.transacciones = user.transacciones.filter(t => !t.deleted);
+    }
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });

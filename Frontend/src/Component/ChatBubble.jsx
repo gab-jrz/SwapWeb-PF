@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/ChatBubble.css';
+import Notification from './Notification';
 
 const API_URL = 'http://localhost:3001/api';
 
@@ -17,20 +18,112 @@ const ChatBubble = ({
   onEditTextChange,
   onEditCancel,
   onEditSave,
+  socket,
+  scrollToBottom
 }) => {
+  const [notifications, setNotifications] = useState([]);
+
+  // Render especial para mensajes del sistema
+  if (mensaje.system) {
+    return (
+      <div style={{width:'100%',display:'flex',justifyContent:'center',margin:'10px 0'}}>
+        <div style={{background:'#e9ecef',color:'#555',padding:'6px 14px',borderRadius:14,fontSize:13,fontWeight:500,boxShadow:'0 1px 2px #0001'}}>
+          {mensaje.descripcion}
+        </div>
+      </div>
+    );
+  }
+  const bubbleRef = useRef(null);
+  const [showMenu, setShowMenu] = useState(false);
+  
+  // Efecto para manejar el scroll automático cuando se recibe un nuevo mensaje
+  useEffect(() => {
+    if (bubbleRef.current && scrollToBottom) {
+      bubbleRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [mensaje, scrollToBottom]);
+  
+  // Efecto para configurar los listeners de socket
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleNewMessage = (newMessage) => {
+      if (newMessage.sender !== currentUserId) {
+        showNotification(`Nuevo mensaje de ${newMessage.senderName}`, 'info');
+      }
+      if (onRefresh) onRefresh();
+    };
+    
+    const handleExchangeConfirmed = (data) => {
+      if (data.userId === currentUserId) {
+        showNotification('¡Intercambio confirmado!', 'success');
+      }
+    };
+    
+    socket.on('newMessage', handleNewMessage);
+    socket.on('exchangeConfirmed', handleExchangeConfirmed);
+    
+    return () => {
+      socket.off('newMessage', handleNewMessage);
+      socket.off('exchangeConfirmed', handleExchangeConfirmed);
+    };
+  }, [socket, currentUserId, onRefresh]);
+  
+  const showNotification = (message, type) => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    
+    setTimeout(() => {
+      removeNotification(id);
+    }, 5000);
+  };
+  
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
   const [localRating, setLocalRating] = React.useState(null);
-  const [showMenu, setShowMenu] = React.useState(false);
 
   const handleConfirmExchange = async () => {
     try {
-      await fetch(`${API_URL}/messages/${mensaje._id}/confirm`, {
+      const response = await fetch(`${API_URL}/messages/${mensaje._id}/confirm`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUserId }),
       });
-      if (onRefresh) onRefresh();
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (socket) {
+          socket.emit('confirmExchange', {
+            messageId: mensaje._id,
+            userId: currentUserId,
+            recipientId: fromMe ? mensaje.receiver : mensaje.sender
+          });
+        }
+        showNotification('Intercambio confirmado exitosamente', 'success');
+        if (onRefresh) onRefresh();
+      } else {
+        throw new Error('Error al confirmar el intercambio');
+      }
     } catch (err) {
       console.error('Error confirmando intercambio', err);
+      showNotification('Error al confirmar el intercambio', 'error');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('¿Eliminar mensaje?')) return;
+    try {
+      const res = await fetch(`http://localhost:3001/api/messages/${mensaje._id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showNotification('Mensaje eliminado', 'success');
+        if (onRefresh) onRefresh();
+      } else {
+        throw new Error('Error eliminando');
+      }
+    } catch (err) {
+      console.error('Error eliminando mensaje', err);
+      showNotification('No se pudo eliminar', 'error');
     }
   };
 
@@ -116,8 +209,9 @@ const ChatBubble = ({
         }}
         onContextMenu={(e) => {
           e.preventDefault();
-          setShowMenu(true);
-          setTimeout(() => setShowMenu(false), 5000); // autocierra tras 5s
+          if (fromMe && !mensaje.system) {
+            setShowMenu(true);
+          }
         }}
       >
         {/* Imagen si hay */}
@@ -258,20 +352,13 @@ const ChatBubble = ({
 
         {/* Menú contextual SOLO para mensajes propios: solo TEXTO estilo WhatsApp */}
         {showMenu && fromMe && (
-          <div
+            <div
             style={{
               position:'absolute',top:28,right:0,zIndex:20,minWidth:160,background:'#fff',border:'1px solid #eee',borderRadius:10,boxShadow:'0 2px 8px #0002',overflow:'hidden',display:'flex',flexDirection:'column',padding:'0'
             }}
             tabIndex={0}
             onBlur={()=>setShowMenu(false)}
           >
-            <div
-              style={{padding:'13px 22px',cursor:'pointer',color:'#009688',fontWeight:600,fontSize:15,outline:'none',border:'none',background:'none',textAlign:'left'}}
-              onClick={()=>{confirmExchange();setShowMenu(false);}}
-            >
-              Confirmar intercambio
-            </div>
-            <div style={{height:1,background:'#eee',margin:'0 12px'}}/>
             <div
               style={{padding:'13px 22px',cursor:'pointer',color:'#1976d2',fontWeight:600,fontSize:15,outline:'none',border:'none',background:'none',textAlign:'left'}}
               onClick={()=>{onRefresh && onRefresh('edit', mensaje._id || mensaje.id);setShowMenu(false);}}

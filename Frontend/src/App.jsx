@@ -7,6 +7,7 @@ import Register from './Pages/Register';
 import Intercambiar from './Pages/Intercambiar';
 import PerfilUsuario from './Pages/PerfilUsuario';
 import Calificaciones from './Pages/Calificaciones';
+import PerfilPublico from './Pages/PerfilPublico';
 import Editar from './Pages/Editar';
 import Configuracion from './Pages/Configuracion';
 import PublicarProducto from './Pages/PublicarProducto';
@@ -25,10 +26,11 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/intercambiar" element={<Intercambiar />} />
+        <Route path="/intercambiar" element={<ProtectedRoute><Intercambiar /></ProtectedRoute>} />
         <Route path="/editar" element={<Editar />} />
 
-        <Route path="/perfil/:id" element={<PerfilUsuario />} />
+        <Route path="/perfil" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
+        <Route path="/perfil/:id" element={<PerfilPublico />} />
         <Route path="/calificaciones/:id" element={<Calificaciones />} />
         <Route path="/configuracion" element={<Configuracion />} />
         <Route path="/publicarproducto" element={

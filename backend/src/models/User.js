@@ -48,7 +48,8 @@ const userSchema = new mongoose.Schema({
   transacciones: {
     type: [mongoose.Schema.Types.Mixed],
     default: []
-  },
+  }, // cada transacción puede tener { ..., deleted: Boolean }
+
   mostrarContacto: {
     type: Boolean,
     default: true

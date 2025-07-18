@@ -30,6 +30,15 @@ const Home = () => {
     };
 
     fetchProducts();
+
+    // Escuchar evento global para refrescar productos tras intercambio
+    const handleProductsUpdated = () => {
+      fetchProducts();
+    };
+    window.addEventListener('productsUpdated', handleProductsUpdated);
+    return () => {
+      window.removeEventListener('productsUpdated', handleProductsUpdated);
+    };
   }, []);
 
   // Filtrado por búsqueda y categoría

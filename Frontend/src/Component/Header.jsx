@@ -52,7 +52,7 @@ const Header = ({
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("usuarioActual");
     setIsLoggedIn(false);
-    navigate("/");
+    window.location.href = "/"; // Fuerza recarga total para limpiar estado en memoria
   };
 
   return (
@@ -100,7 +100,7 @@ const Header = ({
                 <div style={{marginRight:'1.2rem',position:'relative',cursor:'pointer',display:'flex',alignItems:'center'}}
                   onClick={()=>{
                     const usuario=JSON.parse(localStorage.getItem('usuarioActual'));
-                    if(usuario) navigate(`/perfil/${usuario.id}`, { state:{ tab:'mensajes'} });
+                    if(usuario) navigate(`/perfil`, { state:{ tab:'mensajes'} });
                   }}
                   title={unread > 0 ? `Tienes ${unread} mensajes nuevos` : 'Mensajes'}
                 >
@@ -155,16 +155,12 @@ const Header = ({
                     <button
                       className="dropdown-item"
                       onClick={() => {
-                        const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
-                        if (usuario && usuario.id) {
-                          navigate(`/perfil/${usuario.id}`);
-                        }
+                        navigate(`/perfil`);
                         setMenuOpen(false);
                       }}
                     >
                       Mi Perfil
                     </button>
-
                     {/* <button
                       className="dropdown-item"
                       onClick={() => {

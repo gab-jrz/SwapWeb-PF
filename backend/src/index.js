@@ -60,6 +60,7 @@ import productRoutes from './routes/products.js';
 import swapRoutes from './routes/swaps.js';
 import messageRoutes from './routes/messages.js';
 import authRoutes from './routes/auth.js';
+import transactionRoutes from './routes/transactions.js';
 
 // Use routes
 app.use('/api/users', userRoutes);
@@ -67,6 +68,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/swaps', swapRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -1,0 +1,143 @@
+.stepper-intercambio-outer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.stepper-intercambio-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px #0001;
+  padding: 24px 32px 16px 32px;
+  margin-bottom: 24px;
+  max-width: 620px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stepper-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.stepper-icon, .stepper-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  margin-bottom: 6px;
+  border: 2.5px solid #b6c7e6;
+  box-shadow: 0 2px 8px #0001;
+  background: #e3eafc;
+  object-fit: cover;
+}
+
+.stepper-avatar {
+  background: #fff;
+  border: 2.5px solid #b6c7e6;
+  box-shadow: 0 2px 8px #0002;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.stepper-step.completed .stepper-avatar {
+  border-color: #388e3c;
+  box-shadow: 0 2px 8px #4caf5022;
+}
+
+.stepper-step.active .stepper-avatar {
+  border-color: #1976d2;
+  box-shadow: 0 2px 8px #1976d222;
+}
+
+.stepper-avatar-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.stepper-step.completed .stepper-icon {
+  background: #4caf50;
+  color: #fff;
+  border-color: #388e3c;
+}
+
+.stepper-step.active .stepper-icon {
+  background: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+}
+
+.stepper-label {
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.stepper-user {
+  font-size: 13px;
+  color: #888;
+}
+
+.stepper-bar {
+  position: absolute;
+  top: 19px;
+  left: 100%;
+  width: 80px;
+  height: 4px;
+  background: #b6c7e6;
+  z-index: 0;
+  margin-left: 6px;
+  border-radius: 2px;
+}
+
+.stepper-step.completed ~ .stepper-bar {
+  background: #4caf50;
+}
+
+.stepper-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.stepper-confirm-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #1976d230;
+  transition: background 0.2s;
+}
+.stepper-confirm-btn:hover {
+  background: #1254a1;
+}
+
+.stepper-success {
+  color: #388e3c;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

@@ -50,6 +50,10 @@ const messageSchema = new mongoose.Schema({
     type: Number,
     min: 1,
     max: 5
+  },
+  deleted: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

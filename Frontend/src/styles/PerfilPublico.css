@@ -1,0 +1,236 @@
+.perfil-publico {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.perfil-publico-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem 4rem;
+  font-family: 'Roboto', sans-serif;
+  flex: 1;
+  width: 100%;
+}
+
+.perfil-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.perfil-avatar-container {
+  flex: 0 0 150px;
+}
+
+.perfil-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.perfil-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.perfil-info h1 {
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem;
+  color: #333;
+}
+
+.profile-info .location {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.reputation .stars {
+  font-size: 1.5rem;
+  color: #fdd835; /* Amarillo para estrellas */
+}
+
+.reputation .ratings-link {
+  margin-left: 1rem;
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.reputation .ratings-link:hover {
+  text-decoration: underline;
+}
+
+.perfil-productos h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  padding-bottom: 0.5rem;
+  display: inline-block;
+  border-bottom: 2px solid #0d6efd;
+}
+
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 1.25rem;
+}
+
+.product-info h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.product-category {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.product-description {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Estilos para móviles */
+@media (max-width: 768px) {
+  .perfil-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .perfil-avatar-container {
+    margin-bottom: 1.5rem;
+  }
+  
+  .perfil-info {
+    text-align: center;
+  }
+  
+  .productos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilos para carga y errores */
+.loading-container,
+.error-container,
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border-left-color: #0d6efd;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container h2 {
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.not-found h2 {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+/* Estrellas de calificación */
+.estrellas {
+  margin: 0.5rem 0 1rem;
+}
+
+.estrellas i {
+  color: #ddd;
+  font-size: 1.5rem;
+  margin-right: 0.25rem;
+}
+
+.estrellas i.active {
+  color: #ffc107;
+}
+
+.estrellas span {
+  margin-left: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Loading and Error states */
+.loading-container, .error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  font-size: 1.5rem;
+}
+
+.spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #0d6efd;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
