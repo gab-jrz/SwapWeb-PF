@@ -79,6 +79,19 @@ const userSchema = new mongoose.Schema({
   fechaRegistro: {
     type: Date,
     default: Date.now
+  },
+  // Configuraciones de notificaciones
+  notificaciones: {
+    intercambios: {
+      propuestas: { type: Boolean, default: true },
+      cambiosEstado: { type: Boolean, default: true }
+    },
+    mensajes: {
+      directos: { type: Boolean, default: true },
+      intercambio: { type: Boolean, default: true }
+    },
+    calificaciones: { type: Boolean, default: true },
+    recordatorios: { type: Boolean, default: true }
   }
 }, {
   timestamps: true

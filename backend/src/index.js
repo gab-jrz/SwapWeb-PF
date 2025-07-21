@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import process from 'process';
+import ratingsRoutes from './routes/ratings.js';
 
 // Load environment variables
 dotenv.config();
@@ -61,6 +62,7 @@ import swapRoutes from './routes/swaps.js';
 import messageRoutes from './routes/messages.js';
 import authRoutes from './routes/auth.js';
 import transactionRoutes from './routes/transactions.js';
+import notificationRoutes from './routes/notifications.js';
 
 // Use routes
 app.use('/api/users', userRoutes);
@@ -69,6 +71,8 @@ app.use('/api/swaps', swapRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/ratings', ratingsRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

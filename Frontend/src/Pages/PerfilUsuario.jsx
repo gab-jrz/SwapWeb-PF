@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/PerfilUsuario.css';
 import Header from '../Component/Header.jsx';
@@ -35,6 +35,12 @@ const PerfilUsuario = () => {
   const [mensaje, setMensaje] = useState('');
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editText, setEditText] = useState('');
+
+  // Refs para scroll inteligente
+  
+  
+  // Para saber si el usuario envió el último mensaje
+  const lastMessageFromMeRef = useRef(false);
 
   // Avatar del otro usuario para el Stepper
   const [avatarOtro, setAvatarOtro] = useState('/images/fotoperfil.jpg');
@@ -121,7 +127,6 @@ const PerfilUsuario = () => {
     return { chatsAgrupados, noLeidosPorChat };
   };
 
-  const chatMessagesEndRef = React.useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -216,12 +221,29 @@ const PerfilUsuario = () => {
     updateChatsAndUnread();
   }, [updateChatsAndUnread]);
 
-  // Scroll automático al último mensaje (después del render)
+  // --- SCROLL INTELIGENTE ---
+  // Guardar si el usuario estaba abajo ANTES del update
+  const wasUserAtBottomRef = useRef(true);
   useLayoutEffect(() => {
-    if (chatMessagesEndRef.current) {
-      chatMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (activeTab !== 'mensajes') return;
+    wasUserAtBottomRef.current = isUserAtBottom();
+  }, [chatSeleccionado]);
+
+  // Scroll inteligente: solo baja si el usuario estaba abajo o si envió mensaje propio
+  useLayoutEffect(() => {
+    if (activeTab !== 'mensajes') return;
+    const mensajes = chats[chatSeleccionado] || [];
+    const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+    const ultimoMensaje = mensajes[mensajes.length - 1];
+    // Detectar si el último mensaje es del usuario actual
+    const fromMe = ultimoMensaje && usuarioActual && ultimoMensaje.deId === usuarioActual.id;
+    // Si el usuario estaba abajo o envió mensaje propio, scrollea
+    if (wasUserAtBottomRef.current || fromMe) {
+      scrollToBottom();
     }
-  }, [chats, chatSeleccionado]);
+    // Actualizar ref para la próxima
+    lastMessageFromMeRef.current = !!fromMe;
+  }, [chats, chatSeleccionado, activeTab]);
 
   const fetchMensajes = (uid) => {
     const idToUse = uid || userData?.id;
@@ -331,13 +353,43 @@ function handleEnviarMensaje() {
 }
 // --- FIN handleEnviarMensaje ---
 
-// seleccionar automáticamente el primer chat la primera vez
-  useEffect(()=>{
-    if(!chatSeleccionado && Object.keys(chats).length > 0){
-      const firstKey = Object.keys(chats)[0];
-      setChatSeleccionado(firstKey);
+// Mantener el chat seleccionado tras polling/fetch
+  useEffect(() => {
+    // Si el chat seleccionado ya no existe tras un fetch, selecciona el primero disponible
+    if (chatSeleccionado && chats[chatSeleccionado]) {
+      // El chat seleccionado sigue existiendo, no hacer nada
+      return;
+    }
+    const chatKeys = Object.keys(chats);
+    if (chatKeys.length > 0) {
+      setChatSeleccionado(chatKeys[0]);
+    } else {
+      setChatSeleccionado(null); // No hay chats disponibles
     }
   }, [chats, chatSeleccionado]);
+
+  // Eliminar un chat completo (todos los mensajes)
+  const handleDeleteChat = async (chatKey) => {
+    const mensajesChat = chats[chatKey];
+    if (!mensajesChat || mensajesChat.length === 0) return;
+    if (!window.confirm("¿Eliminar este chat y todos sus mensajes?")) return;
+    // Elimina todos los mensajes de este chat en el backend
+    for (const msg of mensajesChat) {
+      await fetch(`${API_URL}/messages/${msg._id || msg.id}`, { method: 'DELETE' });
+    }
+    // Quita el chat del estado local
+    setChats(prev => {
+      const nuevo = { ...prev };
+      delete nuevo[chatKey];
+      return nuevo;
+    });
+    // Si el chat eliminado era el seleccionado, selecciona el siguiente disponible
+    const chatKeys = Object.keys(chats).filter(key => key !== chatKey);
+    setChatSeleccionado(chatKeys.length > 0 ? chatKeys[0] : null);
+    // Refresca mensajes desde backend para asegurar sincronización
+    fetchMensajes(userData.id);
+  };
+
 
   // Efecto para recargar productos y transacciones tras un intercambio
   useEffect(() => {
@@ -730,33 +782,92 @@ function handleEnviarMensaje() {
     });
   };
 
-  function handleRefreshMensaje() {
-    // Si tienes lógica para refrescar mensajes, ponla aquí. Por ahora, solo refresca mensajes del usuario actual si existe la función fetchMensajes
-    if (userData && userData.id && typeof fetchMensajes === 'function') {
-      fetchMensajes(userData.id);
-    }
-  }
-
-  // Efecto para cargar mensajes cuando se carga el componente o cambia el usuario
-  useEffect(() => {
+  const handleRefreshMensaje = React.useCallback(() => {
+    // Solo refrescar si realmente es necesario (ej: después de enviar un mensaje)
     if (userData?.id) {
-      console.log('🔄 Cargando mensajes para el usuario:', userData.id);
       fetchMensajes(userData.id);
-      
-      // Configurar polling para actualizar mensajes cada 30 segundos
-      const intervalId = setInterval(() => {
-        if (activeTab === 'mensajes') {
-          console.log('🔄 Actualizando mensajes...');
-          fetchMensajes(userData.id);
-        }
-      }, 30000);
-      
-      return () => {
-        console.log('🧹 Limpiando intervalo de actualización de mensajes');
-        clearInterval(intervalId);
-      };
     }
-  }, [userData?.id, activeTab]);
+  }, [userData?.id]);
+
+  // Estado para controlar si el usuario está en la pestaña de mensajes y la visibilidad
+  const [isMessagesTabActive, setIsMessagesTabActive] = useState(false);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsMessagesTabActive(document.visibilityState === 'visible' && activeTab === 'mensajes');
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [activeTab]);
+
+  // Eliminado useEffect con polling inteligente
+  // useEffect(() => {
+  //   if (!userData?.id || activeTab !== 'mensajes') return;
+  //   let timeoutId;
+  //   let isMounted = true;
+  //   // Eliminado fetchWithBackoff - causaba re-renders constantes
+  //   // const fetchWithBackoff = async (attempt = 0) => {
+  //   //   if (!isMounted) return;
+  //   //   try {
+  //   //     await fetchMensajes(userData.id);
+  //   //     const delay = 15000; // 15 segundos entre fetchs exitosos
+  //   //     timeoutId = setTimeout(() => fetchWithBackoff(0), delay);
+  //   //   } catch (error) {
+  //   //     // Si hay error, esperar más tiempo antes de reintentar
+  //   //     const delay = Math.min(1000 * (2 ** (attempt + 1)), 60000);
+  //   //     timeoutId = setTimeout(() => fetchWithBackoff(attempt + 1), delay);
+  //   //   }
+  //   // };
+  //   // fetchWithBackoff();
+  //   return () => {
+  //     isMounted = false;
+  //     if (timeoutId) clearTimeout(timeoutId);
+  //   };
+  // }, [userData?.id, activeTab, isMessagesTabActive]);
+
+  // Scroll inteligente: solo bajar automáticamente cuando corresponde
+  const [autoScroll, setAutoScroll] = React.useState(true);
+  const [userSentMessage, setUserSentMessage] = React.useState(false);
+  const chatMessagesEndRef = React.useRef(null);
+  const chatContainerRef = React.useRef(null);
+  
+  // Detectar si el usuario está al final del chat
+  const isUserAtBottom = React.useCallback(() => {
+    if (!chatContainerRef.current) return true;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    return scrollHeight - scrollTop - clientHeight < 50; // 50px de tolerancia
+  }, []);
+  
+  // Scroll inteligente: solo cuando el usuario envía mensaje o está al final
+  const scrollToBottom = React.useCallback((force = false) => {
+    if (force || userSentMessage || isUserAtBottom()) {
+      chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setUserSentMessage(false);
+    }
+  }, [userSentMessage, isUserAtBottom]);
+
+  // Optimizar renderizado de mensajes del chat
+  const chatMessages = React.useMemo(() => {
+    if (!chatSeleccionado || !chats[chatSeleccionado]) return [];
+    return chats[chatSeleccionado];
+  }, [chatSeleccionado, chats]);
+
+  // Detectar si el usuario está al final del chat
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    // Solo activar autoScroll si está a menos de 100px del fondo
+    setAutoScroll(scrollHeight - scrollTop - clientHeight < 100);
+  };
+
+  // Efecto: solo hacer scroll automático si el usuario está al final
+  React.useEffect(() => {
+    if (autoScroll && chatMessagesEndRef.current) {
+      chatMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, autoScroll]);
+
+  // Cuando el usuario envía un mensaje, forzar autoScroll
+  // (NO redeclarar, solo mantener la original que ya existe antes en el archivo)
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -859,7 +970,31 @@ function handleEnviarMensaje() {
             <h1>{`${capitalize(userData.nombre)} ${capitalize(userData.apellido)}`}</h1>
             <div className="perfil-stats">
               <div className="stat">
-                <button className="stat-value" style={{background:'none',border:'none',cursor:'pointer',color:'#0d6efd'}} onClick={()=>navigate(`/calificaciones/${userData.id}`)}>{userData.calificacion}</button>
+                <button
+                  className="rating-button"
+                  onClick={() => navigate(`/calificaciones/${userData.id}`)}
+                  aria-label="Ver calificaciones"
+                >
+                  <div className="rating-display">
+                    <div className="stars-container">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <i
+                          key={star}
+                          className={`fas fa-star`}
+                          style={{
+                            color: userData?.calificacion >= star ? '#FFD700' : '#ddd',
+                            fontSize: '16px',
+                            textShadow: userData?.calificacion >= star ? '0 0 3px rgba(255,215,0,0.5)' : 'none'
+                          }}
+                          aria-hidden="true"
+                        />
+                      ))}
+                    </div>
+                    <span className="rating-value">
+                      ({userData?.calificacion?.toFixed(1) || '0.0'})
+                    </span>
+                  </div>
+                </button>
                 <span className="stat-label">Calificación</span>
               </div>
               <div className="stat">
@@ -1074,13 +1209,62 @@ function handleEnviarMensaje() {
                             </div>
                           )}
 
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ fontSize: '1rem', color: '#222' }}>{otroNombre}</div>
+                          <div className="chat-row">
+                            {(() => {
+                              let avatarUrl = '';
+                              let iniciales = '';
+                              
+                              if (ultimoMensaje) {
+                                if (ultimoMensaje.deId === usuarioActual.id) {
+                                  // Mostrar avatar del destinatario (el otro usuario)
+                                  avatarUrl = ultimoMensaje.paraImagen || '';
+                                  iniciales = (ultimoMensaje.paraNombre || ultimoMensaje.para || 'U').substring(0, 2).toUpperCase();
+                                } else {
+                                  // Mostrar avatar del remitente (el otro usuario)
+                                  avatarUrl = ultimoMensaje.deImagen || '';
+                                  iniciales = (ultimoMensaje.deNombre || ultimoMensaje.de || 'U').substring(0, 2).toUpperCase();
+                                }
+                              }
+                              
+                              // Priorizar siempre la imagen real del backend
+                              return (
+                                <>
+                                  {avatarUrl ? (
+                                    <img
+                                      className="chat-avatar"
+                                      src={avatarUrl}
+                                      alt="avatar"
+                                      onError={(e) => {
+                                        // Solo si falla la carga de imagen, mostrar iniciales
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  {/* Fallback con iniciales solo si no hay imagen */}
+                                  <div
+                                    className="chat-avatar"
+                                    style={{
+                                      display: avatarUrl ? 'none' : 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      background: 'linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%)',
+                                      color: '#2d9cdb',
+                                      fontSize: '14px',
+                                      fontWeight: 'bold'
+                                    }}
+                                  >
+                                    {iniciales}
+                                  </div>
+                                </>
+                              );
+                            })()}
+                            <div className="chat-name">{otroNombre}</div>
                             {noLeidos && (
-                              <span style={{ marginLeft: 8, background: '#dc3545', color: '#fff', borderRadius: '12px', padding: '2px 8px', fontSize: '0.75rem', fontWeight: 600 }}>{unreadByChat[key]}</span>
+                              <span className="chat-badge">{unreadByChat[key]}</span>
                             )}
                           </div>
-                          <div style={{ fontSize: '0.93rem', color: '#555', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div className="chat-preview">
                             {textoUltimo}
                           </div>
                         </div>
@@ -1089,33 +1273,183 @@ function handleEnviarMensaje() {
                   </div>
 
                   {/* mensajes del chat seleccionado */}
-                  <div className="chat-messages" style={{flex:1}}>
+                  <div className="chat-messages" style={{flex:1, overflowY:'auto', maxHeight:'60vh'}} ref={chatContainerRef}>
                                         {(!chatSeleccionado || !chats[chatSeleccionado] || chats[chatSeleccionado].length === 0) ? (
                       <p>Selecciona un chat</p>
                     ) : (
                       <div>
-                        <div className="chat-header" style={{
-                          display: 'flex', alignItems: 'center', gap: 12, background: '#ededed', borderRadius: 12, padding: '8px 16px', marginBottom: '1rem', boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+                        <div className="chat-header-premium" style={{
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 16, 
+                          background: 'linear-gradient(135deg, #f7faff 0%, #e6f2fb 100%)', 
+                          borderRadius: 16, 
+                          padding: '12px 20px', 
+                          marginBottom: '1rem', 
+                          boxShadow: '0 4px 12px rgba(146, 209, 250, 0.15)',
+                          border: '1px solid #b0e0ff'
                         }}>
-                          <span style={{ fontSize: 28, color: '#bbb' }}>👤</span>
-                          <span style={{ fontWeight: 600, fontSize: 17, color: '#222' }}>
-                            {/* Mostrar el nombre real del otro usuario */}
-                            {(() => {
-                              const mensajesChat = chats[chatSeleccionado];
-                              if (!mensajesChat || mensajesChat.length === 0) return 'Chat';
-                              const ultimoMensaje = mensajesChat[mensajesChat.length - 1];
-                              const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-                              if (ultimoMensaje) {
-                                if (ultimoMensaje.deId === usuarioActual.id) {
-                                  return ultimoMensaje.paraNombre || ultimoMensaje.para || ultimoMensaje.paraId || 'Desconocido';
-                                } else {
-                                  return ultimoMensaje.deNombre || ultimoMensaje.de || ultimoMensaje.deId || 'Desconocido';
+                          {/* Avatar del usuario actual */}
+                          <img
+                            src={userData.imagen || '/avatar-default.png'}
+                            alt="Tu avatar"
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: '50%',
+                              border: '2px solid #92d1fa',
+                              boxShadow: '0 2px 6px rgba(146, 209, 250, 0.3)',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              e.target.src = '/avatar-default.png';
+                            }}
+                          />
+                          
+                          {/* Icono de intercambio */}
+                          <div style={{
+                            background: 'linear-gradient(135deg, #2d9cdb 0%, #38a3e2 100%)',
+                            borderRadius: '50%',
+                            width: 28,
+                            height: 28,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: 14,
+                            fontWeight: 'bold',
+                            boxShadow: '0 2px 6px rgba(45, 156, 219, 0.3)'
+                          }}>
+                            ⇄
+                          </div>
+                          
+                          {/* Avatar del otro usuario */}
+                          {(() => {
+                            const mensajesChat = chats[chatSeleccionado];
+                            if (!mensajesChat || mensajesChat.length === 0) return null;
+                            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+                            
+                            // Buscar en todos los mensajes para encontrar la imagen del otro usuario
+                            let otherUserImage = '';
+                            let otherUserName = '';
+                            let iniciales = '';
+                            
+                            for (const mensaje of mensajesChat) {
+                              if (mensaje.deId === usuarioActual.id) {
+                                // El otro usuario es el destinatario
+                                if (mensaje.paraImagen) {
+                                  otherUserImage = mensaje.paraImagen;
+                                }
+                                if (!otherUserName && mensaje.paraNombre) {
+                                  otherUserName = mensaje.paraNombre;
+                                }
+                              } else {
+                                // El otro usuario es el remitente
+                                if (mensaje.deImagen) {
+                                  otherUserImage = mensaje.deImagen;
+                                }
+                                if (!otherUserName && mensaje.deNombre) {
+                                  otherUserName = mensaje.deNombre;
                                 }
                               }
-                              return 'Chat';
-                            })()}
-                          </span>
-                          {/* Botón Ver Perfil */}
+                              
+                              // Si ya tenemos imagen y nombre, salir del loop
+                              if (otherUserImage && otherUserName) break;
+                            }
+                            
+                            // Fallback para el nombre
+                            if (!otherUserName) {
+                              const ultimoMensaje = mensajesChat[mensajesChat.length - 1];
+                              if (ultimoMensaje.deId === usuarioActual.id) {
+                                otherUserName = ultimoMensaje.paraNombre || ultimoMensaje.para || 'Usuario';
+                              } else {
+                                otherUserName = ultimoMensaje.deNombre || ultimoMensaje.de || 'Usuario';
+                              }
+                            }
+                            
+                            iniciales = otherUserName.substring(0, 2).toUpperCase();
+                            
+                            return otherUserImage ? (
+                              <img
+                                src={otherUserImage}
+                                alt={`Avatar de ${otherUserName}`}
+                                style={{
+                                  width: 42,
+                                  height: 42,
+                                  borderRadius: '50%',
+                                  border: '2px solid #92d1fa',
+                                  boxShadow: '0 2px 6px rgba(146, 209, 250, 0.3)',
+                                  objectFit: 'cover'
+                                }}
+                                onError={(e) => {
+                                  // Si falla la imagen, crear avatar con iniciales
+                                  e.target.style.display = 'none';
+                                  const fallbackDiv = document.createElement('div');
+                                  fallbackDiv.className = 'chat-avatar';
+                                  fallbackDiv.style.cssText = `
+                                    width: 42px;
+                                    height: 42px;
+                                    border-radius: 50%;
+                                    border: 2px solid #92d1fa;
+                                    box-shadow: 0 2px 6px rgba(146, 209, 250, 0.3);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    background: linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%);
+                                    color: #2d9cdb;
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                  `;
+                                  fallbackDiv.textContent = iniciales;
+                                  e.target.parentNode.insertBefore(fallbackDiv, e.target.nextSibling);
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: 42,
+                                  height: 42,
+                                  borderRadius: '50%',
+                                  border: '2px solid #92d1fa',
+                                  boxShadow: '0 2px 6px rgba(146, 209, 250, 0.3)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  background: 'linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%)',
+                                  color: '#2d9cdb',
+                                  fontSize: '14px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                {iniciales}
+                              </div>
+                            );
+                          })()} 
+                          
+                          {/* Información del chat */}
+                          <div style={{ flex: 1, marginLeft: 8 }}>
+                            <div style={{ fontWeight: 700, fontSize: 18, color: '#2d9cdb', marginBottom: 2 }}>
+                              {(() => {
+                                const mensajesChat = chats[chatSeleccionado];
+                                if (!mensajesChat || mensajesChat.length === 0) return 'Chat';
+                                const ultimoMensaje = mensajesChat[mensajesChat.length - 1];
+                                const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+                                if (ultimoMensaje) {
+                                  if (ultimoMensaje.deId === usuarioActual.id) {
+                                    return ultimoMensaje.paraNombre || ultimoMensaje.para || 'Usuario';
+                                  } else {
+                                    return ultimoMensaje.deNombre || ultimoMensaje.de || 'Usuario';
+                                  }
+                                }
+                                return 'Chat';
+                              })()} 
+                            </div>
+                            <div style={{ fontSize: 13, color: '#666', fontWeight: 500 }}>
+                              Intercambio en progreso
+                            </div>
+                          </div>
+                          
+                          {/* Solo botón Ver Perfil */}
                           {(() => {
                             const mensajesChat = chats[chatSeleccionado];
                             if (!mensajesChat || mensajesChat.length === 0) return null;
@@ -1123,24 +1457,34 @@ function handleEnviarMensaje() {
                             const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
                             const otherId = base.deId === usuarioActual.id ? base.paraId : base.deId;
                             return (
-                              <div style={{display:'flex', gap:8, marginLeft:'auto'}}>
-                                <button
-                                  onClick={() => window.open(`/perfil/${otherId}`, '_blank')}
-                                  style={{ background: '#00bcd4', color: 'white', border: 'none', borderRadius: 16, padding: '4px 14px', fontSize: 14, cursor: 'pointer', fontWeight: 500 }}
-                                  title="Ver perfil del usuario"
-                                >
-                                  Ver Perfil
-                                </button>
-                                <button
-                                  onClick={() => window.open(`/productos-usuario/${otherId}`, '_blank')}
-                                  style={{ background: '#009688', color: 'white', border: 'none', borderRadius: 16, padding: '4px 14px', fontSize: 14, cursor: 'pointer', fontWeight: 500 }}
-                                  title="Ver productos publicados"
-                                >
-                                  Ver Productos
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => window.open(`/perfil/${otherId}`, '_blank')}
+                                style={{ 
+                                  background: 'linear-gradient(135deg, #2d9cdb 0%, #38a3e2 100%)', 
+                                  color: 'white', 
+                                  border: 'none', 
+                                  borderRadius: 20, 
+                                  padding: '8px 16px', 
+                                  fontSize: 14, 
+                                  cursor: 'pointer', 
+                                  fontWeight: 600,
+                                  boxShadow: '0 2px 8px rgba(45, 156, 219, 0.3)',
+                                  transition: 'all 0.2s'
+                                }}
+                                title="Ver perfil del usuario"
+                                onMouseEnter={(e) => {
+                                  e.target.style.transform = 'translateY(-1px)';
+                                  e.target.style.boxShadow = '0 4px 12px rgba(45, 156, 219, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.transform = 'translateY(0)';
+                                  e.target.style.boxShadow = '0 2px 8px rgba(45, 156, 219, 0.3)';
+                                }}
+                              >
+                                Ver Perfil
+                              </button>
                             );
-                          })()}
+                          })()} 
                         </div>
                         
           {/* Mensaje informativo obligatorio */}
@@ -1162,15 +1506,32 @@ function handleEnviarMensaje() {
                           const puedeCalificar = intercambioCompletado && !mensajeIntercambio.ratingGivenBy?.includes(usuarioActual.id);
 
                           // Avatar y perfil de ambos usuarios
-  const avatarActual = (mensajeIntercambio.deId === usuarioActual.id ? mensajeIntercambio.deImagen : mensajeIntercambio.paraImagen) || '/images/fotoperfil.jpg';
-  const perfilActual = `/perfil`; // Ruta al perfil privado del usuario
-  const perfilOtro = `/perfil/${otroId}`; // Ruta al perfil público del otro usuario
+                          const avatarActual = userData.imagen || '';
+                          
+                          // Buscar avatar del otro usuario en los mensajes
+                          let avatarOtro = '';
+                          for (const mensaje of mensajes) {
+                            if (mensaje.deId === usuarioActual.id) {
+                              if (mensaje.paraImagen) {
+                                avatarOtro = mensaje.paraImagen;
+                                break;
+                              }
+                            } else {
+                              if (mensaje.deImagen) {
+                                avatarOtro = mensaje.deImagen;
+                                break;
+                              }
+                            }
+                          }
+                          
+                          const perfilActual = `/perfil`; // Ruta al perfil privado del usuario
+                          const perfilOtro = `/perfil/${otroId}`; // Ruta al perfil público del otro usuario
 
                           const steps = [
-                            { label: 'Propuesta enviada', icon: '📩', completed: true },
-                            { label: 'Tu confirmación', icon: '👤', completed: yoConfirmado, active: !yoConfirmado, userName: 'Tú', avatarUrl: avatarActual, profileUrl: perfilActual },
-                            { label: `Confirmación de ${otroNombre || 'otro'}`, icon: '👤', completed: otroConfirmado, active: !otroConfirmado && yoConfirmado, userName: otroNombre, avatarUrl: avatarOtro, profileUrl: perfilOtro },
-                            { label: 'Intercambio completado', icon: '✅', completed: intercambioCompletado }
+                            { label: 'Propuesta enviada', icon: '⚡', completed: true },
+                            { label: 'Tu confirmación', icon: '◉', completed: yoConfirmado, active: !yoConfirmado, userName: 'Tú', avatarUrl: avatarActual, profileUrl: perfilActual },
+                            { label: `Confirmación de ${otroNombre || 'otro'}`, icon: '◉', completed: otroConfirmado, active: !otroConfirmado && yoConfirmado, userName: otroNombre, avatarUrl: avatarOtro, profileUrl: perfilOtro },
+                            { label: 'Intercambio completado', icon: '✦', completed: intercambioCompletado }
                           ];
 
                           return (
@@ -1194,14 +1555,7 @@ function handleEnviarMensaje() {
                                   }
                                 }}
                               />
-                              {puedeCalificar && (
-                                <button
-                                  style={{marginTop:12, background:'#fbc02d', color:'#333', border:'none', borderRadius:8, padding:'7px 18px', fontWeight:600, cursor:'pointer'}}
-                                  onClick={()=>{ setRatingTarget({otroId, otroNombre, transId: mensajeIntercambio.transId || mensajeIntercambio._id}); setShowRatingModal(true); }}
-                                >
-                                  Calificar usuario
-                                </button>
-                              )}
+                              {/* Botón de calificación movido al final del chat */}
 
                               <RatingModal
                                 open={showRatingModal}
@@ -1210,6 +1564,10 @@ function handleEnviarMensaje() {
                                 onSubmit={async ({stars, comment}) => {
                                   setRatingLoading(true);
                                   try {
+                                    // Obtener datos del intercambio desde el mensaje
+                                    const productoOfrecido = mensajeIntercambio?.productoOfrecido || '';
+                                    const productoSolicitado = mensajeIntercambio?.productoTitle || '';
+                                    
                                     await fetch(`${API_URL}/ratings`, {
                                       method: 'POST',
                                       headers: {'Content-Type': 'application/json'},
@@ -1218,7 +1576,9 @@ function handleEnviarMensaje() {
                                         paraId: ratingTarget.otroId,
                                         transId: ratingTarget.transId,
                                         stars,
-                                        comment
+                                        comment,
+                                        productoOfrecido,
+                                        productoSolicitado
                                       })
                                     });
                                     setShowRatingModal(false);
@@ -1285,6 +1645,16 @@ function handleEnviarMensaje() {
                                         setEditingMessageId(null);
                                         setEditText('');
                                       }}
+                                      senderProfileImage={
+  mensaje.deId === usuarioActual.id
+    ? usuarioActual.imagen
+    : (mensaje.deId !== usuarioActual.id && mensaje.deImagen)
+      ? mensaje.deImagen
+      : (mensaje.paraId !== usuarioActual.id && mensaje.paraImagen)
+        ? mensaje.paraImagen
+        : avatarOtro
+}
+                                      currentUserProfileImage={usuarioActual.imagen}
                                     />
                                   </div>
                                 </React.Fragment>
@@ -1365,16 +1735,106 @@ function handleEnviarMensaje() {
                              ➤
                            </button>
                          </div>
-                      </div>
-                    )}
-                  </div>
+                          
+                          {/* Botón de calificación al final del chat */}
+                          {(() => {
+                            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+                            const mensajes = chats[chatSeleccionado] || [];
+                            const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
+                            
+                            if (!mensajeIntercambio) return null;
+                            
+                            const intercambioCompletado = mensajeIntercambio.confirmaciones?.length >= 2;
+                            const otroId = mensajeIntercambio.deId === usuarioActual.id ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
+                            const otroNombre = mensajeIntercambio.deId === usuarioActual.id ? 
+                              (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario') : 
+                              (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
+                            const puedeCalificar = intercambioCompletado && !mensajeIntercambio.calificado;
+                            
+                            return puedeCalificar ? (
+                              <div style={{ 
+                                marginTop: 16, 
+                                padding: '16px 20px', 
+                                background: '#ffffff', 
+                                borderRadius: 12, 
+                                border: '2px solid #e8f5e8',
+                                boxShadow: '0 4px 12px rgba(76, 175, 80, 0.15)',
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between'
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                  <div style={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: 20,
+                                    boxShadow: '0 3px 10px rgba(76, 175, 80, 0.3)'
+                                  }}>✓</div>
+                                  <div>
+                                    <div style={{ fontWeight: 700, fontSize: 17, color: '#1a237e', marginBottom: 4 }}>
+                                      ¡Intercambio completado con éxito!
+                                    </div>
+                                    <div style={{ fontSize: 15, color: '#283593', fontWeight: 600 }}>
+                                      Califica tu experiencia con <span style={{ 
+                                        color: '#1565c0', 
+                                        fontWeight: 800,
+                                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                                      }}>{otroNombre || 'el usuario'}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  style={{
+                                    background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: 25,
+                                    padding: '14px 28px',
+                                    fontWeight: 800,
+                                    fontSize: 15,
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 20px rgba(76, 175, 80, 0.3), 0 0 0 0 rgba(76, 175, 80, 0.5)',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                                    animation: 'pulseGlowGreen 2s ease-in-out infinite alternate'
+                                  }}
+                                  onClick={()=>{ setRatingTarget({otroId, otroNombre, transId: mensajeIntercambio.transId || mensajeIntercambio._id}); setShowRatingModal(true); }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.transform = 'translateY(-1px)';
+                                    e.target.style.boxShadow = '0 6px 16px rgba(76, 175, 80, 0.4)';
+                                    e.target.style.animation = 'none';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = '0 4px 20px rgba(76, 175, 80, 0.3), 0 0 0 0 rgba(76, 175, 80, 0.5)';
+                                    e.target.style.animation = 'pulseGlowGreen 2s ease-in-out infinite alternate';
+                                  }}
+                                >
+                                  ⭐ Calificar Ahora
+                                </button>
+                              </div>
+                            ) : null;
+                          })()}
+                       </div>
+                     )}
+                   </div>
 
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+               )}
+             </div>
+           )}
+         </div>
+       </div>
 
       <Footer />
       <DeleteModal
@@ -1416,10 +1876,6 @@ function handleEnviarMensaje() {
         message="¿Estás seguro que deseas eliminar este mensaje? Esta acción no se puede deshacer."
         confirmText="Eliminar mensaje"
       />
-
-
-
-
     </div>
   );
 };

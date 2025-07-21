@@ -19,7 +19,9 @@ const ChatBubble = ({
   onEditCancel,
   onEditSave,
   socket,
-  scrollToBottom
+  scrollToBottom,
+  senderProfileImage,
+  currentUserProfileImage
 }) => {
   const [notifications, setNotifications] = useState([]);
 
@@ -173,23 +175,53 @@ const ChatBubble = ({
       className={`chat-bubble-wrapper ${fromMe ? 'me' : 'other'}`}
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: fromMe ? 'flex-end' : 'flex-start',
-        marginBottom: 10,
+        flexDirection: fromMe ? 'row-reverse' : 'row',
+        alignItems: 'flex-start',
+        marginBottom: 12,
+        gap: 8,
       }}
     >
-      <span
-        className="chat-sender"
+      {/* Foto de perfil del remitente */}
+      <div
         style={{
-          fontSize: 12,
-          color: '#888',
-          marginBottom: 2,
-          marginLeft: fromMe ? 0 : 8,
-          marginRight: fromMe ? 8 : 0,
+          flexShrink: 0,
+          marginTop: 4,
         }}
       >
-        {fromMe ? 'Yo' : mensaje.nombreRemitente}
-      </span>
+        <img
+          className="chat-profile-image"
+src={fromMe ? (currentUserProfileImage || '/images/fotoperfil.jpg') : (senderProfileImage || '/images/fotoperfil.jpg')}
+          alt={fromMe ? 'Mi perfil' : mensaje.nombreRemitente}
+          onError={(e) => {
+            console.log('❌ Error cargando imagen de perfil:', e.target.src);
+            e.target.src = '/images/fotoperfil.jpg';
+          }}
+        />
+      </div>
+      
+      {/* Contenedor del mensaje */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: fromMe ? 'flex-end' : 'flex-start',
+          maxWidth: 'calc(100% - 48px)',
+          flex: 1,
+        }}
+      >
+        <span
+          className="chat-sender"
+          style={{
+            fontSize: 12,
+            color: '#64748b',
+            marginBottom: 4,
+            fontWeight: 500,
+            paddingLeft: fromMe ? 0 : 4,
+            paddingRight: fromMe ? 4 : 0,
+          }}
+        >
+          {fromMe ? 'Yo' : mensaje.nombreRemitente}
+        </span>
       <div
         className={`chat-bubble ${fromMe ? 'me' : 'other'}`}
         style={{
@@ -375,9 +407,20 @@ const ChatBubble = ({
           </div>
         )}
 
+        </div>
       </div>
     </div>
   );
 };
 
-export default ChatBubble;
+export default React.memo(ChatBubble, (prevProps, nextProps) => {
+  // Solo re-renderizar si estos props cambian
+  return (
+    prevProps.mensaje._id === nextProps.mensaje._id &&
+    prevProps.fromMe === nextProps.fromMe &&
+    prevProps.isEditing === nextProps.isEditing &&
+    prevProps.editText === nextProps.editText &&
+    prevProps.senderProfileImage === nextProps.senderProfileImage &&
+    prevProps.currentUserProfileImage === nextProps.currentUserProfileImage
+  );
+});

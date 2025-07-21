@@ -2,6 +2,7 @@ import express from 'express';
 import Message from '../models/Message.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
+import NotificationService from '../services/notificationService.js';
 const router = express.Router();
 
 // Obtener cantidad de mensajes no leídos para un usuario
@@ -41,7 +42,39 @@ router.get('/:userId', async (req, res) => {
     })
       .select('-__v')
       .sort({ createdAt: -1 });
-    res.json(messages);
+    
+    // Enriquecer mensajes con imágenes de perfil de usuarios
+    const enrichedMessages = await Promise.all(messages.map(async (message) => {
+      const messageObj = message.toObject();
+      
+      // Obtener imagen del remitente
+      if (messageObj.deId) {
+        try {
+          const senderUser = await User.findById(messageObj.deId).select('imagen');
+          if (senderUser && senderUser.imagen) {
+            messageObj.deImagen = senderUser.imagen;
+          }
+        } catch (err) {
+          console.log('Error obteniendo imagen del remitente:', err);
+        }
+      }
+      
+      // Obtener imagen del destinatario
+      if (messageObj.paraId) {
+        try {
+          const receiverUser = await User.findById(messageObj.paraId).select('imagen');
+          if (receiverUser && receiverUser.imagen) {
+            messageObj.paraImagen = receiverUser.imagen;
+          }
+        } catch (err) {
+          console.log('Error obteniendo imagen del destinatario:', err);
+        }
+      }
+      
+      return messageObj;
+    }));
+    
+    res.json(enrichedMessages);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -68,6 +101,16 @@ router.post('/', async (req, res) => {
     const newMessage = await message.save();
     const messageResponse = newMessage.toObject();
     delete messageResponse.__v;
+    
+    // Generar notificación automática
+    if (req.body.productoOfrecidoId) {
+      // Es una propuesta de intercambio
+      await NotificationService.notifyNewExchangeProposal(messageResponse);
+    } else {
+      // Es un mensaje directo
+      await NotificationService.notifyNewMessage(messageResponse);
+    }
+    
     res.status(201).json(messageResponse);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -132,23 +175,83 @@ router.put('/:id/confirm', async (req, res) => {
       await User.updateOne({ id: message.deId }, { $push: { transacciones: transDe } });
       await User.updateOne({ id: message.paraId }, { $push: { transacciones: transPara } });
 
-      // Crear mensaje system para ambos usuarios
+      // Crear mensaje de confirmación para ambos usuarios con nombre real
+      const userDe = await User.findOne({ id: message.deId });
+      const userPara = await User.findOne({ id: message.paraId });
+
       const sysTemplate = {
-        de: 'system',
-        deId: 'system',
         productoId: message.productoId,
         productoTitle: message.productoTitle,
         productoOfrecido: message.productoOfrecido,
         descripcion: `Producto intercambiado entre usuarios. ¡Califiquen!`,
-        system: true
+        system: false // Ahora es mensaje de usuario real
       };
       await Message.create([
-        { ...sysTemplate, paraId: message.deId, paraNombre: 'system' },
-        { ...sysTemplate, paraId: message.paraId, paraNombre: 'system' }
+        {
+          ...sysTemplate,
+          de: userPara ? `${userPara.nombre} ${userPara.apellido}` : message.paraId,
+          deId: message.paraId,
+          nombreRemitente: userPara ? `${userPara.nombre} ${userPara.apellido}` : message.paraId,
+          paraId: message.deId,
+          paraNombre: userDe ? `${userDe.nombre} ${userDe.apellido}` : message.deId
+        },
+        {
+          ...sysTemplate,
+          de: userDe ? `${userDe.nombre} ${userDe.apellido}` : message.deId,
+          deId: message.deId,
+          nombreRemitente: userDe ? `${userDe.nombre} ${userDe.apellido}` : message.deId,
+          paraId: message.paraId,
+          paraNombre: userPara ? `${userPara.nombre} ${userPara.apellido}` : message.paraId
+        }
       ]);
     }
 
     await message.save();
+    
+    // Generar notificaciones de cambio de estado
+    const otherUserId = userId === message.deId ? message.paraId : message.deId;
+    const otherUserName = userId === message.deId ? message.paraNombre : message.de;
+    
+    if (completed) {
+      // Notificar intercambio completado a ambos usuarios
+      await NotificationService.notifyExchangeStatusChange(message.deId, 'completed', {
+        messageId: message._id,
+        productTitle: message.productoTitle,
+        otherUserId: message.paraId,
+        otherUserName: message.paraNombre
+      });
+      await NotificationService.notifyExchangeStatusChange(message.paraId, 'completed', {
+        messageId: message._id,
+        productTitle: message.productoOfrecido,
+        otherUserId: message.deId,
+        otherUserName: message.de
+      });
+      
+      // Programar recordatorios de calificación (después de 24 horas)
+      setTimeout(async () => {
+        await NotificationService.notifyRatingReminder(message.deId, {
+          messageId: message._id,
+          productTitle: message.productoTitle,
+          otherUserId: message.paraId,
+          otherUserName: message.paraNombre
+        });
+        await NotificationService.notifyRatingReminder(message.paraId, {
+          messageId: message._id,
+          productTitle: message.productoOfrecido,
+          otherUserId: message.deId,
+          otherUserName: message.de
+        });
+      }, 24 * 60 * 60 * 1000); // 24 horas
+    } else {
+      // Notificar confirmación parcial al otro usuario
+      await NotificationService.notifyExchangeStatusChange(otherUserId, 'confirmed', {
+        messageId: message._id,
+        productTitle: userId === message.deId ? message.productoOfrecido : message.productoTitle,
+        otherUserId: userId,
+        otherUserName: userId === message.deId ? message.de : message.paraNombre
+      });
+    }
+    
     res.json({ confirmed: true, completed });
   } catch (error) {
     res.status(500).json({ message: error.message });

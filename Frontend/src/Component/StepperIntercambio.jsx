@@ -22,8 +22,42 @@ export default function StepperIntercambio({ steps, onConfirm, canConfirm, compl
                   src={step.avatarUrl}
                   alt={step.userName || step.label}
                   className="stepper-avatar"
-                  onError={e => { e.target.src = '/images/fotoperfil.jpg'; }}
+                  onError={(e) => {
+                    // Si falla la imagen, crear avatar con iniciales
+                    e.target.style.display = 'none';
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'stepper-avatar';
+                    fallbackDiv.style.cssText = `
+                      background: linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%);
+                      color: #2d9cdb;
+                      font-size: 16px;
+                      font-weight: bold;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    `;
+                    const iniciales = (step.userName || 'U').substring(0, 2).toUpperCase();
+                    fallbackDiv.textContent = iniciales;
+                    e.target.parentNode.insertBefore(fallbackDiv, e.target.nextSibling);
+                  }}
                 />
+              </a>
+            ) : step.userName ? (
+              <a href={step.profileUrl} target="_blank" rel="noopener noreferrer" className="stepper-avatar-link">
+                <div 
+                  className="stepper-avatar"
+                  style={{
+                    background: 'linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%)',
+                    color: '#2d9cdb',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {step.userName.substring(0, 2).toUpperCase()}
+                </div>
               </a>
             ) : (
               <div className="stepper-icon">{step.icon}</div>

@@ -1,16 +1,49 @@
+/* Navegación de página */
+.page-navigation {
+  max-width: 900px;
+  margin: 1.5rem auto 0;
+  padding: 0 2.5rem;
+}
+
+.btn-back-normal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #6c757d;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.btn-back-normal:hover {
+  color: #4caf50;
+  transform: translateX(-2px);
+}
+
+.btn-back-normal:active {
+  transform: translateX(-1px);
+}
+
 /* Contenedor principal */
 .configuracion-container {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   min-height: 100vh;
-  padding: 30px;
+  padding: 2.5rem;
   background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  margin: 20px auto;
-  max-width: 800px;
-  font-family: 'Arial', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  margin: 2rem auto;
+  max-width: 900px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: calc(100vh - 140px);
 }
 
 .configuracion-container h2 {
@@ -45,6 +78,257 @@
   gap: 25px;
 }
 
+/* Toast de éxito */
+.toast-success {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4caf50;
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1em;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  animation: toastIn 0.3s;
+}
+.toast-success button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.3em;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+@keyframes toastIn {
+  from { opacity: 0; top: 0; }
+  to { opacity: 1; top: 28px; }
+}
+
+/* Modal de confirmación */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2.5rem 2rem 2rem;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  text-align: center;
+}
+.modal-box h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+.modal-actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+.btn-modal-confirm {
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-modal-confirm:hover {
+  background: #388e3c;
+}
+.btn-modal-cancel {
+  background: #eee;
+  color: #444;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-modal-cancel:hover {
+  background: #e57373;
+  color: #fff;
+}
+
+/* Tooltip para privacidad */
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+.tooltip-icon {
+  background: #2196f3;
+  color: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1em;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background 0.2s;
+}
+.tooltip-icon:hover {
+  background: #1565c0;
+}
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: 260px;
+  background: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  position: absolute;
+  z-index: 1200;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.98em;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.tooltip-container:hover .tooltip-text,
+.tooltip-container:focus-within .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Explicación de privacidad */
+.explicacion-privacidad {
+  margin-top: 0.5rem;
+  font-size: 0.97em;
+  color: #555;
+}
+.explicacion-activa {
+  color: #388e3c;
+  font-weight: 500;
+}
+.explicacion-inactiva {
+  color: #b71c1c;
+  font-weight: 500;
+}
+
+/* Notificaciones reestructuradas */
+.notificaciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.notif-category {
+  background: #ffffff;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.notif-category:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.notif-category-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.notif-icon {
+  font-size: 1.2em;
+}
+
+.config-option-small {
+  margin-bottom: 0.8rem;
+  padding: 0.5rem 0;
+}
+
+.config-option-small label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95em;
+  color: #495057;
+  cursor: pointer;
+}
+
+.config-option-small input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #4caf50;
+}
+
+/* Control maestro */
+.notif-master-control {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border: 2px solid #2196f3;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.master-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  font-size: 1.1em;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.master-toggle input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #2196f3;
+}
+
+.master-description {
+  font-size: 0.9em;
+  color: #1565c0;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Responsive para notificaciones */
+@media (max-width: 768px) {
+  .notificaciones-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .notif-category {
+    padding: 1rem;
+  }
+}
+
 .configuracion-container .config-section-title {
   font-size: 1.4em;
   color: #222;
@@ -52,10 +336,57 @@
 }
 
 .configuracion-container .config-option {
-  background-color: #fff;
-  padding: 20px;
+  background-color: #ffffff;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+/* Inputs y selects con colores claros */
+.configuracion-container input[type="text"],
+.configuracion-container input[type="email"],
+.configuracion-container input[type="password"],
+.configuracion-container select {
+  background-color: #ffffff;
+  border: 2px solid #e9ecef;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  color: #2c3e50;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.configuracion-container input[type="text"]:focus,
+.configuracion-container input[type="email"]:focus,
+.configuracion-container input[type="password"]:focus,
+.configuracion-container select:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  background-color: #fff;
+}
+
+/* Labels mejorados */
+.configuracion-container label {
+  color: #2c3e50;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Inputs de contraseña específicos */
+.config-password-input {
+  background-color: #ffffff !important;
+  border: 2px solid #e9ecef !important;
+  color: #2c3e50 !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 1rem !important;
 }
 
 .configuracion-container .config-option label {
@@ -105,12 +436,14 @@
 }
 
 .configuracion-container .btn-guardar {
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
   color: white;
 }
 
 .configuracion-container .btn-guardar:hover {
-  background-color: #45a049;
+  background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
 }
 
 .configuracion-container .btn-eliminar {
@@ -119,5 +452,7 @@
 }
 
 .configuracion-container .btn-eliminar:hover {
-  background-color: #e53935;
+  background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
 }

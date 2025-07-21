@@ -2,14 +2,30 @@ import express from 'express';
 import Product from '../models/Product.js';
 const router = express.Router();
 
-// Get all products
+// Get all products (with optional owner filter)
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find()
+    // Construir filtro basado en query parameters
+    let filter = {};
+    
+    // Si se proporciona owner, filtrar por ownerId
+    if (req.query.owner) {
+      // Intentar convertir a número si es posible, sino usar como string
+      const ownerValue = isNaN(req.query.owner) ? req.query.owner : Number(req.query.owner);
+      filter.ownerId = ownerValue;
+      console.log(' Filtrando productos por owner:', req.query.owner, '(convertido a:', ownerValue, ')');
+    }
+    
+    console.log(' Filtro aplicado:', filter);
+    
+    const products = await Product.find(filter)
       .select('-_id -__v')
       .sort({ id: 1 });
+      
+    console.log(' Productos encontrados:', products.length);
     res.json(products);
   } catch (error) {
+    console.error(' Error al obtener productos:', error);
     res.status(500).json({ message: error.message });
   }
 });

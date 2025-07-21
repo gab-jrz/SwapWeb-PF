@@ -38,7 +38,8 @@ const Login = () => {
       console.log("✅ Usuario logueado correctamente:", data.user);
       console.log("🆔 ID del usuario logueado:", data.user?.id);
 
-      window.location.href = `/perfil/${data.user.id}`; // Fuerza recarga total para limpiar estado en memoria
+      // Redirigir a la página principal después del login exitoso
+      navigate('/'); // Redirige a Home en lugar del perfil público
     } catch (err) {
       setError(err.message);
       console.error("Error al iniciar sesión:", err);
