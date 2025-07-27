@@ -66,7 +66,7 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: Date,
   zona: {
     type: String,
-    default: "Argentina Buenos Aires"
+    default: "Buenos Aires"
   },
   telefono: {
     type: String,
@@ -74,7 +74,7 @@ const userSchema = new mongoose.Schema({
   },
   ubicacion: {
     type: String,
-    default: "Argentina Buenos Aires"
+    default: "Buenos Aires"
   },
   fechaRegistro: {
     type: Date,

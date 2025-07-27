@@ -29,6 +29,19 @@ const productSchema = new mongoose.Schema({
   ownerId: {
     type: Number,
     required: true
+  },
+  caracteristicas: {
+    type: [String],
+    validate: {
+      validator: function(arr) {
+        if (!arr) return true;
+        if (arr.length > 15) return false;
+        const totalChars = arr.reduce((acc, item) => acc + (item?.length || 0), 0);
+        return totalChars <= 1000;
+      },
+      message: 'Máximo 15 ítems y 1000 caracteres en total en las características.'
+    },
+    default: undefined // No guardar campo si está vacío
   }
 }, {
   timestamps: true

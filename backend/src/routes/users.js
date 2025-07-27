@@ -134,11 +134,12 @@ router.put('/:id', async (req, res) => {
 
     const updateFields = [
       'nombre', 'apellido', 'username', 'email', 'password',
-      'imagen', 'zona', 'mostrarContacto', 'transacciones'
+      'imagen', 'zona', 'telefono', 'mostrarContacto', 'transacciones'
     ];
 
     updateFields.forEach(field => {
       if (req.body[field] !== undefined) {
+        console.log(`[Backend] Actualizando campo ${field}:`, req.body[field]);
         if (field === 'mostrarContacto') {
           // Asegurar booleano real (maneja "false" string)
           user[field] = req.body[field] === true || req.body[field] === 'true';
@@ -149,6 +150,12 @@ router.put('/:id', async (req, res) => {
           }
         }
       }
+    });
+    
+    console.log('[Backend] Usuario antes de guardar:', {
+      zona: user.zona,
+      telefono: user.telefono,
+      email: user.email
     });
 
     const updatedUser = await user.save();

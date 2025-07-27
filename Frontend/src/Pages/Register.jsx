@@ -10,6 +10,14 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState('Tucumán');
+
+  const PROVINCIAS = [
+    'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
+    'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza',
+    'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis',
+    'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán'
+  ].sort();
 
   const navigate = useNavigate();
 
@@ -45,10 +53,10 @@ const Register = () => {
         username: `${nombreCapitalizado.toLowerCase()}${apellidoCapitalizado.toLowerCase()}`,
         email,
         password,
-        zona: "Argentina Buenos Aires",
+        zona: provinciaSeleccionada || 'Tucumán',
         telefono: "011-555-46522",
         imagen: "https://via.placeholder.com/150",
-        ubicacion: "Argentina Buenos Aires"
+        ubicacion: provinciaSeleccionada || 'Tucumán'
       };
 
       const response = await fetch("http://localhost:3001/api/users/register", {
@@ -129,6 +137,19 @@ const Register = () => {
           required
           disabled={loading}
         />
+
+        <select
+          value={provinciaSeleccionada}
+          onChange={e => setProvinciaSeleccionada(e.target.value)}
+          required
+          disabled={loading}
+          style={{marginBottom:'1rem'}}
+        >
+          <option value="">Selecciona una provincia</option>
+          {PROVINCIAS.map(p => (
+            <option value={p} key={p}>{p}</option>
+          ))}
+        </select>
 
         <button type="submit" className="btn-register" disabled={loading}>
           {loading ? "Registrando..." : "Registrar"}

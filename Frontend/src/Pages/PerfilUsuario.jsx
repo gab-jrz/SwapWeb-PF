@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/PerfilUsuario.css';
+import '../styles/PerfilUsuario-Remodelado.css';
 import Header from '../Component/Header.jsx';
+import ArticuloCard from '../components/ArticuloCard.jsx';
 import Footer from '../Component/Footer.jsx';
 import DeleteModal from '../Component/DeleteModal.jsx';
 import ConfirmModal from '../Component/ConfirmModal.jsx';
@@ -950,83 +952,189 @@ function handleEnviarMensaje() {
   return (
     <div className="perfil-usuario-container">
       <Header search={false} />
-      <button className="btn-menu" style={{ margin: 10 }} onClick={() => navigate("/")}>
-        ← Inicio
-      </button>
+      {/* Botón Regresar */}
+      <div className="regresar-container-premium">
+        <button className="btn-regresar-premium" onClick={() => navigate("/")}> 
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Regresar
+        </button>
+      </div>
 
-      <div className="perfil-usuario-content">
-        <div className="perfil-header">
-          <div className="perfil-imagen">
-            <img 
-              src={userData.imagen || '/images/fotoperfil.jpg'} 
-              alt="Foto de perfil" 
-              onError={(e) => {
-                e.target.onerror = null; 
-                e.target.src = '/images/fotoperfil.jpg';
-              }}
-            />
+      {/* Cabecera Premium */}
+      <div className="perfil-header-premium">
+        <div className="perfil-card-premium">
+          {/* Avatar Premium */}
+          <div className="avatar-container-premium">
+            <div className="avatar-wrapper-premium">
+              <img 
+                src={userData.imagen || '/images/fotoperfil.jpg'} 
+                alt="Foto de perfil" 
+                className="avatar-image-premium"
+                onError={(e) => {
+                  e.target.onerror = null; 
+                  e.target.src = '/images/fotoperfil.jpg';
+                }}
+              />
+              <div className="avatar-ring-premium"></div>
+            </div>
           </div>
-          <div className="perfil-info">
-            <h1>{`${capitalize(userData.nombre)} ${capitalize(userData.apellido)}`}</h1>
-            <div className="perfil-stats">
-              <div className="stat">
+
+          {/* Información Principal */}
+          <div className="perfil-main-info-premium">
+            <h1 className="perfil-nombre-premium">
+              {`${capitalize(userData.nombre)} ${capitalize(userData.apellido)}`}
+            </h1>
+            
+            {/* Stats Premium */}
+            <div className="perfil-stats-premium">
+              <div className="stat-card-premium">
                 <button
-                  className="rating-button"
+                  className="rating-button-premium"
                   onClick={() => navigate(`/calificaciones/${userData.id}`)}
                   aria-label="Ver calificaciones"
                 >
-                  <div className="rating-display">
-                    <div className="stars-container">
+                  <div className="rating-content-premium">
+                    <div className="stars-premium">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <i
                           key={star}
-                          className={`fas fa-star`}
+                          className={`fas fa-star star-premium`}
                           style={{
-                            color: userData?.calificacion >= star ? '#FFD700' : '#ddd',
-                            fontSize: '16px',
-                            textShadow: userData?.calificacion >= star ? '0 0 3px rgba(255,215,0,0.5)' : 'none'
+                            color: userData?.calificacion >= star ? '#FFD700' : '#e1e5e9',
                           }}
                           aria-hidden="true"
                         />
                       ))}
                     </div>
-                    <span className="rating-value">
-                      ({userData?.calificacion?.toFixed(1) || '0.0'})
+                    <span className="rating-number-premium">
+                      {userData?.calificacion?.toFixed(1) || '5.0'}
                     </span>
                   </div>
                 </button>
-                <span className="stat-label">Calificación</span>
+                <span className="stat-label-premium">Calificación</span>
               </div>
-              <div className="stat">
-                <span className="stat-value">{userData.transacciones.length}</span>
-                <span className="stat-label">Transacciones</span>
+              
+              <div className="stat-card-premium">
+                <div className="stat-number-premium">{userData.transacciones.length}</div>
+                <span className="stat-label-premium">Transacciones</span>
               </div>
             </div>
-            <div className="perfil-detalles">
-              <p><strong>Ubicación:</strong> {userData.ubicacion || 'Argentina, Tucumán'}</p>
+
+            {/* Detalles de Contacto Premium */}
+            <div className="perfil-detalles-premium">
+              <div className="detalle-item-premium">
+                <svg className="detalle-icon-premium" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span className="detalle-label-premium">Provincia:</span>
+                <span className="detalle-value-premium">{(userData.zona || userData.ubicacion || 'Tucumán')}</span>
+              </div>
+              
               {userData.mostrarContacto ? (
                 <>
-                  <p><strong>Email:</strong> {userData.email || 'No disponible'}</p>
-                  <p><strong>Teléfono:</strong> {userData.telefono ? userData.telefono : 'Privado'}</p>
+                  <div className="detalle-item-premium">
+                    <svg className="detalle-icon-premium" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <span className="detalle-label-premium">Email:</span>
+                    <span className="detalle-value-premium">{userData.email || 'No disponible'}</span>
+                  </div>
+                  <div className="detalle-item-premium">
+                    <svg className="detalle-icon-premium" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <span className="detalle-label-premium">Teléfono:</span>
+                    <span className="detalle-value-premium">{userData.telefono || 'Privado'}</span>
+                  </div>
                 </>
               ) : (
-                <p><em>Información de contacto: Privada</em></p>
+                <div className="detalle-item-premium privacy-notice">
+                  <svg className="detalle-icon-premium" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <circle cx="12" cy="16" r="1"></circle>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <span className="detalle-value-premium privacy-text">Información de contacto privada</span>
+                </div>
               )}
             </div>
-            <div className="perfil-acciones">
-              <button className="btn-editar" onClick={handleEditClick}>Editar Perfil</button>
-              <button className="btn-configuracion" onClick={() => navigate('/configuracion')}>Configuración</button>
+
+            {/* Botones de Acción Premium */}
+            <div className="perfil-acciones-premium">
+              <button className="btn-editar-premium" onClick={handleEditClick}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Editar Perfil
+              </button>
+              <button className="btn-configuracion-premium" onClick={() => navigate('/configuracion')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V6a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Configuración
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="perfil-tabs">
-          <button className={`tab-btn ${activeTab === 'articulos' ? 'active' : ''}`} onClick={() => handleTabChange('articulos')}>Mis Artículos</button>
-          <button className={`tab-btn ${activeTab === 'transacciones' ? 'active' : ''}`} onClick={() => handleTabChange('transacciones')}>Mis Transacciones</button>
-          <button className={`tab-btn ${activeTab === 'mensajes' ? 'active' : ''}`} onClick={() => handleTabChange('mensajes')}>Mensajes</button>
+      <div className="perfil-usuario-content">
+
+        {/* Tabs Premium */}
+        <div className="perfil-tabs-premium">
+          <button className={`tab-btn-premium ${activeTab === 'articulos' ? 'active' : ''}`} onClick={() => handleTabChange('articulos')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+            </svg>
+            Mis Artículos
+          </button>
+          <button className={`tab-btn-premium ${activeTab === 'transacciones' ? 'active' : ''}`} onClick={() => handleTabChange('transacciones')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 7h10v10"></path>
+              <path d="M7 17 17 7"></path>
+            </svg>
+            Mis Intercambios
+          </button>
+          <button className={`tab-btn-premium ${activeTab === 'mensajes' ? 'active' : ''}`} onClick={() => handleTabChange('mensajes')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Mensajes
+          </button>
+          <button className={`tab-btn-premium ${activeTab === 'favoritos' ? 'active' : ''}`} onClick={() => handleTabChange('favoritos')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            Favoritos
+          </button>
         </div>
 
         <div className="perfil-tab-content">
+          {activeTab === 'favoritos' && (
+            <div className="mis-favoritos">
+              <h2>Favoritos</h2>
+              {/* Aquí se mostrarán los productos favoritos del usuario */}
+              {Array.isArray(userData.favoritos) && userData.favoritos.length > 0 ? (
+                <div className="favoritos-grid">
+                  {userData.favoritos.map((producto) => (
+                    <ArticuloCard
+                      key={producto.id || producto._id}
+                      producto={producto}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p>No tienes productos favoritos aún.</p>
+              )}
+            </div>
+          )}
           {activeTab === 'articulos' && (
             <div className="mis-articulos">
               <h2>Mis Artículos</h2>
@@ -1038,21 +1146,15 @@ function handleEnviarMensaje() {
               ) : (
                 <div className="articulos-grid">
                   {userListings.map((producto) => (
-                    <div key={producto.id} className="articulo-card">
-                      <div className="articulo-imagen">
-                        <img src={producto.image} alt={producto.title} />
-                      </div>
-                      <div className="articulo-info">
-                        <h3>{producto.title}</h3>
-                        <p>{producto.description}</p>
-                        <span className="categoria">{producto.categoria}</span>
-                        <div className="acciones-producto" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
-                          <button className="btn-intercambio" onClick={() => handleMarcarComoIntercambiado(producto)}>✅ Marcar como Intercambiado</button>
-                          <button className="btn-editar-producto" onClick={() => handleEditarProducto(producto)}>✏️ Editar</button>
-                          <button className="btn-eliminar-producto" onClick={() => handleEliminarProducto(producto)}>🗑️ Eliminar</button>
-                        </div>
-                      </div>
-                    </div>
+                    <ArticuloCard
+                      key={producto.id}
+                      producto={{
+                        ...producto,
+                        fechaPublicacion: producto.fechaPublicacion || producto.createdAt,
+                        estado: producto.intercambiado ? 'inactivo' : 'activo',
+                      }}
+                      onEdit={handleEditarProducto}
+                    />
                   ))}
                 </div>
               )}
@@ -1061,12 +1163,14 @@ function handleEnviarMensaje() {
 
           {activeTab === 'transacciones' && (
             <div className="mis-transacciones">
-              <h2>Mis Transacciones</h2>
+              <h2>Mis Intercambios</h2>
               {userData.transacciones.length === 0 ? (
-                <p>No tienes transacciones aún.</p>
+                <p>No tienes intercambios aún.</p>
               ) : (
                 <div className="transacciones-grid">
-                  {userData.transacciones.map((t, idx) => (
+                  {userData.transacciones
+                    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha)) // Ordenar por fecha descendente
+                    .map((t, idx) => (
                     <TransactionCard
                       key={idx}
                       transaccion={t}
@@ -1075,6 +1179,10 @@ function handleEnviarMensaje() {
                         setTransToDelete({ ...t, idx });
                         setShowConfirmDeleteTrans(true);
                       }}
+                      onRate={(ratingData) => {
+                        setRatingTarget(ratingData);
+                        setShowRatingModal(true);
+                      }}
                     />
                   ))}
                 </div>
@@ -1082,7 +1190,7 @@ function handleEnviarMensaje() {
               {/* Modal de confirmación para eliminar transacción */}
               <ConfirmModal
                 isOpen={showConfirmDeleteTrans}
-                onClose={() => { setShowConfirmDeleteTrans(false); setTransToDelete(null); }}
+                onCancel={() => { setShowConfirmDeleteTrans(false); setTransToDelete(null); }}
                 onConfirm={async () => {
                    if (!transToDelete) return;
                    try {
@@ -1117,9 +1225,64 @@ function handleEnviarMensaje() {
                           localStorage.setItem('usuarioActual', JSON.stringify(userBD));
                         }
                       }
+                      
+                      // Mostrar toast de confirmación
+                      const toast = document.createElement('div');
+                      toast.textContent = 'Registro de intercambio eliminado exitosamente';
+                      toast.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                        color: white;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                        z-index: 10000;
+                        font-weight: 600;
+                        font-size: 14px;
+                        animation: slideInRight 0.3s ease-out;
+                      `;
+                      document.body.appendChild(toast);
+                      
+                      // Eliminar toast después de 3 segundos
+                      setTimeout(() => {
+                        if (toast.parentNode) {
+                          toast.style.animation = 'slideOutRight 0.3s ease-out';
+                          setTimeout(() => {
+                            if (toast.parentNode) {
+                              document.body.removeChild(toast);
+                            }
+                          }, 300);
+                        }
+                      }, 3000);
+                      
                     } catch (err) {
                       console.error('❌ Error al eliminar transacción:', err);
-                      alert('Error al eliminar el registro.');
+                      
+                      // Toast de error
+                      const errorToast = document.createElement('div');
+                      errorToast.textContent = 'Error al eliminar el registro';
+                      errorToast.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                        color: white;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+                        z-index: 10000;
+                        font-weight: 600;
+                        font-size: 14px;
+                      `;
+                      document.body.appendChild(errorToast);
+                      
+                      setTimeout(() => {
+                        if (errorToast.parentNode) {
+                          document.body.removeChild(errorToast);
+                        }
+                      }, 3000);
                     } finally {
                       setShowConfirmDeleteTrans(false);
                       setTransToDelete(null);
@@ -1127,7 +1290,6 @@ function handleEnviarMensaje() {
                   }}
                   title="Eliminar registro de intercambio"
                   message="¿Estás seguro que deseas eliminar este registro de intercambio? Esta acción no se puede deshacer."
-                  confirmText="Eliminar"
                 />
             </div>
           )}

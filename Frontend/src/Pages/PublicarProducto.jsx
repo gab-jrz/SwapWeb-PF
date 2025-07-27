@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../Component/Header';
+import { categorias } from "../categorias";
 import Footer from '../Component/Footer';
 import "../styles/PublicarProducto.css";
 
@@ -114,10 +115,13 @@ const PublicarProducto = () => {
     title: '',
     description: '',
     categoria: '',
-    image: null,
+    images: [], // Ahora es un array de imágenes
   });
 
-  const [previewImage, setPreviewImage] = useState(null);
+  const [caracteristicas, setCaracteristicas] = useState([]);
+  const [caracteristicaInput, setCaracteristicaInput] = useState("");
+  const [caracteristicasError, setCaracteristicasError] = useState("");
+  const [previewImages, setPreviewImages] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -152,25 +156,28 @@ const PublicarProducto = () => {
     handleFileSelect(file);
   };
 
-  const handleFileSelect = async (file) => {
-    if (file) {
+  const handleFileSelect = async (fileList) => {
+    const files = Array.from(fileList);
+    if (files.length + previewImages.length > 3) {
+      showNotification('Solo puedes subir hasta 3 imágenes.', 'error');
+      return;
+    }
+    for (const file of files) {
       if (!file.type.startsWith('image/')) {
-        showNotification('Por favor selecciona un archivo de imagen válido', 'error');
-        return;
+        showNotification('Por favor selecciona solo archivos de imagen.', 'error');
+        continue;
       }
-
       try {
         const compressedImage = await compressImage(file);
         const reader = new FileReader();
         reader.onload = () => {
-          setPreviewImage(reader.result);
-          setFormData(prev => ({ ...prev, image: compressedImage }));
+          setPreviewImages(prev => [...prev, reader.result]);
+          setFormData(prev => ({ ...prev, images: [...prev.images, compressedImage] }));
         };
         reader.readAsDataURL(compressedImage);
       } catch (error) {
         console.error('Error al comprimir la imagen:', error);
         showNotification(error.message || 'Error al procesar la imagen', 'error');
-        // Reset the file input
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -183,14 +190,51 @@ const PublicarProducto = () => {
     setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
   };
 
+  // Características: validación
+  const totalCaracteres = caracteristicas.reduce((acc, c) => acc + c.length, 0);
+
+  const handleAddCaracteristica = () => {
+    if (!caracteristicaInput.trim()) return;
+    if (caracteristicas.length >= 15) {
+      setCaracteristicasError("Máximo 15 ítems.");
+      return;
+    }
+    if (totalCaracteres + caracteristicaInput.length > 1000) {
+      setCaracteristicasError("Máximo 1000 caracteres en total.");
+      return;
+    }
+    setCaracteristicas([...caracteristicas, caracteristicaInput.trim()]);
+    setCaracteristicaInput("");
+    setCaracteristicasError("");
+  };
+
+  const handleEditCaracteristica = (idx, value) => {
+    if (value.length > 1000) return;
+    const nuevas = [...caracteristicas];
+    nuevas[idx] = value;
+    setCaracteristicas(nuevas);
+  };
+
+  const handleRemoveCaracteristica = idx => {
+    setCaracteristicas(caracteristicas.filter((_, i) => i !== idx));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.categoria) {
       showNotification('Por favor completa todos los campos requeridos', 'error');
       return;
     }
-    if (!formData.image) {
-      showNotification('Por favor selecciona una imagen para tu producto', 'error');
+    if (formData.images.length === 0) {
+      showNotification('Por favor selecciona al menos una imagen para tu producto', 'error');
+      return;
+    }
+    if (caracteristicas.length > 15) {
+      setCaracteristicasError("Máximo 15 ítems.");
+      return;
+    }
+    if (totalCaracteres > 1000) {
+      setCaracteristicasError("Máximo 1000 caracteres en total.");
       return;
     }
     setIsModalOpen(true);
@@ -201,25 +245,29 @@ const PublicarProducto = () => {
     console.log('Iniciando publicación del producto...');
 
     try {
-      const reader = new FileReader();
-      const imageBase64Promise = new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(formData.image);
-      });
-
-      const imageBase64 = await imageBase64Promise;
-      console.log('Imagen convertida a Base64');
+      // Convertir todas las imágenes a base64
+      const imagesBase64 = await Promise.all(formData.images.map(imgFile => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(imgFile);
+        });
+      }));
+      console.log('Imágenes convertidas a Base64');
 
       const productoData = {
         title: formData.title,
         description: formData.description,
         categoria: formData.categoria,
-        image: imageBase64,
+        images: imagesBase64,
         ownerId: user.id,
         date: new Date().toISOString(),
         status: 'available'
       };
+      if (caracteristicas.length > 0) {
+        productoData.caracteristicas = caracteristicas;
+      }
 
       console.log('Enviando datos al servidor:', productoData);
 
@@ -309,6 +357,47 @@ const PublicarProducto = () => {
             />
           </div>
 
+          {/* Características del Producto - Checklist dinámica */}
+          <div className="form-group">
+            <label>Características del Producto <span style={{fontWeight:400, fontSize:'0.95em', color:'#6366f1'}}>(opcional, máx 15 ítems/1000 caracteres)</span></label>
+            <div className="caracteristicas-checklist">
+              <div className="caracteristicas-input-row">
+                <input
+                  type="text"
+                  maxLength={200}
+                  placeholder="Ej: Batería nueva, Incluye caja, Garantía vigente..."
+                  value={caracteristicaInput}
+                  onChange={e => setCaracteristicaInput(e.target.value)}
+                  onKeyDown={e => { if(e.key==='Enter'){ e.preventDefault(); handleAddCaracteristica(); }}}
+                  disabled={caracteristicas.length>=15 || totalCaracteres>=1000}
+                />
+                <button type="button" className="btn-add-caracteristica" onClick={handleAddCaracteristica} disabled={!caracteristicaInput.trim() || caracteristicas.length>=15 || totalCaracteres+caracteristicaInput.length>1000}>
+                  +
+                </button>
+              </div>
+              <div className="caracteristicas-list">
+                {caracteristicas.map((item, idx) => (
+                  <div className="caracteristica-item" key={idx}>
+                    <span className="caracteristica-bullet">✔️</span>
+                    <input
+                      type="text"
+                      value={item}
+                      maxLength={200}
+                      onChange={e => handleEditCaracteristica(idx, e.target.value)}
+                      className="caracteristica-edit-input"
+                      style={{width:'70%'}}
+                    />
+                    <button type="button" className="btn-remove-caracteristica" title="Eliminar" onClick={()=>handleRemoveCaracteristica(idx)}>×</button>
+                  </div>
+                ))}
+              </div>
+              <div className="caracteristicas-limits">
+                <span>{caracteristicas.length}/15 ítems</span> | <span>{totalCaracteres}/1000 caracteres</span>
+              </div>
+              {caracteristicasError && <div className="caracteristicas-error">{caracteristicasError}</div>}
+            </div>
+          </div>
+
           <div className="form-group">
             <label htmlFor="categoria">Categoría</label>
             <select
@@ -319,42 +408,51 @@ const PublicarProducto = () => {
               required
             >
               <option value="" disabled>-- Selecciona una categoría --</option>
-              <option value="otros">Otros</option>
-              <option value="tecnologia">Tecnología</option>
-              <option value="electrodomesticos">Electrodomésticos</option>
-              <option value="ropa">Ropa</option>
+              {categorias.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label>Imagen del Producto</label>
+            <label>Imágenes del Producto</label>
             <div
               className={`upload-area ${isDragging ? 'dragging' : ''}`}
               onDragEnter={handleDragEnter}
               onDragOver={handleDragEnter}
               onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+              onDrop={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragging(false);
+                handleFileSelect(e.dataTransfer.files);
+              }}
               onClick={() => fileInputRef.current?.click()}
             >
-              {previewImage ? (
-                <div className="preview-container">
-                  <img src={previewImage} alt="Vista previa" className="preview-image" />
-                  <button
-                    type="button"
-                    className="remove-image"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewImage(null);
-                      setFormData(prev => ({ ...prev, image: null }));
-                    }}
-                  >
-                    ×
-                  </button>
+              {previewImages.length > 0 ? (
+                <div className="preview-multi-container">
+                  {previewImages.map((img, idx) => (
+                    <div className="preview-container" key={idx}>
+                      <img src={img} alt={`Vista previa ${idx + 1}`} className="preview-image" />
+                      <button
+                        type="button"
+                        className="remove-image"
+                        title="Eliminar imagen"
+                        onClick={e => {
+                          e.stopPropagation();
+                          setPreviewImages(prev => prev.filter((_, i) => i !== idx));
+                          setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="upload-placeholder">
                   <i className="fas fa-cloud-upload-alt"></i>
-                  <p>Arrastra y suelta tu imagen aquí o haz clic para seleccionar</p>
+                  <p>Arrastra y suelta hasta 3 imágenes aquí o haz clic para seleccionar</p>
                   <span>Formatos aceptados: JPG, PNG, GIF</span>
                 </div>
               )}
@@ -363,9 +461,12 @@ const PublicarProducto = () => {
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 accept="image/*"
-                onChange={(e) => handleFileSelect(e.target.files[0])}
+                multiple
+                onChange={e => handleFileSelect(e.target.files)}
+                disabled={previewImages.length >= 3}
               />
             </div>
+            <div className="multi-image-warning">Puedes subir hasta 3 imágenes.</div>
           </div>
 
           <button type="submit" className="btn-publicar">

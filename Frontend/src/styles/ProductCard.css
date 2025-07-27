@@ -1,53 +1,212 @@
-.product-card {
-  width: 250px; /* Ancho de la tarjeta */
-  height: auto; /* Altura automática, dependiendo del contenido */
-  overflow: hidden; /* Esconde el contenido que sobresale */
-  border: 1px solid #ddd; /* Borde sutil */
-  border-radius: 8px; /* Bordes redondeados */
+.product-card-premium {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+  padding: 0;
   display: flex;
-  flex-direction: column; /* Hace que los elementos se acomoden de arriba hacia abajo */
-  justify-content: space-between; /* Distribuye los elementos de manera que no se solapen */
-  padding: 15px;
+  flex-direction: column;
+  position: relative;
+  min-width: 280px;
+  max-width: 320px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 0.5rem auto;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.product-card img {
-  width: 100%; /* Hace que la imagen ocupe todo el ancho del contenedor */
-  height: 180px; /* Altura fija para la imagen */
-  object-fit: contain; /* Recorta la imagen si es necesario para ajustarse */
-  border-radius: 8px; /* Bordes redondeados para la imagen */
-  margin-bottom: 10px; /* Espacio entre la imagen y el texto */
+.product-card-premium:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.15);
 }
 
-.product-info {
+.product-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  margin-bottom: 0;
+  background: #f8f9fa;
+}
+
+.product-badge-nuevo {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  background: linear-gradient(90deg, #7b2ff2 0%, #1e90ff 100%);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.32em 0.9em;
+  border-radius: 2em;
+  box-shadow: 0 2px 8px rgba(123,47,242,0.13);
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 2px rgba(60,60,90,0.10);
+  border: none;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.97;
+  transition: opacity 0.2s;
+}
+
+.product-badge-nuevo::after {
+  content: "✨";
+  margin-left: 0.45em;
+  font-size: 1em;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f2f2fa;
+}
+
+.product-content {
+  padding: 0.7rem;
   flex: 1;
-  display: flex;              /* <-- Para usar flexbox dentro */
-  flex-direction: column;     /* <-- Organiza en columna */
-  align-items: center;        /* <-- Centra horizontalmente */
-  justify-content: center;    /* <-- Centra verticalmente si hay espacio */
-  text-align: center;    /* Hace que el contenido ocupe todo el espacio disponible en la tarjeta */
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  position: relative;
 }
 
-.product-info h3 {
-  font-size: 1.2em; /* Tamaño adecuado para el título */
-  margin: 0 0 10px; /* Margen debajo del título */
-  text-align: center; /* Centra el título */
-  color: #333;
+.product-consultar-btn {
+  margin-top: 1.1em;
+  width: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 2.5em;
+  font-weight: 700;
+  font-size: 1.18rem;
+  padding: 0.8em 0;
+  box-shadow: 0 6px 24px rgba(118,75,162,0.18), 0 1.5px 8px rgba(123,47,242,0.09);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.13s, box-shadow 0.18s, filter 0.18s;
+  outline: none;
+  letter-spacing: 0.03em;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s cubic-bezier(.23,1.01,.32,1) both;
+}
+.product-consultar-btn::before {
+  content: "";
+  position: absolute;
+  left: -75%;
+  top: 0;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(123,47,242,0.13) 0%, rgba(102,126,234,0.09) 60%, rgba(118,75,162,0.13) 100%);
+  opacity: 0.7;
+  transition: opacity 0.22s;
+  pointer-events: none;
+  z-index: 0;
+}
+.product-consultar-btn:hover, .product-consultar-btn:focus {
+  background: linear-gradient(90deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-3px) scale(1.045);
+  box-shadow: 0 12px 36px rgba(123,47,242,0.19), 0 2px 12px rgba(102,126,234,0.13);
+  filter: brightness(1.08) saturate(1.03);
+  animation: pulseBtn 0.7s;
+}
+@keyframes pulseBtn {
+  0% { filter: brightness(1.1) saturate(1.1) scale(1.03); }
+  55% { filter: brightness(1.18) saturate(1.13) scale(1.09); }
+  100% { filter: none; }
 }
 
-.product-info p {
-  font-size: 1em; /* Tamaño del texto de la descripción */
-  color: #555;
-  text-align: justify; /* Justifica el texto de la descripción */
-  margin-bottom: 10px;
+.product-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
 }
 
-.product-info .categoria {
+.product-categoria-badge {
   display: inline-block;
-  padding: 5px 10px;
-  font-size: 0.9em;
-  text-align: center;
-  background-color: #f4f4f4;
-  border-radius: 5px;
-  text-align: center;
-  color: #777;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.6rem;
+  border-radius: 1rem;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  width: fit-content;
+}
+
+.product-desc {
+  color: #6c757d;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  margin: 0.2rem 0 0.4rem 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-owner-simple {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.product-owner-simple:hover {
+  color: #4f46e5;
+}
+
+.product-owner-name {
+  font-weight: 600;
+  color: #374151;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.product-owner-simple:hover .product-owner-name {
+  text-decoration-color: #4f46e5;
+}
+
+.product-meta-box {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin: 0.3rem 0 0.2rem 0;
+  background-color: #f9fafb;
+}
+
+.product-fecha-simple,
+.product-provincia-simple {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 0.2rem;
+}
+
+.product-provincia-simple {
+  margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .product-card-premium {
+    min-width: 90vw;
+    max-width: 97vw;
+    padding: 1rem 0.8rem 1rem 0.8rem;
+  }
+  .product-img-wrap {
+    height: 120px;
+  }
 }

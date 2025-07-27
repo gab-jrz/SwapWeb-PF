@@ -21,9 +21,35 @@ router.get('/', async (req, res) => {
     const products = await Product.find(filter)
       .select('-_id -__v')
       .sort({ id: 1 });
-      
-    console.log(' Productos encontrados:', products.length);
-    res.json(products);
+
+    // Enriquecer cada producto con nombre y provincia del owner
+    const User = (await import('../models/User.js')).default;
+    const enrichedProducts = await Promise.all(products.map(async (prod) => {
+      let ownerName = 'Usuario';
+      let provincia = 'Sin especificar';
+      let ownerId = prod.ownerId;
+      try {
+        // Buscar usuario por id (puede ser string o number)
+        const owner = await User.findOne({ id: String(prod.ownerId) });
+        if (owner) {
+          ownerName = owner.nombre + (owner.apellido ? ' ' + owner.apellido : '');
+          provincia = owner.provincia || 'Sin especificar';
+          ownerId = owner.id;
+        }
+      } catch (e) {
+        // Si hay error, dejar valores por defecto
+      }
+      return {
+        ...prod.toObject(),
+        ownerName,
+        provincia,
+        ownerId,
+        fechaPublicacion: prod.createdAt
+      };
+    }));
+
+    console.log(' Productos encontrados:', enrichedProducts.length);
+    res.json(enrichedProducts);
   } catch (error) {
     console.error(' Error al obtener productos:', error);
     res.status(500).json({ message: error.message });

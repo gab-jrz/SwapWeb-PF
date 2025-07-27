@@ -27,9 +27,12 @@ const Intercambiar = () => {
 
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [userProducts, setUserProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 9;
 
   useEffect(() => {
     const fetchUserProducts = async () => {
@@ -123,8 +126,15 @@ const Intercambiar = () => {
       }
 
       await response.json();
-      alert("¡Propuesta enviada con éxito!");
-      navigate(`/perfil/${usuarioActual.id}`);
+      
+      // Mostrar toast de éxito
+      setShowToast(true);
+      
+      // Auto-ocultar toast después de 3 segundos y navegar
+      setTimeout(() => {
+        setShowToast(false);
+        navigate(`/perfil/${usuarioActual.id}`);
+      }, 3000);
 
     } catch (error) {
       console.error("Error al enviar el mensaje:", error);
@@ -153,88 +163,161 @@ const Intercambiar = () => {
     <>
       <Header search={false} />
       <div className="intercambiar-container">
-      <div className="intercambiar-detalles">
-        <h2>
-          Estás enviando una propuesta a{" "}
-          <span className="resaltado">{ownerNombre} {ownerApellido}</span>
-        </h2>
-          <div className="producto-interes">
-            <div className="producto-interes-imagen">
-              <img src={productoImage} alt={productoTitle} />
+        <div className="intercambiar-hero">
+          <div className="hero-content">
+            <h1 className="hero-title">
+              Enviar propuesta a <span className="user-highlight">{ownerNombre} {ownerApellido}</span>
+            </h1>
+          </div>
+        </div>
+
+        <div className="producto-showcase">
+          <div className="producto-card-premium">
+            <div className="producto-image-container">
+              <img src={productoImage} alt={productoTitle} className="producto-image" />
             </div>
-            <div className="producto-interes-info">
-              <h3>{productoTitle}</h3>
-              <p className="producto-descripcion">{productoDescription}</p>
+            <div className="producto-details">
+              <h2 className="producto-title">{productoTitle}</h2>
+              <p className="producto-description">{productoDescription}</p>
             </div>
           </div>
-      </div>
+        </div>
 
-      <form className="intercambiar-formulario" onSubmit={handleSubmit}>
-        <h3>Selecciona un producto para intercambiar</h3>
-
-        {loading ? (
-          <p>Cargando tus productos...</p>
-        ) : error ? (
-          <p className="error-message">{error}</p>
-        ) : userProducts.length === 0 ? (
-          <div className="no-products">
-            <p>No tienes productos disponibles para intercambiar.</p>
-            <button type="button" className="btn-menu" onClick={() => navigate("/publicar")}>
-              Publicar un producto
-            </button>
-          </div>
-        ) : (
-          <div className="productos-grid">
-            {userProducts.map((product) => (
-              <div 
-                key={product.id} 
-                className={`producto-card ${selectedProductId === product.id ? 'selected' : ''}`}
-                onClick={() => handleProductSelect(product)}
-              >
-                <div className="producto-imagen">
-                  <img src={product.image} alt={product.title} />
+        <form className="exchange-form" onSubmit={handleSubmit}>
+          <div className="form-section">
+            <h2 className="section-title">Selecciona tu producto</h2>
+            
+            {loading ? (
+              <div className="loading-state">
+                <div className="loading-spinner"></div>
+                <p>Cargando tus productos...</p>
+              </div>
+            ) : error ? (
+              <div className="error-state">
+                <p className="error-message">{error}</p>
+              </div>
+            ) : userProducts.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">📦</div>
+                <h3>No tienes productos disponibles</h3>
+                <p>Publica tu primer producto para comenzar a intercambiar</p>
+                <button type="button" className="btn-primary" onClick={() => navigate("/publicar")}>
+                  Publicar Producto
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="products-gallery-fixed">
+                  {userProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage).map((product) => (
+                    <div 
+                      key={product.id} 
+                      className={`product-card-elegant ${selectedProductId === product.id ? 'selected' : ''}`}
+                      onClick={() => handleProductSelect(product)}
+                    >
+                      <div className="product-image-wrapper">
+                        <img src={product.image} alt={product.title} className="product-image" />
+                        {selectedProductId === product.id && (
+                          <div className="selection-indicator">
+                            <div className="check-icon">✓</div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="product-content">
+                        <h4 className="product-name">{product.title}</h4>
+                        <p className="product-desc">{product.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* PAGINACIÓN */}
+                {userProducts.length > productsPerPage && (
+                  <div className="pagination-container">
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      ← Anterior
+                    </button>
+                    
+                    <div className="pagination-info">
+                      Página {currentPage} de {Math.ceil(userProducts.length / productsPerPage)}
+                    </div>
+                    
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(userProducts.length / productsPerPage)))}
+                      disabled={currentPage === Math.ceil(userProducts.length / productsPerPage)}
+                    >
+                      Siguiente →
+                    </button>
                   </div>
-                  <div className="producto-info">
-                    <h4>{product.title}</h4>
-                    <p>{product.description}</p>
+                )}
+              </>
+            )}
+          </div>
+
+          {selectedProductId && (
+            <div className="proposal-section">
+              <h2 className="section-title">Detalles de tu propuesta</h2>
+              <div className="proposal-container">
+                <div className="proposal-input-wrapper">
+                  <textarea
+                    name="condiciones"
+                    value={formData.condiciones}
+                    onChange={(e) => setFormData(prev => ({ ...prev, condiciones: e.target.value }))}
+                    required
+                    className="proposal-textarea"
+                    placeholder="Describe tu propuesta de intercambio, lugar de encuentro y condiciones..."
+                    rows="5"
+                  />
+                  <div className="input-decoration"></div>
                 </div>
               </div>
-            ))}
+            </div>
+          )}
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => navigate(`/producto/${productoId}`)}
+            >
+              Regresar
+            </button>
+
+            <button 
+              type="submit" 
+              className="btn-primary btn-submit"
+              disabled={isSubmitting || !selectedProductId}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="btn-spinner"></div>
+                  Enviando...
+                </>
+              ) : (
+                "Enviar Propuesta"
+              )}
+            </button>
           </div>
-        )}
-
-        {selectedProductId && (
-          <label>
-            Lugar y condiciones de intercambio:
-            <textarea
-              name="condiciones"
-              value={formData.condiciones}
-              onChange={(e) => setFormData(prev => ({ ...prev, condiciones: e.target.value }))}
-              required
-              placeholder="Especifica el lugar y las condiciones para realizar el intercambio"
-            />
-          </label>
-        )}
-
-        <div className="botones-intercambio">
-          <button
-            type="button"
-            className="btn-menu"
-            onClick={() => navigate(`/producto/${productoId}`)}
-          >
-            ← Regresar al producto
-          </button>
-
-          <button 
-            type="submit" 
-            className="btn-enviar"
-            disabled={isSubmitting || !selectedProductId}
-          >
-            {isSubmitting ? "Enviando..." : "Enviar propuesta"}
-          </button>
-        </div>
-      </form>
+        </form>
       </div>
+      
+      {/* TOAST DE ÉXITO */}
+      {showToast && (
+        <div className="success-toast">
+          <div className="toast-content">
+            <div className="toast-icon">✓</div>
+            <div className="toast-message">
+              <h4>¡Intercambio enviado exitosamente!</h4>
+              <p>Tu propuesta ha sido enviada correctamente</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <Footer />
     </>
   );
