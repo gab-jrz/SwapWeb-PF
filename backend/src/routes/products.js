@@ -5,10 +5,45 @@ const router = express.Router();
 // Get all products
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find()
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const categoria = req.query.categoria || '';
+    const skip = (page - 1) * limit;
+
+    // Construir filtros
+    let filter = {};
+    
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' };
+    }
+    
+    if (categoria) {
+      filter.categoria = { $regex: categoria, $options: 'i' };
+    }
+
+    // Obtener productos con paginación y filtros
+    const products = await Product.find(filter)
       .select('-_id -__v')
-      .sort({ id: 1 });
-    res.json(products);
+      .sort({ id: 1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Obtener el total de productos para calcular el total de páginas
+    const totalProducts = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    res.json({
+      products,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalProducts,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        limit
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -94,3 +94,22 @@
     margin-top: auto; /* Esto asegura que el footer se mueva siempre al fondo */
   }
   
+  /* Estilos para la información de paginación */
+  .pagination-info {
+    margin: 1rem 0;
+    padding: 0.5rem;
+  }
+  
+  .pagination-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  /* Ajustes responsive para paginación */
+  @media (max-width: 768px) {
+    .pagination-info p {
+      font-size: 0.8rem;
+    }
+  }
+  
