@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/TransactionCard.css';
 
-const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate }) => {
+const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepublish }) => {
   // Debug: ver estructura de la transacción
   console.log('🔍 Estructura de transacción:', transaccion);
   console.log('🔍 Campos disponibles:', Object.keys(transaccion));
@@ -290,6 +290,49 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate }) => {
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Botón de volver a publicar */}
+        {onRepublish && (
+          <button
+            onClick={() => onRepublish(transaccion)}
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              padding: '6px 12px',
+              fontWeight: 600,
+              fontSize: 11,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(102, 126, 234, 0.25)',
+              minWidth: '90px',
+              height: '32px',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.05)';
+              e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.35)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.25)';
+            }}
+            title="Volver a publicar este producto"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M21 3v5h-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 16l-5 5v-5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Volver a publicar
+          </button>
+        )}
+
         {/* Botón de calificación - solo visible si se puede calificar */}
         {puedeCalificar && (
           <button

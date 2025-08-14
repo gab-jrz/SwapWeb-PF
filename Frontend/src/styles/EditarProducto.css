@@ -175,6 +175,12 @@
   gap: 20px;
 }
 
+.form-editar-producto {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .form-group {
   margin-bottom: 5px;
 }
@@ -195,7 +201,7 @@
   border-radius: 4px;
   font-size: 16px;
   transition: border-color 0.3s, box-shadow 0.3s;
-  background-color: #5a5757;
+  background-color: #ffffff;
 }
 
 .form-group input:focus,
@@ -220,17 +226,19 @@
 
 .form-actions {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 20px;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 40px;
   flex-wrap: wrap;
+  padding-top: 20px;
+  border-top: 1px solid rgba(226, 232, 240, 0.5);
 }
 
 .btn-guardar,
 .btn-cancelar,
 .btn-eliminar {
-  padding: 12px 24px;
-  border-radius: 4px;
+  padding: 16px 32px;
+  border-radius: 16px;
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.1s;

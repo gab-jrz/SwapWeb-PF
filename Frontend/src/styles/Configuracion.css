@@ -1,49 +1,157 @@
-/* Navegación de página */
-.page-navigation {
-  max-width: 900px;
-  margin: 1.5rem auto 0;
-  padding: 0 2.5rem;
+/* ===== CONTENEDOR Y BOTÓN REGRESAR PREMIUM IDÉNTICO AL PERFIL ===== */
+.regresar-container-premium {
+  max-width: 1200px !important;
+  margin: 0 !important;
+  margin-left: 2rem !important;
+  padding: 1.5rem 2rem 0 2rem !important;
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  width: auto !important;
+  text-align: left !important;
 }
 
-.btn-back-normal {
+.btn-regresar-premium {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  color: #6c757d;
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding: 0.5rem 0;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.8rem;
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.15) 0%, 
+    rgba(139, 92, 246, 0.12) 50%, 
+    rgba(79, 172, 254, 0.1) 100%);
+  backdrop-filter: blur(25px);
+  border: 1.5px solid rgba(102, 126, 234, 0.3);
+  color: rgba(102, 126, 234, 0.95);
+  font-weight: 700;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 20px;
+  box-shadow: 
+    0 12px 40px rgba(102, 126, 234, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(102, 126, 234, 0.2);
+  position: relative;
+  overflow: hidden;
+  min-width: 150px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   text-decoration: none;
-  font-family: inherit;
 }
 
-.btn-back-normal:hover {
-  color: #4caf50;
-  transform: translateX(-2px);
+.btn-regresar-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(102, 126, 234, 0.3) 30%,
+    rgba(139, 92, 246, 0.25) 50%,
+    rgba(79, 172, 254, 0.2) 70%,
+    transparent 100%);
+  transition: left 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 1;
 }
 
-.btn-back-normal:active {
-  transform: translateX(-1px);
+.btn-regresar-premium::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, 
+    rgba(102, 126, 234, 0.2) 0%, 
+    transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: all 0.6s ease;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.btn-regresar-premium:hover {
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.25) 0%, 
+    rgba(139, 92, 246, 0.2) 50%, 
+    rgba(79, 172, 254, 0.18) 100%);
+  color: rgba(255, 255, 255, 0.98);
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 
+    0 20px 60px rgba(102, 126, 234, 0.25),
+    0 8px 32px rgba(139, 92, 246, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(102, 126, 234, 0.3);
+  border-color: rgba(102, 126, 234, 0.6);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.btn-regresar-premium:hover::before {
+  left: 100%;
+}
+
+.btn-regresar-premium:hover::after {
+  width: 200px;
+  height: 200px;
+}
+
+.btn-regresar-premium:active {
+  transform: translateY(-1px) scale(1.05);
+  transition: all 0.15s ease;
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.3),
+    0 4px 16px rgba(139, 92, 246, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.btn-regresar-premium svg {
+  width: 22px;
+  height: 22px;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+  z-index: 2;
+  position: relative;
+}
+
+.btn-regresar-premium:hover svg {
+  transform: translateX(-6px) scale(1.15) rotate(-5deg);
+  filter: drop-shadow(0 3px 8px rgba(102, 126, 234, 0.5));
 }
 
 /* Contenedor principal */
 .configuracion-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem 4rem;
+  background: linear-gradient(135deg, 
+    rgba(248, 250, 252, 0.95) 0%, 
+    rgba(241, 245, 249, 0.9) 50%, 
+    rgba(248, 250, 252, 0.95) 100%);
   min-height: 100vh;
-  padding: 2.5rem;
-  background-color: #fff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-  margin: 2rem auto;
-  max-width: 900px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  min-height: calc(100vh - 140px);
+  position: relative;
+}
+
+.configuracion-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .configuracion-container h2 {
@@ -72,10 +180,134 @@
 }
 
 /* Sección de opciones */
-.configuracion-container .config-options {
+.config-options {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(255, 255, 255, 0.9) 50%, 
+    rgba(248, 250, 252, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 
+    0 20px 60px rgba(102, 126, 234, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  z-index: 1;
+}
+
+.config-options h2 {
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 50%, 
+    #4f9cfe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 3rem;
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  position: relative;
+}
+
+.config-options h2::after {
+  content: '';
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== SECCIONES DE CONFIGURACIÓN PREMIUM ===== */
+.config-section {
+  margin-bottom: 2.5rem;
+  padding: 2rem 3rem;
+  max-width: 1200px;
+  width: 100%;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(248, 250, 252, 0.6) 100%);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(102, 126, 234, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.config-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.6) 0%, 
+    rgba(139, 92, 246, 0.4) 50%, 
+    rgba(79, 172, 254, 0.6) 100%);
+  z-index: 1;
+}
+
+.config-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 16px 48px rgba(102, 126, 234, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.config-section:last-child {
+  margin-bottom: 0;
+}
+
+.config-section-title {
+  background: linear-gradient(135deg, 
+    #495057 0%, 
+    #667eea 50%, 
+    #495057 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
   display: flex;
-  flex-direction: column;
-  gap: 25px;
+  align-items: center;
+  gap: 0.75rem;
+  letter-spacing: -0.3px;
+  position: relative;
+}
+
+.config-section-title::before {
+  content: "";
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.2) 0%, 
+    rgba(139, 92, 246, 0.15) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(102, 126, 234, 0.3);
 }
 
 /* Toast de éxito */
@@ -270,19 +502,251 @@
   padding: 0.5rem 0;
 }
 
-.config-option-small label {
+.config-option-small .master-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #495057;
+  line-height: 1.4;
+}
+
+.config-option label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.95em;
+  font-weight: 600;
   color: #495057;
   cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  font-size: 1rem;
+  line-height: 1.5;
+  min-height: 28px;
 }
 
+.config-option label:hover {
+  color: #667eea;
+  text-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+}
+
+.config-option-small label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  line-height: 1.5;
+  min-height: 26px;
+}
+
+/* CHECKBOXES PRINCIPALES - ESTILO IDÉNTICO AL MAESTRO */
+.config-option input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(248, 250, 252, 0.9) 100%);
+  border: 2px solid rgba(102, 126, 234, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 4px 12px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  margin-right: 0.75rem;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.config-option input[type="checkbox"]:hover {
+  border-color: rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 16px rgba(102, 126, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* ANIMACIÓN PARA CHECKMARK */
+@keyframes checkmarkPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.config-option input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 40%, 
+    #4f9cfe 100%);
+  border-color: #667eea;
+  transform: scale(1.05);
+  box-shadow: 
+    0 6px 20px rgba(102, 126, 234, 0.35),
+    0 3px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.config-option input[type="checkbox"]:checked::before {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: checkmarkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* CHECKBOXES PEQUEÑOS - ESTILO IDÉNTICO AL MAESTRO */
 .config-option-small input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #4caf50;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(248, 250, 252, 0.9) 100%);
+  border: 2px solid rgba(102, 126, 234, 0.4);
+  border-radius: 7px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 4px 12px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  margin-right: 0.5rem;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.config-option-small input[type="checkbox"]:hover {
+  border-color: rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 16px rgba(102, 126, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.config-option-small input[type="checkbox"]:hover {
+  border-color: rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 16px rgba(102, 126, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.config-option-small input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 40%, 
+    #4f9cfe 100%);
+  border-color: #667eea;
+  transform: scale(1.03);
+  box-shadow: 
+    0 6px 20px rgba(102, 126, 234, 0.35),
+    0 3px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.config-option-small input[type="checkbox"]:checked::before {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: 900;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: checkmarkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.config-option input[type="checkbox"]:hover {
+  border-color: rgba(102, 126, 234, 0.5) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 
+    0 4px 12px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+}
+
+.config-option input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 50%, 
+    #4f9cfe 100%) !important;
+  border-color: #667eea !important;
+  transform: scale(1.05) !important;
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.config-option input[type="checkbox"]:checked::before {
+  content: '✓' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: white !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  animation: checkmarkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes checkmarkPopSmall {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
 }
 
 /* Control maestro */
@@ -298,16 +762,78 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.7rem;
+  gap: 1rem;
   font-size: 1.1em;
   cursor: pointer;
   margin-bottom: 0.5rem;
 }
 
 .master-toggle input[type="checkbox"] {
-  width: 22px;
-  height: 22px;
-  accent-color: #2196f3;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(248, 250, 252, 0.9) 100%);
+  border: 2px solid rgba(102, 126, 234, 0.4);
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 4px 12px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+.master-toggle input[type="checkbox"]:hover {
+  border-color: rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 16px rgba(102, 126, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.master-toggle input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 40%, 
+    #4f9cfe 100%);
+  border-color: #667eea;
+  transform: scale(1.08);
+  box-shadow: 
+    0 6px 20px rgba(102, 126, 234, 0.35),
+    0 3px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.master-toggle input[type="checkbox"]:checked::before {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 16px;
+  font-weight: 900;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: checkmarkPopMaster 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes checkmarkPopMaster {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.3) rotate(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 .master-description {
@@ -418,41 +944,453 @@
 /* Botones */
 .configuracion-container .config-action-buttons {
   display: flex;
-  gap: 20px;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.configuracion-container .btn-guardar,
-.configuracion-container .btn-eliminar {
-  padding: 12px 20px;
-  font-size: 1.1em;
-  cursor: pointer;
-  border-radius: 5px;
-  transition: all 0.3s ease;
-  width: 48%;
-  text-align: center;
-  border: none;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(102, 126, 234, 0.15);
 }
 
 .configuracion-container .btn-guardar {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #4f9cfe 100%);
   color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .configuracion-container .btn-guardar:hover {
-  background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 12px 35px rgba(102, 126, 234, 0.35),
+    0 6px 20px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .configuracion-container .btn-eliminar {
-  background-color: #f44336;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #bd2130 100%);
   color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 8px 25px rgba(220, 53, 69, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .configuracion-container .btn-eliminar:hover {
   background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+/* ===== MODO OSCURO ELEGANTE - ESTILO PERFIL ===== */
+body.dark-mode .configuracion-container {
+  background: transparent !important;
+  border: none !important;
+}
+
+body.dark-mode .config-options {
+  background: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #0a0510 25%,
+    #1a0f2e 60%,
+    #2d1b4e 100%
+  ) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .config-options h2 {
+  color: #f2f3f5 !important;
+}
+
+body.dark-mode .config-section {
+  background: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #0a0510 25%,
+    #1a0f2e 60%,
+    #2d1b4e 100%
+  ) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+body.dark-mode .config-section h3 {
+  color: #ffffff !important;
+  font-size: 18px !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 20px !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .config-option {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 27, 78, 0.9) 0%,
+    rgba(26, 15, 46, 0.8) 50%,
+    rgba(10, 5, 16, 0.9) 100%
+  ) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px) !important;
+}
+
+body.dark-mode .config-option:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(55, 37, 88, 0.95) 0%,
+    rgba(36, 25, 56, 0.9) 50%,
+    rgba(20, 15, 26, 0.95) 100%
+  ) !important;
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .config-option-small {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 8px 0 !important;
+}
+
+body.dark-mode .config-option-small:hover {
+  background: transparent !important;
+  border: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .config-option label,
+body.dark-mode .config-option-small label {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .config-option .description,
+body.dark-mode .config-option-small .description {
+  color: #c4b5fd !important;
+  font-size: 14px !important;
+  opacity: 0.9 !important;
+  margin-top: 4px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .master-toggle {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  transition: all 0.3s ease !important;
+  padding: 0 !important;
+}
+
+body.dark-mode .master-toggle:hover {
+  background: transparent !important;
+  border: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .master-toggle label,
+body.dark-mode .master-toggle label strong,
+body.dark-mode .notif-master-control .master-toggle label,
+body.dark-mode .notif-master-control .master-toggle label strong,
+body.dark-mode .notif-master-control label,
+body.dark-mode .notif-master-control label strong {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+body.dark-mode .master-toggle .description {
+  color: #c4b5fd !important;
+  font-size: 14px !important;
+  opacity: 0.9 !important;
+  margin-top: 4px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Alineación del master toggle en modo claro */
+.master-toggle label,
+.notif-master-control .master-toggle label,
+.notif-master-control label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+/* Selectores desplegables elegantes en modo oscuro */
+body.dark-mode .config-option select {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 27, 78, 0.9) 0%,
+    rgba(26, 15, 46, 0.8) 50%,
+    rgba(10, 5, 16, 0.9) 100%
+  ) !important;
+  border: 2px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 16px !important;
+  padding-right: 40px !important;
+}
+
+body.dark-mode .config-option select:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(55, 37, 88, 0.95) 0%,
+    rgba(36, 25, 56, 0.9) 50%,
+    rgba(20, 15, 26, 0.95) 100%
+  ) !important;
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.dark-mode .config-option select:focus {
+  outline: none !important;
+  border-color: rgba(139, 92, 246, 0.8) !important;
+  box-shadow: 
+    0 0 0 3px rgba(139, 92, 246, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .config-option select option {
+  background: #1a0f2e !important;
+  color: #ffffff !important;
+  padding: 8px !important;
+}
+
+/* Campos de entrada elegantes en modo oscuro */
+body.dark-mode .config-option input[type="password"],
+body.dark-mode .config-option input[type="text"],
+body.dark-mode .config-password-input {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 27, 78, 0.9) 0%,
+    rgba(26, 15, 46, 0.8) 50%,
+    rgba(10, 5, 16, 0.9) 100%
+  ) !important;
+  border: 2px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.dark-mode .config-option input[type="password"]:hover,
+body.dark-mode .config-option input[type="text"]:hover,
+body.dark-mode .config-password-input:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(55, 37, 88, 0.95) 0%,
+    rgba(36, 25, 56, 0.9) 50%,
+    rgba(20, 15, 26, 0.95) 100%
+  ) !important;
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.dark-mode .config-option input[type="password"]:focus,
+body.dark-mode .config-option input[type="text"]:focus,
+body.dark-mode .config-password-input:focus {
+  outline: none !important;
+  border-color: rgba(139, 92, 246, 0.8) !important;
+  box-shadow: 
+    0 0 0 3px rgba(139, 92, 246, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .config-option input[type="password"]::placeholder,
+body.dark-mode .config-option input[type="text"]::placeholder,
+body.dark-mode .config-password-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-style: italic !important;
+}
+
+/* Secciones de notificaciones sin bordes blancos */
+body.dark-mode .notif-category {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 27, 78, 0.9) 0%,
+    rgba(26, 15, 46, 0.8) 50%,
+    rgba(10, 5, 16, 0.9) 100%
+  ) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 12px !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px) !important;
+}
+
+body.dark-mode .notif-category:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(55, 37, 88, 0.95) 0%,
+    rgba(36, 25, 56, 0.9) 50%,
+    rgba(20, 15, 26, 0.95) 100%
+  ) !important;
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .notif-category-title {
+  color: #ffffff !important;
+  border-bottom: 2px solid rgba(139, 92, 246, 0.3) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Contenedor exterior del master toggle */
+body.dark-mode .notif-master-control {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 27, 78, 0.9) 0%,
+    rgba(26, 15, 46, 0.8) 50%,
+    rgba(10, 5, 16, 0.9) 100%
+  ) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  margin-top: 20px !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px) !important;
+  transition: all 0.3s ease !important;
+}
+
+body.dark-mode .notif-master-control:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(55, 37, 88, 0.95) 0%,
+    rgba(36, 25, 56, 0.9) 50%,
+    rgba(20, 15, 26, 0.95) 100%
+  ) !important;
+  border-color: rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark-mode .master-description {
+  color: #c4b5fd !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Checkboxes estilo premium violeta */
+body.dark-mode .config-option input[type="checkbox"],
+body.dark-mode .config-option-small input[type="checkbox"],
+body.dark-mode .master-toggle input[type="checkbox"] {
+  background: linear-gradient(135deg, 
+    rgba(45, 27, 78, 0.8) 0%, 
+    rgba(26, 15, 46, 0.9) 100%) !important;
+  border: 2px solid rgba(139, 92, 246, 0.5) !important;
+  border-radius: 6px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .config-option input[type="checkbox"]:checked,
+body.dark-mode .config-option-small input[type="checkbox"]:checked,
+body.dark-mode .master-toggle input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+  border-color: #a855f7 !important;
+  box-shadow: 
+    0 0 0 3px rgba(168, 85, 247, 0.3),
+    0 4px 12px rgba(139, 92, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+body.dark-mode .config-option input[type="checkbox"]:hover,
+body.dark-mode .config-option-small input[type="checkbox"]:hover,
+body.dark-mode .master-toggle input[type="checkbox"]:hover {
+  border-color: rgba(168, 85, 247, 0.7) !important;
+  box-shadow: 
+    0 0 0 2px rgba(168, 85, 247, 0.2),
+    0 4px 12px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  transform: scale(1.05) !important;
 }

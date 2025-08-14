@@ -442,6 +442,17 @@ const Editar = () => {
   return (
     <>
       <Header />
+      
+      {/* Botón de regreso premium */}
+      <div className="regresar-container-premium">
+        <button className="btn-regresar-premium" onClick={() => navigate('/perfil')}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Regresar
+        </button>
+      </div>
+      
       <main className="editar-perfil-container">
         <h1 className="titulo-edicion">
           {editando ? 'Editar Perfil' : 'Mi Perfil'}

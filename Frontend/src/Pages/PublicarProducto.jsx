@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../Component/Header';
 import { categorias } from "../categorias";
 import Footer from '../Component/Footer';
 import "../styles/PublicarProducto.css";
+import { initDarkModeDetector } from '../utils/darkModeDetector';
 
 const API_URL = 'http://localhost:3001/api';
 
@@ -347,12 +348,14 @@ const PublicarProducto = () => {
     <div className="perfil-usuario-container">
       <Header search={false} />
 
-      <button
-        className="btn-regresar"
-        onClick={() => navigate('/perfil')}
-      >
-        ← Volver
-      </button>
+      <div className="regresar-container-premium">
+        <button className="btn-regresar" onClick={() => navigate('/perfil')}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Regresar
+        </button>
+      </div>
 
       <div className="publicar-producto-container">
         <div className="publicar-form-card">

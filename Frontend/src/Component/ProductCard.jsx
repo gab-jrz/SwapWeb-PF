@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getProductImageUrl } from "../utils/getProductImageUrl.js";
 import "../styles/ProductCard.css";
@@ -20,6 +20,13 @@ const ProductCard = ({
   onConsultar
 }) => {
   const navigate = useNavigate();
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Cargar estado de favorito desde localStorage al montar el componente
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    setIsFavorite(favorites.some(fav => fav.id === id));
+  }, [id]);
 
   const handleOwnerClick = (e) => {
     e.preventDefault();
@@ -27,6 +34,43 @@ const ProductCard = ({
     if (ownerId) {
       navigate(`/perfil-publico/${ownerId}`);
     }
+  };
+
+  const handleFavoriteToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const productData = {
+      id,
+      title,
+      description,
+      categoria,
+      image: getMainImage(),
+      images,
+      fechaPublicacion,
+      provincia,
+      ownerName,
+      ownerId,
+      condicion,
+      valorEstimado,
+      disponible
+    };
+
+    if (isFavorite) {
+      // Remover de favoritos
+      const updatedFavorites = favorites.filter(fav => fav.id !== id);
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      setIsFavorite(false);
+    } else {
+      // Agregar a favoritos
+      const updatedFavorites = [...favorites, productData];
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      setIsFavorite(true);
+    }
+    
+    // Disparar evento personalizado para notificar cambios en favoritos
+    window.dispatchEvent(new CustomEvent('favoritesChanged'));
   };
 
   // Determinar la imagen a mostrar (portada)
@@ -61,6 +105,22 @@ const ProductCard = ({
         {esNuevo && (
           <span className="product-badge-nuevo">Nuevo</span>
         )}
+        <button 
+          className={`favorite-btn ${isFavorite ? 'favorite-active' : ''}`}
+          onClick={handleFavoriteToggle}
+          title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path 
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              fill={isFavorite ? 'currentColor' : 'none'}
+            />
+          </svg>
+        </button>
       </div>
       <div className="product-content">
         <div className="product-categoria-badge">

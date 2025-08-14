@@ -215,13 +215,13 @@ const Configuracion = () => {
     <>
     <Header search={false} />
     
-    {/* Botón de regreso normal */}
-    <div className="page-navigation">
-      <button 
-        onClick={() => navigate(-1)}
-        className="btn-back-normal"
-      >
-        ← Volver
+    {/* Botón de regreso premium */}
+    <div className="regresar-container-premium">
+      <button className="btn-regresar-premium" onClick={() => navigate(-1)}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Regresar
       </button>
     </div>
 
@@ -444,6 +444,7 @@ const Configuracion = () => {
                   value={passwords.currentPassword}
                   onChange={handlePasswordChange}
                   className="config-password-input"
+                  placeholder="Escribe tu contraseña actual"
                   required
                 />
               </label>
@@ -457,6 +458,7 @@ const Configuracion = () => {
                   value={passwords.newPassword}
                   onChange={handlePasswordChange}
                   className="config-password-input"
+                  placeholder="Escribe una nueva contraseña"
                   required
                 />
               </label>
@@ -470,6 +472,7 @@ const Configuracion = () => {
                   value={passwords.confirmPassword}
                   onChange={handlePasswordChange}
                   className="config-password-input"
+                  placeholder="Confirma tu contraseña"
                   required
                 />
               </label>

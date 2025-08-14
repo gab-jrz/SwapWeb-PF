@@ -71,13 +71,56 @@ const PerfilUsuario = () => {
     return () => window.removeEventListener('userProfileUpdated', handleProfileUpdated);
   }, []);
 
-  // Pestaña activa ('articulos', 'transacciones', 'mensajes')
+  // Pestaña activa ('articulos', 'transacciones', 'mensajes', 'favoritos')
   const [activeTab, setActiveTab] = useState('articulos');
+
+  // Cargar favoritos desde localStorage
+  useEffect(() => {
+    const loadFavorites = () => {
+      const favoritesFromStorage = JSON.parse(localStorage.getItem('favorites') || '[]');
+      setFavoritos(favoritesFromStorage);
+    };
+    
+    loadFavorites();
+    
+    // Escuchar cambios en localStorage (cuando se agregan/quitan favoritos)
+    const handleStorageChange = (e) => {
+      if (e.key === 'favorites') {
+        loadFavorites();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // También escuchar eventos personalizados para cambios en la misma pestaña
+    const handleFavoritesChange = () => {
+      loadFavorites();
+    };
+    
+    window.addEventListener('favoritesChanged', handleFavoritesChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('favoritesChanged', handleFavoritesChange);
+    };
+  }, []);
+
+  // Función para eliminar producto de favoritos
+  const handleRemoveFromFavorites = (productId) => {
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const updatedFavorites = favorites.filter(fav => fav.id !== productId);
+    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+    setFavoritos(updatedFavorites);
+    
+    // Disparar evento para sincronizar con otros componentes
+    window.dispatchEvent(new CustomEvent('favoritesChanged'));
+  };
 
   // Datos del usuario y sus productos
   
   const [productos, setProductos] = useState([]);
   const [transacciones, setTransacciones] = useState([]);
+  const [favoritos, setFavoritos] = useState([]);
 
   // Imagen de perfil sincronizada globalmente
   const [imagenPerfil, setImagenPerfil] = useState('/images/fotoperfil.jpg');
@@ -874,6 +917,168 @@ function handleEnviarMensaje() {
     navigate(`/editar-producto/${producto.id}`);
   };
 
+  // Función para marcar producto como intercambiado
+  const handleMarkAsExchanged = async (producto) => {
+    if (!window.confirm(`¿Estás seguro de que quieres marcar "${producto.title}" como intercambiado?`)) {
+      return;
+    }
+
+    try {
+      console.log('🔄 Marcando producto como intercambiado:', producto.title);
+      
+      // 1. Actualizar estado local inmediatamente
+      setUserListings(prev => prev.filter(p => p.id !== producto.id));
+      
+      // 2. Crear nueva transacción para "Mis Intercambios"
+      const nuevaTransaccion = {
+        id: Date.now().toString(),
+        productoOfrecido: producto.title,
+        productoOfrecidoId: producto.id,
+        productoSolicitado: 'Intercambio directo',
+        productoSolicitadoId: null,
+        estado: 'completado',
+        fecha: new Date().toISOString(),
+        tipo: 'intercambio_directo',
+        descripcion: `Producto "${producto.title}" marcado como intercambiado`
+      };
+
+      // 3. Actualizar transacciones localmente
+      setUserData(prev => ({
+        ...prev,
+        transacciones: [...(prev.transacciones || []), nuevaTransaccion]
+      }));
+
+      // 4. Persistir cambios en el backend
+      // Marcar producto como intercambiado
+      const productResponse = await fetch(`${API_URL}/products/${producto.id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ intercambiado: true })
+      });
+
+      if (!productResponse.ok) {
+        throw new Error('Error al marcar producto como intercambiado');
+      }
+
+      // Actualizar transacciones del usuario en el backend
+      const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+      const updatedTransacciones = [...(usuarioActual.transacciones || []), nuevaTransaccion];
+
+      const userResponse = await fetch(`${API_URL}/users/${usuarioActual.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ transacciones: updatedTransacciones })
+      });
+
+      if (userResponse.ok) {
+        const updatedUser = await userResponse.json();
+        localStorage.setItem('usuarioActual', JSON.stringify(updatedUser));
+        console.log('✅ Producto marcado como intercambiado exitosamente');
+        
+        // Mostrar mensaje de éxito
+        alert(`"${producto.title}" ha sido marcado como intercambiado y aparecerá en "Mis Intercambios"`);
+      }
+
+    } catch (error) {
+      console.error('❌ Error al marcar como intercambiado:', error);
+      alert('Hubo un error al marcar el producto como intercambiado. Por favor, inténtalo de nuevo.');
+      
+      // Revertir cambios locales en caso de error
+      setUserListings(prev => [...prev, producto]);
+      setUserData(prev => ({
+        ...prev,
+        transacciones: prev.transacciones.filter(t => t.id !== nuevaTransaccion.id)
+      }));
+    }
+  };
+
+  // Función para volver a publicar producto desde intercambios
+  const handleRepublish = async (transaccion) => {
+    if (!window.confirm(`¿Estás seguro de que quieres volver a publicar "${transaccion.productoOfrecido}"?`)) {
+      return;
+    }
+
+    try {
+      console.log('🔄 Volviendo a publicar producto:', transaccion.productoOfrecido);
+      
+      // 1. Buscar el producto en el backend usando el ID de la transacción
+      const productResponse = await fetch(`${API_URL}/products/${transaccion.productoOfrecidoId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!productResponse.ok) {
+        throw new Error('No se pudo encontrar el producto');
+      }
+
+      const producto = await productResponse.json();
+
+      // 2. Marcar producto como NO intercambiado en el backend
+      const updateResponse = await fetch(`${API_URL}/products/${transaccion.productoOfrecidoId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ intercambiado: false })
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error('Error al actualizar el producto');
+      }
+
+      // 3. Actualizar estado local inmediatamente
+      // Agregar producto de vuelta a "Mis Artículos"
+      setUserListings(prev => [...prev, {
+        ...producto,
+        intercambiado: false,
+        estado: 'activo'
+      }]);
+      
+      // Remover transacción de "Mis Intercambios"
+      setUserData(prev => ({
+        ...prev,
+        transacciones: prev.transacciones.filter(t => t.id !== transaccion.id)
+      }));
+
+      // 4. Actualizar transacciones del usuario en el backend
+      const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+      const updatedTransacciones = usuarioActual.transacciones.filter(t => t.id !== transaccion.id);
+
+      const userResponse = await fetch(`${API_URL}/users/${usuarioActual.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ transacciones: updatedTransacciones })
+      });
+
+      if (userResponse.ok) {
+        const updatedUser = await userResponse.json();
+        localStorage.setItem('usuarioActual', JSON.stringify(updatedUser));
+        console.log('✅ Producto republicado exitosamente');
+        
+        // Mostrar mensaje de éxito
+        alert(`"${transaccion.productoOfrecido}" ha sido republicado y aparecerá en "Mis Artículos"`);
+        
+        // Cambiar automáticamente a la pestaña de artículos
+        setActiveTab('articulos');
+      }
+
+    } catch (error) {
+      console.error('❌ Error al republicar producto:', error);
+      alert('Hubo un error al republicar el producto. Por favor, inténtalo de nuevo.');
+    }
+  };
+
   const handleEditClick = () => navigate('/editar');
 
   // Maneja el cambio de texto en la respuesta de un mensaje
@@ -1264,13 +1469,59 @@ function handleEnviarMensaje() {
             <div className="mis-favoritos">
               <h2>Favoritos</h2>
               {/* Aquí se mostrarán los productos favoritos del usuario */}
-              {Array.isArray(userData.favoritos) && userData.favoritos.length > 0 ? (
+              {Array.isArray(favoritos) && favoritos.length > 0 ? (
                 <div className="favoritos-grid">
-                  {userData.favoritos.map((producto) => (
-                    <ArticuloCard
-                      key={producto.id || producto._id}
-                      producto={producto}
-                    />
+                  {favoritos.map((producto) => (
+                    <div key={producto.id || producto._id} className="favorito-card-premium">
+                      <div className="favorito-img-wrap">
+                        <img
+                          src={
+                            producto.images && producto.images.length > 0
+                              ? producto.images[0] || '/images/placeholder-product.jpg'
+                              : producto.image || '/images/placeholder-product.jpg'
+                          }
+                          alt={producto.title}
+                          className="favorito-img"
+                        />
+                      </div>
+                      <div className="favorito-content">
+                        <div className="favorito-categoria-badge">
+                          {producto.categoria}
+                        </div>
+                        <h3 className="favorito-title">{producto.title}</h3>
+                        <p className="favorito-desc">{producto.description}</p>
+                        <div className="favorito-meta-box">
+                          <div className="favorito-fecha-simple">
+                            Publicado el: {producto.fechaPublicacion ? new Date(producto.fechaPublicacion).toLocaleDateString() : 'Sin fecha'}
+                          </div>
+                          <div className="favorito-provincia-simple">
+                            En: {producto.provincia || 'Sin especificar'}
+                          </div>
+                        </div>
+                        <div className="favorito-actions">
+                          <button 
+                            className="favorito-consultar-btn" 
+                            onClick={() => navigate(`/producto/${producto.id}`)}
+                            title="Consultar este producto"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            Consultar este producto
+                          </button>
+                          <button 
+                            className="favorito-remove-btn" 
+                            onClick={() => handleRemoveFromFavorites(producto.id)}
+                            title="Eliminar de favoritos"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            Eliminar de favoritos
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -1294,9 +1545,10 @@ function handleEnviarMensaje() {
                       producto={{
                         ...producto,
                         fechaPublicacion: producto.fechaPublicacion || producto.createdAt,
-                        estado: producto.intercambiado ? 'inactivo' : 'activo',
+                        estado: producto.intercambiado ? 'intercambiado' : 'activo',
                       }}
                       onEdit={handleEditarProducto}
+                      onMarkAsExchanged={handleMarkAsExchanged}
                     />
                   ))}
                 </div>
@@ -1326,6 +1578,7 @@ function handleEnviarMensaje() {
                         setRatingTarget(ratingData);
                         setShowRatingModal(true);
                       }}
+                      onRepublish={handleRepublish}
                     />
                   ))}
                 </div>

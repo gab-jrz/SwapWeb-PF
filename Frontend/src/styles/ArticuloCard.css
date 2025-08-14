@@ -116,6 +116,102 @@
   box-shadow: 0 4px 16px 0 rgba(91, 124, 250, 0.3);
   transform: translateY(-1px);
 }
+
+/* ===== BOTÓN MARCAR COMO INTERCAMBIADO - DISEÑO PREMIUM ===== */
+.articulo-intercambio-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 0.8rem !important;
+  padding: 0.7rem 1.2rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  width: 100% !important;
+  margin-top: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-shadow: 
+    0 4px 14px rgba(16, 185, 129, 0.25),
+    0 2px 8px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.articulo-intercambio-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.articulo-intercambio-btn:hover::before {
+  left: 100%;
+}
+
+.articulo-intercambio-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%) !important;
+  box-shadow: 
+    0 6px 20px rgba(16, 185, 129, 0.35),
+    0 4px 12px rgba(16, 185, 129, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.articulo-intercambio-btn:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: 
+    0 2px 8px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.articulo-intercambio-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) !important;
+}
+
+/* Badge para estado intercambiado */
+.articulo-intercambiado-badge {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 0.8rem !important;
+  padding: 0.7rem 1.2rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  width: 100% !important;
+  margin-top: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 
+    0 4px 14px rgba(16, 185, 129, 0.25),
+    0 2px 8px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  opacity: 0.8 !important;
+}
+
+.articulo-intercambiado-badge svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) !important;
+}
 .articulo-categoria {
   background: #f8f9fa;
   color: #7c5dfa;
@@ -164,33 +260,33 @@
   background: linear-gradient(135deg, 
     rgba(0, 0, 0, 0.9) 0%, 
     rgba(30, 15, 46, 0.8) 50%, 
-    rgba(45, 25, 70, 0.7) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+    rgba(45, 25, 70, 0.7) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.6),
     0 0 20px rgba(139, 92, 246, 0.1),
-    inset 0 1px 0 rgba(139, 92, 246, 0.1);
-  backdrop-filter: blur(20px);
-  transition: all 0.3s ease;
+    inset 0 1px 0 rgba(139, 92, 246, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  transition: all 0.3s ease !important;
 }
 
 .dark-mode .articulo-card-premium:hover {
-  transform: translateY(-8px) scale(1.02);
-  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-8px) scale(1.02) !important;
+  border-color: rgba(139, 92, 246, 0.5) !important;
   box-shadow: 
     0 16px 40px rgba(0, 0, 0, 0.8),
     0 0 30px rgba(139, 92, 246, 0.3),
-    inset 0 1px 0 rgba(139, 92, 246, 0.2);
+    inset 0 1px 0 rgba(139, 92, 246, 0.2) !important;
 }
 
 /* Wrapper de imagen */
 .dark-mode .articulo-img-wrap {
   background: linear-gradient(135deg, 
     rgba(0, 0, 0, 0.5) 0%, 
-    rgba(30, 15, 46, 0.3) 100%);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-  position: relative;
-  overflow: hidden;
+    rgba(30, 15, 46, 0.3) 100%) !important;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2) !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 .dark-mode .articulo-img-wrap::after {
@@ -317,6 +413,51 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+/* ===== BOTÓN INTERCAMBIO - MODO OSCURO PREMIUM ===== */
+.dark-mode .articulo-intercambio-btn {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 
+    0 4px 15px rgba(16, 185, 129, 0.3),
+    0 0 20px rgba(16, 185, 129, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.dark-mode .articulo-intercambio-btn::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent) !important;
+}
+
+.dark-mode .articulo-intercambio-btn:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 50%, #064e3b 100%) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  box-shadow: 
+    0 8px 25px rgba(16, 185, 129, 0.4),
+    0 0 30px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.dark-mode .articulo-intercambio-btn:active {
+  box-shadow: 
+    0 2px 8px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Badge intercambiado - Modo oscuro */
+.dark-mode .articulo-intercambiado-badge {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 
+    0 4px 15px rgba(16, 185, 129, 0.25),
+    0 0 20px rgba(16, 185, 129, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+  opacity: 0.9 !important;
+}
+
 /* Categoría */
 .dark-mode .articulo-categoria {
   background: linear-gradient(135deg, 
@@ -390,13 +531,448 @@
   opacity: 0.4;
 }
 
+/* ===== CONTENEDOR DE ARTÍCULOS - DISEÑO EN GRILLA MÁS ANCHO ===== */
+.articulos-container,
+.perfil-tab-content,
+.articulos-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 1.5rem !important;
+  padding: 1.5rem 2rem !important;
+  max-width: 95% !important;
+  width: 95% !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Contenedor específico para mis-articulos - Layout vertical */
+.mis-articulos {
+  display: block !important;
+  padding: 1.5rem 2rem !important;
+  max-width: 95% !important;
+  width: 95% !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+/* ===== TÍTULOS DE SECCIÓN PREMIUM ===== */
+.mis-articulos h2,
+.mis-favoritos h2,
+.mis-intercambios h2,
+.mensajes h2 {
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, 
+    #7c3aed 0%, 
+    #a855f7 50%, 
+    #ec4899 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-align: center !important;
+  margin: 0 0 2rem 0 !important;
+  padding: 1rem 0 !important;
+  position: relative !important;
+  text-shadow: 0 0 30px rgba(124, 58, 237, 0.3) !important;
+}
+
+.mis-articulos h2::before,
+.mis-favoritos h2::before,
+.mis-intercambios h2::before,
+.mensajes h2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(124, 58, 237, 0.6), 
+    transparent);
+  border-radius: 2px;
+}
+
+.mis-articulos h2::after,
+.mis-favoritos h2::after,
+.mis-intercambios h2::after,
+.mensajes h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(168, 85, 247, 0.4), 
+    transparent);
+  border-radius: 1px;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translateX(-50%) scaleX(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1.2);
+  }
+}
+
+/* ===== MODO OSCURO - TÍTULOS MEJORADOS ===== */
+.dark-mode .mis-articulos h2,
+.dark-mode .mis-favoritos h2,
+.dark-mode .mis-intercambios h2,
+.dark-mode .mensajes h2 {
+  background: linear-gradient(135deg, 
+    #a855f7 0%, 
+    #ec4899 50%, 
+    #f59e0b 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-shadow: 
+    0 0 40px rgba(168, 85, 247, 0.6),
+    0 0 80px rgba(236, 72, 153, 0.3) !important;
+  filter: brightness(1.3) !important;
+}
+
+.dark-mode .mis-articulos h2::before,
+.dark-mode .mis-favoritos h2::before,
+.dark-mode .mis-intercambios h2::before,
+.dark-mode .mensajes h2::before {
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(168, 85, 247, 0.8), 
+    transparent) !important;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.5) !important;
+}
+
+.dark-mode .mis-articulos h2::after,
+.dark-mode .mis-favoritos h2::after,
+.dark-mode .mis-intercambios h2::after,
+.dark-mode .mensajes h2::after {
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(236, 72, 153, 0.6), 
+    transparent) !important;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.4) !important;
+}
+
+/* ===== BOTONES DE ACCIÓN EN CARDS ===== */
+.articulo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.articulo-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.articulo-edit-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.articulo-intercambio-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 1.8rem;
+  background: linear-gradient(135deg, 
+    #10b981 0%, 
+    #059669 30%, 
+    #047857 60%, 
+    #065f46 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 6px 20px rgba(16, 185, 129, 0.4),
+    0 2px 8px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.articulo-intercambio-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent);
+  transition: left 0.6s ease;
+}
+
+.articulo-intercambio-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: all 0.4s ease;
+  border-radius: 50%;
+}
+
+.articulo-intercambio-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  background: linear-gradient(135deg, 
+    #059669 0%, 
+    #047857 30%, 
+    #065f46 60%, 
+    #064e3b 100%);
+  box-shadow: 
+    0 12px 35px rgba(16, 185, 129, 0.5),
+    0 6px 20px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(16, 185, 129, 0.2);
+}
+
+.articulo-intercambio-btn:hover::before {
+  left: 100%;
+}
+
+.articulo-intercambio-btn:hover::after {
+  width: 120px;
+  height: 120px;
+}
+
+.articulo-intercambio-btn:active {
+  transform: translateY(-1px) scale(1.01);
+  transition: all 0.1s ease;
+}
+
+.articulo-intercambio-btn svg {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.articulo-intercambio-btn:hover svg {
+  transform: rotate(180deg) scale(1.1);
+}
+
+.articulo-intercambiado-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 
+    0 4px 16px rgba(107, 114, 128, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Modo oscuro para botones */
+.dark-mode .articulo-edit-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark-mode .articulo-edit-btn:hover {
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark-mode .articulo-intercambio-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  box-shadow: 
+    0 4px 16px rgba(16, 185, 129, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark-mode .articulo-intercambio-btn:hover {
+  box-shadow: 
+    0 8px 25px rgba(16, 185, 129, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark-mode .articulo-intercambiado-badge {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+  box-shadow: 
+    0 4px 16px rgba(107, 114, 128, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Forzar que las tarjetas se muestren en línea horizontal */
+.articulo-card-premium {
+  flex: 0 0 calc(33.333% - 1rem) !important;
+  max-width: calc(33.333% - 1rem) !important;
+  min-width: 280px !important;
+  margin: 0 !important;
+}
+
+/* Modo claro - Contenedor mejorado */
+:not(.dark-mode) .articulos-container {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Modo oscuro - Contenedor */
+.dark-mode .articulos-container {
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.4) 0%, 
+    rgba(30, 15, 46, 0.3) 100%);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(139, 92, 246, 0.1);
+}
+
+/* Tarjetas mejoradas para modo claro */
+:not(.dark-mode) .articulo-card-premium {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.9) 0%, 
+    rgba(255, 255, 255, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+:not(.dark-mode) .articulo-card-premium:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 8px 32px rgba(102, 126, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Botón "Publicar Nuevo Producto" - Estilo específico para mis-articulos */
+.mis-articulos .btn-publicar {
+  width: 70% !important;
+  max-width: 800px !important;
+  min-width: 450px !important;
+  padding: 15px 80px !important;
+  margin: 1rem auto !important;
+  display: block !important;
+  text-align: center !important;
+}
+
+/* Botón "Publicar Nuevo Producto" - Centrado simple y efectivo */
+.nuevo-producto-btn,
+button[class*="publicar"],
+button[class*="nuevo"],
+.btn-publicar-nuevo {
+  width: 60% !important;
+  max-width: 700px !important;
+  min-width: 350px !important;
+  padding: 15px 50px !important;
+  margin: 1rem auto !important;
+  display: block !important;
+  text-align: center !important;
+}
+
+.nuevo-producto-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.nuevo-producto-btn:hover::before {
+  left: 100%;
+}
+
+.nuevo-producto-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: rgba(30, 30, 50, 1);
+  box-shadow: 
+    0 15px 50px rgba(0, 0, 0, 0.15),
+    0 5px 20px rgba(102, 126, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 1);
+}
+
 /* Responsive */
+@media (max-width: 768px) {
+  .articulos-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+}
+
 @media (max-width: 600px) {
+  .articulos-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+  
   .articulo-card-premium {
-    min-width: 90vw;
-    max-width: 97vw;
+    min-width: 100%;
+    max-width: 100%;
     padding: 1rem 0.8rem 1rem 0.8rem;
   }
+  
   .articulo-img-wrap {
     height: 120px;
   }
