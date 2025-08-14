@@ -2493,3 +2493,851 @@ body.dark-mode .detalle-item-premium:hover .detalle-value-premium,
   visibility: visible !important;
   opacity: 1 !important;
 }
+
+/* ===== ESTILOS PREMIUM PARA MIS INTERCAMBIOS ===== */
+.mis-transacciones {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 2rem !important;
+  text-align: center !important;
+}
+
+.mis-transacciones h2 {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-align: center !important;
+  margin: 2rem 0 3rem 0 !important;
+  text-shadow: 0 4px 8px rgba(102, 126, 234, 0.3) !important;
+  letter-spacing: -0.02em !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+.mis-transacciones h2::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -15px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100px !important;
+  height: 4px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4) !important;
+}
+
+.mis-transacciones h2::before {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 150px !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.6), transparent) !important;
+}
+
+.mis-transacciones p {
+  font-size: 1.3rem !important;
+  font-weight: 500 !important;
+  color: #667eea !important;
+  text-align: center !important;
+  margin: 3rem 0 !important;
+  padding: 2rem !important;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
+  border-radius: 20px !important;
+  border: 2px solid rgba(102, 126, 234, 0.2) !important;
+  box-shadow: 
+    0 15px 35px rgba(102, 126, 234, 0.1),
+    0 8px 20px rgba(102, 126, 234, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+  position: relative !important;
+  transition: all 0.3s ease !important;
+}
+
+.mis-transacciones p:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 20px 40px rgba(102, 126, 234, 0.15),
+    0 12px 25px rgba(102, 126, 234, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+/* ===== ESTILOS PREMIUM PARA TARJETAS DE INTERCAMBIO ===== */
+.transacciones-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)) !important;
+  gap: 2rem !important;
+  margin-top: 2rem !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+}
+
+.transaction-card-premium {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  border-radius: 24px !important;
+  padding: 2rem !important;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 15px 35px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(25px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.transaction-card-premium::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent) !important;
+  border-radius: 24px 24px 0 0 !important;
+}
+
+.transaction-card-premium:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  box-shadow: 
+    0 35px 70px rgba(0, 0, 0, 0.2),
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.transaction-header-premium {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 1.5rem !important;
+  padding-bottom: 1rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.transaction-status-premium {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.transaction-status-premium::before {
+  content: '●' !important;
+  color: #ffffff !important;
+  animation: pulse 2s infinite !important;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.transaction-products-premium {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1.5rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.product-section-premium {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.product-label-premium {
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.product-label-premium::before {
+  content: '' !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.5) !important;
+}
+
+.product-title-premium {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin-bottom: 0.5rem !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  line-height: 1.3 !important;
+}
+
+.transaction-user-premium {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  margin: 1.5rem 0 !important;
+  padding: 1rem !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.user-avatar-premium {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1.2rem !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+.user-info-premium {
+  flex: 1 !important;
+}
+
+.user-name-premium {
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  margin-bottom: 0.25rem !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.transaction-date-premium {
+  font-size: 0.85rem !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  margin-top: 1rem !important;
+}
+
+.transaction-date-premium::before {
+  content: '🕒' !important;
+  font-size: 1rem !important;
+}
+
+.transaction-actions-premium {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  margin-top: 2rem !important;
+  padding-top: 1.5rem !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.1) !important;
+  position: relative !important;
+}
+
+.transaction-actions-premium::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -1px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 60px !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent) !important;
+}
+
+.btn-transaction-premium {
+  width: 100% !important;
+  padding: 1rem 2rem !important;
+  border-radius: 16px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+  cursor: pointer !important;
+  backdrop-filter: blur(20px) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.75rem !important;
+}
+
+.btn-transaction-premium::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+  transition: left 0.6s ease !important;
+}
+
+.btn-transaction-premium:hover::before {
+  left: 100% !important;
+}
+
+.btn-calificar-premium {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  box-shadow: 
+    0 8px 25px rgba(16, 185, 129, 0.3),
+    0 4px 15px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-calificar-premium::after {
+  content: '⭐' !important;
+  font-size: 1.1rem !important;
+}
+
+.btn-calificar-premium:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 
+    0 12px 35px rgba(16, 185, 129, 0.4),
+    0 8px 25px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+}
+
+.btn-republicar-premium {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.3),
+    0 4px 15px rgba(102, 126, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-republicar-premium::after {
+  content: '🔄' !important;
+  font-size: 1.1rem !important;
+}
+
+.btn-republicar-premium:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 
+    0 12px 35px rgba(102, 126, 234, 0.4),
+    0 8px 25px rgba(102, 126, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+}
+
+.btn-eliminar-premium {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  box-shadow: 
+    0 8px 25px rgba(239, 68, 68, 0.2),
+    0 4px 15px rgba(239, 68, 68, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-eliminar-premium::after {
+  content: '🗑️' !important;
+  font-size: 1rem !important;
+}
+
+.btn-eliminar-premium:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 
+    0 12px 35px rgba(239, 68, 68, 0.3),
+    0 8px 25px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #dc2626 !important;
+}
+
+/* Responsive para botones */
+@media (min-width: 768px) {
+  .transaction-actions-premium {
+    flex-direction: row !important;
+    gap: 1.5rem !important;
+  }
+  
+  .btn-transaction-premium {
+    flex: 1 !important;
+    width: auto !important;
+  }
+}
+
+/* ===== ESTILOS PREMIUM PARA CHAT EN MODO OSCURO ===== */
+/* Solo se aplican cuando se detecta modo oscuro del sistema */
+.dark-mode .send-message.whatsapp-send-bar {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.95) 0%, 
+    rgba(60, 35, 90, 0.98) 50%, 
+    rgba(50, 30, 80, 0.95) 100%) !important;
+  border: 2px solid rgba(139, 92, 246, 0.4) !important;
+  border-top: 3px solid rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.25), 
+              0 4px 16px rgba(0,0,0,0.3), 
+              inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.dark-mode .send-message.whatsapp-send-bar .btn-clip {
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.2) 0%, 
+    rgba(168, 85, 247, 0.15) 100%) !important;
+  border: 2px solid rgba(139, 92, 246, 0.5) !important;
+  color: #a855f7 !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3), 
+              0 2px 8px rgba(0,0,0,0.2), 
+              inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.dark-mode .send-message.whatsapp-send-bar textarea {
+  background: linear-gradient(135deg, 
+    rgba(30, 15, 46, 0.9) 0%, 
+    rgba(45, 25, 70, 0.95) 100%) !important;
+  border: 2px solid rgba(139, 92, 246, 0.3) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.15), 
+              inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.dark-mode .send-message.whatsapp-send-bar textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 500 !important;
+}
+
+.dark-mode .send-message.whatsapp-send-bar .btn-send {
+  background: linear-gradient(135deg, 
+    #8b5cf6 0%, 
+    #a855f7 50%, 
+    #7c3aed 100%) !important;
+  border: 3px solid rgba(255,255,255,0.2) !important;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5), 
+              0 4px 12px rgba(0,0,0,0.3), 
+              inset 0 2px 0 rgba(255,255,255,0.2) !important;
+}
+
+/* Efectos hover y focus para modo oscuro */
+.dark-mode .send-message.whatsapp-send-bar .btn-clip:hover {
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.3) 0%, 
+    rgba(168, 85, 247, 0.25) 100%) !important;
+  transform: scale(1.05) translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4), 
+              0 3px 10px rgba(0,0,0,0.3) !important;
+}
+
+.dark-mode .send-message.whatsapp-send-bar textarea:focus {
+  border: 2px solid rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.25), 
+              inset 0 2px 4px rgba(0,0,0,0.3),
+              0 0 0 3px rgba(168, 85, 247, 0.1) !important;
+  transform: translateY(-1px) scale(1.01) !important;
+}
+
+.dark-mode .send-message.whatsapp-send-bar .btn-send:hover {
+  background: linear-gradient(135deg, 
+    #9333ea 0%, 
+    #c084fc 50%, 
+    #8b5cf6 100%) !important;
+  transform: scale(1.1) translateY(-2px) !important;
+  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.6), 
+              0 6px 16px rgba(0,0,0,0.4), 
+              inset 0 2px 0 rgba(255,255,255,0.3) !important;
+}
+
+.dark-mode .send-message.whatsapp-send-bar .btn-send:active {
+  transform: scale(1.05) translateY(-1px) !important;
+}
+
+/* Efectos de brillo y animaciones premium para modo oscuro */
+.dark-mode .send-message.whatsapp-send-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(168, 85, 247, 0.1), 
+    transparent);
+  animation: darkModeShimmer 3s infinite;
+  border-radius: 28px;
+  z-index: 1;
+}
+
+.dark-mode .send-message.whatsapp-send-bar * {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes darkModeShimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Mejoras adicionales para legibilidad en modo oscuro */
+.dark-mode .send-message.whatsapp-send-bar textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dark-mode .send-message.whatsapp-send-bar textarea::-webkit-scrollbar-track {
+  background: rgba(45, 25, 70, 0.3);
+  border-radius: 3px;
+}
+
+.dark-mode .send-message.whatsapp-send-bar textarea::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border-radius: 3px;
+}
+
+.dark-mode .send-message.whatsapp-send-bar textarea::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #9333ea, #c084fc);
+}
+
+/* ===== ESTILOS PREMIUM PARA CHAT BUBBLES EN MODO OSCURO ===== */
+/* Mejora los textos de los mensajes del chat para que sean legibles en modo oscuro */
+
+/* Contenedor de fecha */
+.dark-mode div[style*="textAlign:'center'"][style*="color:'#888'"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+  background: rgba(45, 25, 70, 0.3) !important;
+  padding: 8px 16px !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  font-weight: 600 !important;
+}
+
+/* Estilos generales para ChatBubbles en modo oscuro */
+.dark-mode .chat-bubble {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.95) 0%, 
+    rgba(60, 35, 90, 0.9) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2), 
+              0 2px 8px rgba(0,0,0,0.3) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.dark-mode .chat-bubble * {
+  color: #ffffff !important;
+}
+
+/* Nombres de usuarios en chat */
+.dark-mode .chat-bubble .sender-name,
+.dark-mode .chat-bubble .user-name {
+  color: #a855f7 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+}
+
+/* Contenido de mensajes */
+.dark-mode .chat-bubble .message-content,
+.dark-mode .chat-bubble .message-text {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 500 !important;
+}
+
+/* Timestamps */
+.dark-mode .chat-bubble .timestamp,
+.dark-mode .chat-bubble .message-time {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Burbujas del usuario actual (lado derecho) */
+.dark-mode .chat-bubble.from-me {
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.9) 0%, 
+    rgba(168, 85, 247, 0.8) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Burbujas de otros usuarios (lado izquierdo) */
+.dark-mode .chat-bubble.from-other {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.9) 0%, 
+    rgba(60, 35, 90, 0.8) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+}
+
+/* Estilos específicos para el componente ChatBubble */
+.dark-mode .chat-bubble-container {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.95) 0%, 
+    rgba(60, 35, 90, 0.9) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Forzar colores de texto en todos los elementos del chat */
+.dark-mode .chat-bubble-container *,
+.dark-mode [class*="chat"] *,
+.dark-mode [class*="message"] *,
+.dark-mode [class*="bubble"] * {
+  color: #ffffff !important;
+}
+
+/* Estilos específicos para nombres y contenido */
+.dark-mode .chat-bubble-container .chat-sender,
+.dark-mode .chat-bubble-container .message-sender,
+.dark-mode .chat-bubble-container .sender {
+  color: #a855f7 !important;
+  font-weight: 700 !important;
+}
+
+.dark-mode .chat-bubble-container .chat-content,
+.dark-mode .chat-bubble-container .message-body,
+.dark-mode .chat-bubble-container .content {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 500 !important;
+}
+
+/* Forzar estilos en elementos inline con style */
+.dark-mode div[style*="color:#"] {
+  color: #ffffff !important;
+}
+
+.dark-mode span[style*="color:#"] {
+  color: #ffffff !important;
+}
+
+.dark-mode p[style*="color:#"] {
+  color: #ffffff !important;
+}
+
+/* Estilos para elementos con colores específicos que necesitan override */
+.dark-mode [style*="color:#111"],
+.dark-mode [style*="color:#333"],
+.dark-mode [style*="color:#555"],
+.dark-mode [style*="color:#666"],
+.dark-mode [style*="color:#777"],
+.dark-mode [style*="color:#888"],
+.dark-mode [style*="color:#999"],
+.dark-mode [style*="color:black"],
+.dark-mode [style*="color:#000"] {
+  color: #ffffff !important;
+}
+
+/* ===== MEJORAS PARA ELEMENTOS CON FONDO BLANCO EN MODO OSCURO ===== */
+/* Campos de entrada, inputs y elementos blancos que se ven mal en modo oscuro */
+
+/* Elementos con fondo blanco */
+.dark-mode [style*="background:#fff"],
+.dark-mode [style*="background:white"],
+.dark-mode [style*="background:#ffffff"],
+.dark-mode [style*="background-color:#fff"],
+.dark-mode [style*="background-color:white"],
+.dark-mode [style*="background-color:#ffffff"] {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.95) 0%, 
+    rgba(60, 35, 90, 0.9) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2), 
+              0 2px 8px rgba(0,0,0,0.3) !important;
+  backdrop-filter: blur(12px) !important;
+  color: #ffffff !important;
+}
+
+/* Inputs y campos de texto */
+.dark-mode input[type="text"],
+.dark-mode input[type="email"],
+.dark-mode input[type="password"],
+.dark-mode input[type="search"],
+.dark-mode textarea,
+.dark-mode select {
+  background: linear-gradient(135deg, 
+    rgba(30, 15, 46, 0.9) 0%, 
+    rgba(45, 25, 70, 0.95) 100%) !important;
+  border: 2px solid rgba(139, 92, 246, 0.3) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.15), 
+              inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.dark-mode input:focus,
+.dark-mode textarea:focus,
+.dark-mode select:focus {
+  border: 2px solid rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.25), 
+              inset 0 2px 4px rgba(0,0,0,0.3),
+              0 0 0 3px rgba(168, 85, 247, 0.1) !important;
+  outline: none !important;
+}
+
+/* Botones con fondo blanco */
+.dark-mode button[style*="background:#fff"],
+.dark-mode button[style*="background:white"],
+.dark-mode .btn-white,
+.dark-mode .button-white {
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.2) 0%, 
+    rgba(168, 85, 247, 0.15) 100%) !important;
+  border: 2px solid rgba(139, 92, 246, 0.5) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3) !important;
+}
+
+.dark-mode button[style*="background:#fff"]:hover,
+.dark-mode button[style*="background:white"]:hover,
+.dark-mode .btn-white:hover,
+.dark-mode .button-white:hover {
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.3) 0%, 
+    rgba(168, 85, 247, 0.25) 100%) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+}
+
+/* Contenedores y divs con fondo blanco */
+.dark-mode div[style*="background:#fff"],
+.dark-mode div[style*="background:white"],
+.dark-mode div[style*="background-color:#fff"],
+.dark-mode div[style*="background-color:white"] {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.9) 0%, 
+    rgba(60, 35, 90, 0.8) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Estilos específicos para elementos comunes con fondo blanco */
+.dark-mode .form-control,
+.dark-mode .form-input,
+.dark-mode .input-field,
+.dark-mode .text-input {
+  background: linear-gradient(135deg, 
+    rgba(30, 15, 46, 0.9) 0%, 
+    rgba(45, 25, 70, 0.95) 100%) !important;
+  border: 2px solid rgba(139, 92, 246, 0.3) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.15) !important;
+}
+
+/* Elementos con clases comunes que suelen tener fondo blanco */
+.dark-mode .card,
+.dark-mode .panel,
+.dark-mode .box,
+.dark-mode .container-white,
+.dark-mode .bg-white {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.9) 0%, 
+    rgba(60, 35, 90, 0.8) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Override específico para elementos persistentes - SIN AFECTAR MODO CLARO */
+.dark-mode *[style*="background:#f"] {
+  background: linear-gradient(135deg, 
+    rgba(45, 25, 70, 0.9) 0%, 
+    rgba(60, 35, 90, 0.8) 100%) !important;
+}
+
+/* ===== CORRECCIÓN PARA MODO CLARO ===== */
+/* Asegurar que los textos sean normales en modo claro */
+:not(.dark-mode) .chat-bubble-container *,
+:not(.dark-mode) .message-container *,
+:not(.dark-mode) .chat-message *,
+:not(.dark-mode) .chat-bubble *,
+:not(.dark-mode) [class*="chat"] *,
+:not(.dark-mode) [class*="message"] *,
+:not(.dark-mode) [class*="bubble"] * {
+  color: inherit !important;
+}
+
+/* Restaurar colores específicos para modo claro */
+:not(.dark-mode) .chat-bubble-container .chat-sender,
+:not(.dark-mode) .chat-bubble-container .message-sender,
+:not(.dark-mode) .chat-bubble-container .sender {
+  color: #333333 !important;
+}
+
+:not(.dark-mode) .chat-bubble-container .chat-content,
+:not(.dark-mode) .chat-bubble-container .message-body,
+:not(.dark-mode) .chat-bubble-container .content {
+  color: #555555 !important;
+}
+
+/* Corrección adicional para elementos específicos en modo claro */
+:not(.dark-mode) div[style*="color:#"],
+:not(.dark-mode) span[style*="color:#"],
+:not(.dark-mode) p[style*="color:#"] {
+  color: initial !important;
+}
+
+/* Restaurar colores normales para elementos que fueron forzados a blanco */
+:not(.dark-mode) [style*="color:#111"],
+:not(.dark-mode) [style*="color:#333"],
+:not(.dark-mode) [style*="color:#555"],
+:not(.dark-mode) [style*="color:#666"],
+:not(.dark-mode) [style*="color:#777"],
+:not(.dark-mode) [style*="color:#888"],
+:not(.dark-mode) [style*="color:#999"],
+:not(.dark-mode) [style*="color:black"],
+:not(.dark-mode) [style*="color:#000"] {
+  color: initial !important;
+}
+
+/* Asegurar que los textos en modo claro usen colores apropiados */
+@media (prefers-color-scheme: light) {
+  :not(.dark-mode) * {
+    color: initial !important;
+  }
+  
+  :not(.dark-mode) .chat-bubble-container,
+  :not(.dark-mode) .message-container,
+  :not(.dark-mode) .chat-message {
+    color: #333333 !important;
+  }
+}
+
+/* Estilos específicos SOLO para modo oscuro - NO aplicar universalmente */
+@media (prefers-color-scheme: dark) {
+  .dark-mode .chat-bubble-container,
+  .dark-mode .message-container,
+  .dark-mode .chat-message {
+    color: #ffffff !important;
+  }
+  
+  .dark-mode input,
+  .dark-mode textarea,
+  .dark-mode select {
+    color: #ffffff !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+  }
+}

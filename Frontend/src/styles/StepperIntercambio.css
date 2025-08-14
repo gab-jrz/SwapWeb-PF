@@ -2,17 +2,22 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 0 20px;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.02), rgba(168, 85, 247, 0.02));
 }
 
 .stepper-intercambio-container {
-  background: linear-gradient(135deg, #f7faff 0%, #e6f2fb 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(146, 209, 250, 0.15);
-  border: 1px solid #b0e0ff;
-  padding: 16px 24px;
-  margin: 12px auto;
-  max-width: 600px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 60px rgba(124, 58, 237, 0.15),
+    0 8px 32px rgba(168, 85, 247, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(124, 58, 237, 0.1);
+  padding: 3rem 2.5rem;
+  margin: 1rem auto;
+  max-width: 800px;
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -24,9 +29,10 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-  border-radius: 20px 20px 0 0;
+  height: 6px;
+  background: linear-gradient(90deg, #7c3aed, #a855f7, #ec4899, #f59e0b);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
 }
 
 .stepper-track {
@@ -34,10 +40,10 @@
   align-items: flex-start;
   justify-content: space-between;
   position: relative;
-  margin-bottom: 20px;
-  padding: 0 30px;
+  margin-bottom: 2rem;
+  padding: 0;
   width: 100%;
-  max-width: 800px;
+  max-width: 700px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -46,77 +52,113 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
   position: relative;
   flex: 1;
-  max-width: 150px;
-  z-index: 2;
+  max-width: 120px;
+  margin-top: 0;
+  z-index: 3;
   text-align: center;
+  transition: all 0.3s ease;
 }
 
 .stepper-icon, .stepper-avatar {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  margin-bottom: 12px;
-  border: 3px solid #00d4ff;
-  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  font-size: 24px;
+  margin-bottom: 1rem;
+  margin-top: 0;
+  border: 4px solid rgba(124, 58, 237, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(124, 58, 237, 0.2),
+    0 4px 16px rgba(168, 85, 247, 0.15),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   object-fit: cover;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   font-weight: 700;
   color: white;
+  backdrop-filter: blur(10px);
 }
 
 .stepper-avatar {
-  background: #fff;
-  border: 2px solid #b0e0ff;
-  box-shadow: 0 2px 8px rgba(146, 209, 250, 0.2);
-  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.95);
+  border: 4px solid rgba(124, 58, 237, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(124, 58, 237, 0.15),
+    0 4px 16px rgba(168, 85, 247, 0.1),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(15px);
 }
 
 .stepper-step.completed .stepper-avatar {
-  border-color: #2d9cdb;
-  box-shadow: 0 3px 12px rgba(45, 156, 219, 0.3);
-  transform: scale(1.02);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 
+    0 12px 40px rgba(16, 185, 129, 0.25),
+    0 6px 20px rgba(5, 150, 105, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+  transform: scale(1.05);
+  background: rgba(236, 253, 245, 0.95);
 }
 
 .stepper-step.completed .stepper-avatar::after {
   content: '✓';
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 20px;
-  height: 20px;
-  background: #10b981;
+  bottom: -4px;
+  right: -4px;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-  border: 2px solid white;
+  font-size: 16px;
+  font-weight: 900;
+  border: 3px solid white;
+  box-shadow: 
+    0 4px 16px rgba(16, 185, 129, 0.4),
+    0 2px 8px rgba(5, 150, 105, 0.3);
+  animation: checkmarkPulse 0.6s ease-out;
+}
+
+@keyframes checkmarkPulse {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .stepper-step.active .stepper-avatar {
-  border-color: #3b82f6;
-  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.3);
-  transform: scale(1.05);
-  animation: pulse 2s infinite;
+  border-color: rgba(124, 58, 237, 0.6);
+  box-shadow: 
+    0 12px 40px rgba(124, 58, 237, 0.35),
+    0 6px 20px rgba(168, 85, 247, 0.25),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+  transform: scale(1.08);
+  background: rgba(248, 245, 255, 0.95);
+  animation: activePulse 2s infinite;
 }
 
-@keyframes pulse {
+@keyframes activePulse {
   0%, 100% {
-    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.3);
+    box-shadow: 
+      0 12px 40px rgba(124, 58, 237, 0.35),
+      0 6px 20px rgba(168, 85, 247, 0.25),
+      inset 0 2px 4px rgba(255, 255, 255, 0.9);
+    border-color: rgba(124, 58, 237, 0.6);
   }
   50% {
-    box-shadow: 0 6px 30px rgba(59, 130, 246, 0.5);
+    box-shadow: 
+      0 16px 50px rgba(124, 58, 237, 0.45),
+      0 8px 25px rgba(168, 85, 247, 0.35),
+      inset 0 2px 4px rgba(255, 255, 255, 0.9);
+    border-color: rgba(124, 58, 237, 0.8);
   }
 }
 
@@ -145,62 +187,108 @@
 .stepper-label {
   font-size: 15px;
   color: #1e293b;
-  margin-bottom: 4px;
-  font-weight: 600;
+  margin-bottom: 12px;
+  margin-top: 8px;
+  font-weight: 700;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.5;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+  letter-spacing: 0.2px;
+  word-spacing: 2px;
+  padding: 0 8px;
 }
 
 .stepper-user {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748b;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
-  background: #f1f5f9;
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-top: 2px;
+  background: rgba(248, 250, 252, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-top: 8px;
+  border: 1px solid rgba(124, 58, 237, 0.1);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.05);
+  transition: all 0.3s ease;
 }
 
 .stepper-bar {
   position: absolute;
-  top: 32px;
-  left: calc(50% + 32px);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #e2e8f0, #cbd5e1);
+  top: 37px;
+  left: calc(50% + 37px);
+  width: calc(100% - 74px);
+  height: 4px;
+  background: linear-gradient(90deg, 
+    rgba(226, 232, 240, 0.8), 
+    rgba(203, 213, 225, 0.6));
   z-index: 1;
-  border-radius: 2px;
-  transition: all 0.3s ease;
+  border-radius: 6px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(5px);
 }
 
-.stepper-step.completed + .stepper-step .stepper-bar {
-  background: linear-gradient(90deg, #10b981, #059669);
-  height: 4px;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+.stepper-step.completed + .stepper-step .stepper-bar,
+.stepper-step.completed .stepper-bar {
+  background: linear-gradient(90deg, 
+    #10b981, 
+    #059669, 
+    rgba(16, 185, 129, 0.8));
+  height: 6px;
+  box-shadow: 
+    0 4px 16px rgba(16, 185, 129, 0.4),
+    0 2px 8px rgba(5, 150, 105, 0.3);
+  animation: barGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes barGlow {
+  0% { 
+    box-shadow: 
+      0 4px 16px rgba(16, 185, 129, 0.4),
+      0 2px 8px rgba(5, 150, 105, 0.3);
+  }
+  100% { 
+    box-shadow: 
+      0 6px 20px rgba(16, 185, 129, 0.5),
+      0 3px 12px rgba(5, 150, 105, 0.4);
+  }
 }
 
 .stepper-actions {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(124, 58, 237, 0.1);
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(124, 58, 237, 0.02), 
+    transparent);
 }
 
 .stepper-confirm-btn {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
   color: #fff;
   border: none;
-  border-radius: 12px;
-  padding: 14px 40px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 16px;
+  padding: 18px 48px;
+  font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: 
+    0 8px 32px rgba(124, 58, 237, 0.3),
+    0 4px 16px rgba(168, 85, 247, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(10px);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .stepper-confirm-btn::before {

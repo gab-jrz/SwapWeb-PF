@@ -5,6 +5,8 @@ import ProductCard from "../Component/ProductCard";
 import Footer from "../Component/Footer";
 import Carousel from "../Component/Carousel";
 import QuienesSomos from "../Component/QuienesSomos";
+import Pagination from "../Component/Pagination";
+import ProductsPerPage from "../Component/ProductsPerPage";
 import { getProducts } from "../services/api";
 import useProducts from "../hooks/useProducts";
 import { categorias } from "../categorias";
@@ -17,7 +19,8 @@ const Home = () => {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [mostrarTodos, setMostrarTodos] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage, setProductsPerPage] = useState(8);
   
   // Estados para filtros avanzados
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
@@ -142,8 +145,34 @@ const Home = () => {
     }
   });
 
-  // Lógica para mostrar 4 productos al principio, y luego más si se presiona "Mostrar más"
-  const productosParaMostrar = mostrarTodos ? productosOrdenados : productosOrdenados.slice(0, 8);
+  // Lógica de paginación
+  const totalProducts = productosOrdenados.length;
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = startIndex + productsPerPage;
+  const productosParaMostrar = productosOrdenados.slice(startIndex, endIndex);
+  
+  // Funciones de paginación
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Scroll suave hacia arriba cuando cambie la página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  // Función para cambiar productos por página
+  const handleProductsPerPageChange = (newLimit) => {
+    setProductsPerPage(newLimit);
+    setCurrentPage(1); // Reset a la primera página cuando cambie el límite
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const hasNextPage = currentPage < totalPages;
+  const hasPrevPage = currentPage > 1;
+  
+  // Reset página cuando cambien los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, dateFilter, userFilter, provinceFilter, sortBy, productsPerPage]);
   
   // Obtener nombre de categoría seleccionada
   const getCategoryName = (categoryId) => {
@@ -175,6 +204,15 @@ const Home = () => {
 
       {/* Carousel */}
       <Carousel />
+      
+      {/* Selector de productos por página */}
+      {!loading && !error && totalProducts > 0 && (
+        <ProductsPerPage
+          currentLimit={productsPerPage}
+          onLimitChange={handleProductsPerPageChange}
+          options={[8, 12, 16, 24]}
+        />
+      )}
 
       <main className="main-content">
         {/* Mostrar mensaje de carga o error */}
@@ -212,27 +250,25 @@ const Home = () => {
           </div>
         )}
 
-        {/* Botón "Explorá más" solo si no se muestran todos los productos */}
-        {!loading && !error && productosOrdenados.length > 4 && !mostrarTodos && (
-          <div className="d-flex justify-content-center my-4">
-            <button
-              className="btn btn-outline-primary"
-              onClick={() => setMostrarTodos(true)}
-            >
-              Explorá más
-            </button>
-          </div>
+        {/* Componente de Paginación */}
+        {!loading && !error && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+          />
         )}
-
-        {/* Botón "Mostrar menos" solo si se están mostrando todos los productos */}
-        {!loading && !error && mostrarTodos && productosOrdenados.length > 4 && (
-          <div className="d-flex justify-content-center my-4">
-            <button
-              className="btn btn-outline-secondary"
-              onClick={() => setMostrarTodos(false)}
-            >
-              Mostrar menos
-            </button>
+        
+        {/* Información de resultados */}
+        {!loading && !error && totalProducts > 0 && (
+          <div className="results-info text-center mt-3 mb-4">
+            <p className="text-muted">
+              Mostrando {startIndex + 1}-{Math.min(endIndex, totalProducts)} de {totalProducts} productos
+              {searchTerm && ` para "${searchTerm}"`}
+              {selectedCategory && ` en ${getCategoryName(selectedCategory)}`}
+            </p>
           </div>
         )}
       </main>

@@ -403,10 +403,42 @@ const Header = ({
                       })()}
                     </div>
                     <div className="user-info-text">
-                      <span className="user-greeting">
+                      <span 
+                        style={{
+                          color: darkMode ? '#ffffff' : '#1a1a1a',
+                          fontWeight: '600',
+                          textShadow: 'none',
+                          fontSize: '14px',
+                          opacity: '1',
+                          visibility: 'visible',
+                          display: 'inline-block',
+                          fontFamily: 'inherit',
+                          lineHeight: '1.4',
+                          letterSpacing: '0.01em',
+                          WebkitTextFillColor: darkMode ? '#ffffff' : '#1a1a1a',
+                          textDecoration: 'none',
+                          background: 'transparent'
+                        }}
+                      >
                         {location.pathname === "/" ? "Hola," : ""}
                       </span>
-                      <span className="user-name">{nombreUsuario}</span>
+                      <span 
+                        style={{
+                          color: darkMode ? '#ffffff' : '#1a1a1a',
+                          fontWeight: '600',
+                          textShadow: 'none',
+                          fontSize: '14px',
+                          opacity: '1',
+                          visibility: 'visible',
+                          display: 'inline-block',
+                          fontFamily: 'inherit',
+                          lineHeight: '1.4',
+                          letterSpacing: '0.01em',
+                          WebkitTextFillColor: darkMode ? '#ffffff' : '#1a1a1a',
+                          textDecoration: 'none',
+                          background: 'transparent'
+                        }}
+                      >{nombreUsuario}</span>
                     </div>
                     <svg
                       className="user-dropdown-arrow"

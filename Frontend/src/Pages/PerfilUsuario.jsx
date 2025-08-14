@@ -917,6 +917,95 @@ function handleEnviarMensaje() {
     navigate(`/editar-producto/${producto.id}`);
   };
 
+  // NUEVA FUNCIÓN: Limpiar productos huérfanos del home
+  const limpiarProductosHuerfanos = async () => {
+    if (!window.confirm('¿Estás seguro de que quieres limpiar productos huérfanos del home? Esto eliminará productos que no aparecen en "Mis Artículos" pero siguen en el home.')) {
+      return;
+    }
+
+    try {
+      console.log('🧹 Iniciando limpieza de productos huérfanos...');
+      
+      const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+      if (!usuarioActual || !usuarioActual.id) {
+        console.error('❌ No se encontró usuario actual');
+        return;
+      }
+
+      // Obtener datos frescos del usuario
+      const resUser = await fetch(`${API_URL}/users/${usuarioActual.id}`);
+      if (!resUser.ok) {
+        throw new Error('Error al obtener datos del usuario');
+      }
+      
+      const userData = await resUser.json();
+      const productosActuales = userData.productos || [];
+      const transaccionesActuales = userData.transacciones || [];
+      
+      console.log('📊 Productos actuales en BD:', productosActuales.length);
+      console.log('📊 Transacciones actuales:', transaccionesActuales.length);
+      
+      // Identificar productos que fueron intercambiados (aparecen en transacciones completadas)
+      const productosIntercambiados = transaccionesActuales
+        .filter(t => t.estado === 'completado')
+        .map(t => t.productoOfrecido)
+        .filter(Boolean);
+      
+      console.log('🔄 Productos intercambiados encontrados:', productosIntercambiados);
+      
+      // Filtrar productos que NO fueron intercambiados (productos huérfanos)
+      const productosLimpios = productosActuales.filter(producto => {
+        const esHuerfano = productosIntercambiados.includes(producto.titulo);
+        if (esHuerfano) {
+          console.log(`🗑️ Producto huérfano identificado: "${producto.titulo}"`);
+        }
+        return !esHuerfano;
+      });
+      
+      const productosEliminados = productosActuales.length - productosLimpios.length;
+      
+      if (productosEliminados > 0) {
+        // Actualizar la lista de productos sin los huérfanos
+        const updateResponse = await fetch(`${API_URL}/users/${usuarioActual.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productos: productosLimpios }),
+        });
+        
+        if (updateResponse.ok) {
+          console.log(`✅ ${productosEliminados} productos huérfanos eliminados del home`);
+          
+          // Actualizar datos locales
+          setUserData(prev => ({ ...prev, productos: productosLimpios }));
+          localStorage.setItem('usuarioActual', JSON.stringify({ ...userData, productos: productosLimpios }));
+          
+          // Forzar actualización del home
+          window.dispatchEvent(new CustomEvent('productsUpdated'));
+          
+          alert(`✅ Limpieza completada: ${productosEliminados} productos huérfanos eliminados del home.`);
+        } else {
+          throw new Error('Error al actualizar productos en el servidor');
+        }
+      } else {
+        console.log('✨ No se encontraron productos huérfanos para eliminar');
+        alert('✨ No se encontraron productos huérfanos. El home está limpio.');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error en limpieza de productos huérfanos:', error);
+      alert('❌ Error al limpiar productos huérfanos. Revisa la consola para más detalles.');
+    }
+  };
+
+  // Hacer las funciones accesibles globalmente para la consola
+  useEffect(() => {
+    window.limpiarProductosHuerfanos = limpiarProductosHuerfanos;
+    
+    return () => {
+      delete window.limpiarProductosHuerfanos;
+    };
+  }, []);
+
   // Función para marcar producto como intercambiado
   const handleMarkAsExchanged = async (producto) => {
     if (!window.confirm(`¿Estás seguro de que quieres marcar "${producto.title}" como intercambiado?`)) {
@@ -1590,6 +1679,9 @@ function handleEnviarMensaje() {
                 onConfirm={async () => {
                    if (!transToDelete) return;
                    try {
+                     // Obtener usuario actual al inicio
+                     const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+                     
                      // Siempre usar _id de MongoDB para la eliminación
                      let backendEliminado = false;
                      const transId = transToDelete._id;
@@ -1597,13 +1689,68 @@ function handleEnviarMensaje() {
                        const res = await fetch(`${API_URL}/transactions/${transId}`, { method: 'DELETE' });
                        if (res.ok) backendEliminado = true;
                      }
+                     
+                     // NUEVA FUNCIONALIDAD: Eliminar también el producto asociado del home
+                     // Buscar y eliminar el producto que fue intercambiado
+                     const productoAEliminar = transToDelete.productoOfrecido;
+                     console.log('🔍 DEBUG: Producto a eliminar:', productoAEliminar);
+                     console.log('🔍 DEBUG: Datos del intercambio:', transToDelete);
+                     
+                     if (productoAEliminar && usuarioActual && usuarioActual.id) {
+                       try {
+                         // Buscar el producto en la lista de productos del usuario
+                         const resUserProducts = await fetch(`${API_URL}/users/${usuarioActual.id}`);
+                         if (resUserProducts.ok) {
+                           const userData = await resUserProducts.json();
+                           const productosActuales = userData.productos || [];
+                           console.log('🔍 DEBUG: Productos actuales del usuario:', productosActuales.map(p => p.titulo));
+                           
+                           // Encontrar el producto por nombre y eliminarlo
+                           const productosActualizados = productosActuales.filter(producto => {
+                             const coincide = producto.titulo !== productoAEliminar;
+                             console.log(`🔍 DEBUG: Comparando "${producto.titulo}" !== "${productoAEliminar}" = ${coincide}`);
+                             return coincide;
+                           });
+                           
+                           console.log('🔍 DEBUG: Productos después del filtro:', productosActualizados.map(p => p.titulo));
+                           console.log('🔍 DEBUG: Se eliminó algún producto?', productosActualizados.length !== productosActuales.length);
+                           
+                           // Actualizar la lista de productos del usuario
+                           if (productosActualizados.length !== productosActuales.length) {
+                             const updateResponse = await fetch(`${API_URL}/users/${usuarioActual.id}`, {
+                               method: 'PUT',
+                               headers: { 'Content-Type': 'application/json' },
+                               body: JSON.stringify({ productos: productosActualizados }),
+                             });
+                             console.log('🔍 DEBUG: Respuesta de actualización:', updateResponse.status, updateResponse.ok);
+                             
+                             if (updateResponse.ok) {
+                               console.log(`✅ Producto "${productoAEliminar}" eliminado del home`);
+                               
+                               // Forzar actualización del home disparando evento global
+                               window.dispatchEvent(new CustomEvent('productsUpdated'));
+                               console.log('🔄 Evento de actualización de productos disparado');
+                             } else {
+                               console.error('❌ Error en la actualización del usuario');
+                             }
+                           } else {
+                             console.log('⚠️ No se encontró el producto para eliminar');
+                           }
+                         }
+                       } catch (error) {
+                         console.error('Error al eliminar producto del home:', error);
+                       }
+                     } else {
+                       console.log('⚠️ No se puede eliminar: faltan datos', { productoAEliminar, usuarioId: usuarioActual?.id });
+                     }
+                     
                      // Si no hubo _id o la eliminación directa falló, marcar la transacción como deleted en el usuario
-                     const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
                      if (usuarioActual && usuarioActual.id) {
                        if (!backendEliminado) {
                          const nuevas = (usuarioActual.transacciones || []).map(t => {
                            if ((t._id && t._id === transId) || (!t._id && t.fecha === transToDelete.fecha && t.productoOfrecido === transToDelete.productoOfrecido)) {
                              return { ...t, deleted: true };
+                     // ... rest of the code remains the same ...
                            }
                            return t;
                          });
@@ -2152,7 +2299,7 @@ function handleEnviarMensaje() {
                           );
                         })()}
 
-                        <div>
+                        <div className={darkMode ? 'dark-mode' : ''}>
                           {(() => {
                             const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
                             // Agrupar mensajes por fecha (YYYY-MM-DD) y ordenar de más antiguo a más reciente
@@ -2229,15 +2376,48 @@ function handleEnviarMensaje() {
                           </div>
                         )}
                         {/* enviar nuevo mensaje estilo WhatsApp */}
-                         <div className="send-message whatsapp-send-bar" style={{display:'flex',alignItems:'center',gap:'0.5rem',marginTop:'1rem',background:'#f7f7f7',borderRadius:24,padding:'0.4rem 1rem',boxShadow:'0 1px 2px rgba(0,0,0,0.04)'}}>
+                         <div className={`send-message whatsapp-send-bar ${darkMode ? 'dark-mode' : ''}`} style={{
+                           display:'flex',
+                           alignItems:'center',
+                           gap:'0.8rem',
+                           marginTop:'1.5rem',
+                           background:'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 50%, rgba(241,245,249,0.95) 100%)',
+                           borderRadius:'28px',
+                           padding:'1.2rem 1.8rem',
+                           boxShadow:'0 8px 32px rgba(102, 126, 234, 0.15), 0 4px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)',
+                           backdropFilter:'blur(15px)',
+                           border:'2px solid rgba(102, 126, 234, 0.2)',
+                           borderTop:'3px solid rgba(102, 126, 234, 0.4)',
+                           position:'relative',
+                           overflow:'hidden'
+                         }}>
                            {/* Botón de adjuntar imagen al extremo izquierdo, pequeño y redondeado */}
-                           <button
-                             type="button"
-                             className="btn-clip"
-                             style={{ background: '#e0f7fa', border: 'none', cursor: 'pointer', fontSize: 16, color: '#0097a7', marginRight: 10, marginLeft: 0, order: 0, borderRadius: '50%', width: 32, height: 32, display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 1px 2px #0001' }}
-                             onClick={() => document.getElementById('fileInput').click()}
-                             title="Adjuntar imagen"
-                           >
+                            <button
+                              type="button"
+                              className="btn-clip"
+                              style={{ 
+                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)', 
+                                border: '2px solid rgba(102, 126, 234, 0.3)', 
+                                cursor: 'pointer', 
+                                fontSize: 18, 
+                                color: '#667eea', 
+                                marginRight: 12, 
+                                marginLeft: 0, 
+                                order: 0, 
+                                borderRadius: '50%', 
+                                width: 48, 
+                                height: 48, 
+                                display:'flex', 
+                                alignItems:'center', 
+                                justifyContent:'center', 
+                                boxShadow:'0 4px 16px rgba(102, 126, 234, 0.2), 0 2px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.6)',
+                                backdropFilter: 'blur(8px)',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transform: 'translateZ(0)'
+                              }}
+                              onClick={() => document.getElementById('fileInput').click()}
+                              title="Adjuntar imagen"
+                            >
                              📷
                            </button>
                            <input
@@ -2269,8 +2449,25 @@ function handleEnviarMensaje() {
                              </div>
                            )}
                            {/* Input de mensaje */}
-                           <textarea
-                             style={{ flex: 1, border: 'none', resize: 'none', background: 'transparent', outline: 'none', fontSize: 15, minHeight: 32, maxHeight: 70, padding: '8px 0', color: '#111' }}
+                            <textarea
+                              style={{ 
+                                flex: 1, 
+                                border: '2px solid rgba(102, 126, 234, 0.2)', 
+                                resize: 'none', 
+                                background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%)', 
+                                outline: 'none', 
+                                fontSize: 16, 
+                                minHeight: 48, 
+                                maxHeight: 120, 
+                                padding: '14px 20px', 
+                                color: '#2d3748',
+                                borderRadius: '24px',
+                                boxShadow: '0 4px 16px rgba(102, 126, 234, 0.1), inset 0 2px 4px rgba(0,0,0,0.05)',
+                                backdropFilter: 'blur(10px)',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                fontFamily: 'inherit',
+                                lineHeight: '1.5'
+                              }}
                              rows={1}
                              value={nuevoTexto}
                              onChange={e => setNuevoTexto(e.target.value)}
@@ -2286,11 +2483,28 @@ function handleEnviarMensaje() {
                            {/* Botón enviar */}
                            <button
                              className="btn-send"
-                             style={{ background: '#00bcd4', color: 'white', border: 'none', borderRadius: '50%', width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, marginLeft: 6, cursor: 'pointer' }}
+                             style={{ 
+                               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #4f46e5 100%)', 
+                               color: 'white', 
+                               border: '3px solid rgba(255,255,255,0.4)', 
+                               borderRadius: '50%', 
+                               width: 56, 
+                               height: 56, 
+                               display: 'flex', 
+                               alignItems: 'center', 
+                               justifyContent: 'center', 
+                               fontSize: 22, 
+                               marginLeft: 12, 
+                               cursor: 'pointer',
+                               boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4), 0 4px 12px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.3)',
+                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                               transform: 'translateZ(0)',
+                               backdropFilter: 'blur(8px)'
+                             }}
                              onClick={handleEnviarMensaje}
                              title="Enviar"
                            >
-                             ➤
+                            ➤
                            </button>
                          </div>
                           

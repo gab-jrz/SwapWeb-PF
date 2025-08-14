@@ -49,10 +49,11 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
         borderRadius: 16,
         border: '1px solid rgba(102, 126, 234, 0.12)',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1)',
-        padding: '20px 24px',
+        padding: '16px 20px',
         display: 'flex',
-        alignItems: 'flex-start',
-        gap: 16,
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 12,
         marginBottom: 16,
         minHeight: 'auto',
         position: 'relative',
@@ -126,9 +127,9 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
         {/* Información de productos */}
         <div style={{
           background: 'linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%)',
-          borderRadius: 12,
-          padding: '16px 18px',
-          marginBottom: 12,
+          borderRadius: 10,
+          padding: '12px 14px',
+          marginBottom: 10,
           border: '1px solid rgba(33, 150, 243, 0.15)',
           boxShadow: '0 2px 8px rgba(33, 150, 243, 0.08)',
           position: 'relative'
@@ -289,7 +290,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
           </span>
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
         {/* Botón de volver a publicar */}
         {onRepublish && (
           <button
@@ -297,29 +298,36 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
             style={{
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              padding: '6px 12px',
-              fontWeight: 600,
-              fontSize: 11,
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: 12,
+              padding: '10px 16px',
+              fontWeight: 700,
+              fontSize: 12,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 4,
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(102, 126, 234, 0.25)',
-              minWidth: '90px',
-              height: '32px',
-              whiteSpace: 'nowrap'
+              gap: 6,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3), 0 4px 15px rgba(102, 126, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              minWidth: '120px',
+              height: '38px',
+              whiteSpace: 'nowrap',
+              backdropFilter: 'blur(10px)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-              e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.35)';
+              e.target.style.transform = 'translateY(-2px) scale(1.02)';
+              e.target.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4), 0 6px 20px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+              e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.25)';
+              e.target.style.transform = 'translateY(0) scale(1)';
+              e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3), 0 4px 15px rgba(102, 126, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+              e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
             }}
             title="Volver a publicar este producto"
           >
@@ -333,47 +341,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
           </button>
         )}
 
-        {/* Botón de calificación - solo visible si se puede calificar */}
-        {puedeCalificar && (
-          <button
-            onClick={handleRateClick}
-            style={{
-              background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              padding: '6px 10px',
-              fontWeight: 600,
-              fontSize: 11,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(76, 175, 80, 0.25)',
-              minWidth: '70px',
-              height: '32px',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-              e.target.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.35)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 2px 8px rgba(76, 175, 80, 0.25)';
-            }}
-            title={`Calificar intercambio con ${nombreOtro}`}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" 
-                fill="currentColor" 
-              />
-            </svg>
-            Calificar
-          </button>
-        )}
+
         
         {/* Botón de eliminar */}
         <button
@@ -381,28 +349,33 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
           style={{
             background: 'linear-gradient(135deg, #ff4757 0%, #ff3742 100%)',
             color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            padding: '6px 8px',
-            fontWeight: 600,
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: 12,
+            padding: '10px',
+            fontWeight: 700,
             fontSize: 12,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 8px rgba(255, 71, 87, 0.25)',
-            minWidth: '32px',
-            width: '32px',
-            height: '32px'
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 8px 25px rgba(255, 71, 87, 0.3), 0 4px 15px rgba(255, 71, 87, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+            minWidth: '38px',
+            width: '38px',
+            height: '38px',
+            backdropFilter: 'blur(10px)',
+            position: 'relative',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'scale(1.05)';
-            e.target.style.boxShadow = '0 4px 12px rgba(255, 71, 87, 0.35)';
+            e.target.style.transform = 'translateY(-2px) scale(1.02)';
+            e.target.style.boxShadow = '0 12px 35px rgba(255, 71, 87, 0.4), 0 6px 20px rgba(255, 71, 87, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+            e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)';
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'scale(1)';
-            e.target.style.boxShadow = '0 2px 8px rgba(255, 71, 87, 0.25)';
+            e.target.style.transform = 'translateY(0) scale(1)';
+            e.target.style.boxShadow = '0 8px 25px rgba(255, 71, 87, 0.3), 0 4px 15px rgba(255, 71, 87, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+            e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
           }}
           title="Eliminar intercambio"
         >

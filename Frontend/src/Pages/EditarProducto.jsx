@@ -251,19 +251,25 @@ const EditarProducto = () => {
   return (
     <div className="editar-producto-container">
       <Header search={false} />
-      {notification.show && (
-        <div className={`notification ${notification.type}`}>{notification.message}</div>
-      )}
-      <div className="editar-producto-content">
+      {/* Botón Regresar */}
+      <div className="regresar-container-premium">
         <button 
-          className="btn-volver"
+          className="btn-regresar-premium"
           onClick={() => {
             // Redirigir al perfil privado del usuario
             navigate('/perfil');
           }}
         >
-          ← Volver al perfil
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          REGRESAR
         </button>
+      </div>
+      {notification.show && (
+        <div className={`notification ${notification.type}`}>{notification.message}</div>
+      )}
+      <div className="editar-producto-content">
 
         <div className="editar-producto-card">
           <h2 className="editar-producto-title">Editar Producto</h2>
