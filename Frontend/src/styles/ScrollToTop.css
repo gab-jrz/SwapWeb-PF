@@ -1,0 +1,39 @@
+/* Botón flotante para volver arriba */
+.scroll-to-top-btn {
+  position: fixed;
+  right: 32px;
+  bottom: 40px;
+  z-index: 100;
+  background: linear-gradient(135deg, #7b2ff2 0%, #1e90ff 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 54px;
+  height: 54px;
+  box-shadow: 0 4px 24px rgba(123,47,242,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+  opacity: 0.92;
+  outline: none;
+}
+
+.scroll-to-top-btn:hover {
+  background: linear-gradient(135deg, #1e90ff 0%, #7b2ff2 100%);
+  box-shadow: 0 8px 32px rgba(30,144,255,0.18);
+  transform: translateY(-2px) scale(1.07);
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .scroll-to-top-btn {
+    right: 18px;
+    bottom: 22px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+  }
+}
