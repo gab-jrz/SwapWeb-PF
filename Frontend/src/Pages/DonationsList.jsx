@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../Component/Header';
+import Footer from '../Component/Footer';
 import DonationCard from '../Component/DonationCard';
 import '../styles/DonationsList.css';
 
@@ -381,8 +382,10 @@ const DonationsList = () => {
           </div>
         )}
       </div>
+  <Footer />
     </>
   );
 };
 
 export default DonationsList;
+

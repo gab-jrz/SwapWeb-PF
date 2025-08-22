@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config.js';
+import { categorias } from '../categorias';
 
 const DonationCard = ({ 
   title, 
@@ -62,6 +63,23 @@ const DonationCard = ({
     return statusMap[status] || statusMap.available;
   };
 
+  const conditionLabel = (key) => {
+    const map = {
+      'nuevo': 'Nuevo',
+      'como_nuevo': 'Como nuevo',
+      'muy_bueno': 'Muy bueno',
+      'bueno': 'Bueno',
+      'regular': 'Regular'
+    };
+    return map[key] || key || '';
+  };
+
+  const categoryLabel = (catKey) => {
+    if (!catKey) return '';
+    const found = categorias.find(c => c.id === catKey || c.name === catKey);
+    return found ? found.name : catKey;
+  };
+
   const statusInfo = getStatusInfo(status);
 
   if (viewMode === 'list') {
@@ -96,11 +114,11 @@ const DonationCard = ({
               <div className="donation-meta">
                 <span className="donation-category">
                   <i className="fas fa-tag me-1"></i>
-                  {category}
+                  {categoryLabel(category)}
                 </span>
                 <span className="donation-condition">
                   <i className="fas fa-star me-1"></i>
-                  {condition}
+                  {conditionLabel(condition)}
                 </span>
                 <span className="donation-location">
                   <i className="fas fa-map-marker-alt me-1"></i>

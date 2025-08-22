@@ -1888,7 +1888,10 @@ async function handleEnviarMensaje() {
                       
                       <div className="solicitud-content">
                         <div className="solicitud-header">
-                          <span className="solicitud-categoria">{solicitud.category}</span>
+                          <div>
+                            <h4 className="solicitud-titulo">{solicitud.title || solicitud.category}</h4>
+                            {solicitud.title && <small className="solicitud-categoria">{solicitud.category}</small>}
+                          </div>
                           <span className={`solicitud-urgencia ${solicitud.urgency || 'med'}`}>
                             {solicitud.urgency === 'high' ? 'Urgente' : 
                              solicitud.urgency === 'low' ? 'Baja' : 'Media'}

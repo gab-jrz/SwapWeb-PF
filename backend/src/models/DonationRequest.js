@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const DonationRequestSchema = new mongoose.Schema({
   requester: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   category: { type: String, required: true },
+  title: { type: String },
   needDescription: { type: String, required: true },
   specificNeeds: [{ type: String }], // Array de especificaciones específicas
   location: { type: String },

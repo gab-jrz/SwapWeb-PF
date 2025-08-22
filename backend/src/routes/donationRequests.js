@@ -163,4 +163,14 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
+// DELETE donation request
+router.delete('/:id', async (req, res) => {
+  try {
+    await DonationRequest.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Donation request deleted' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 export default router;

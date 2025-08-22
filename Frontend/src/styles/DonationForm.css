@@ -764,6 +764,84 @@
   }
 }
 
+/* Fix: Ensure select's selected text is visible in light and dark themes.
+   Some pages use body.dark-mode while others use data-theme="dark" or prefers-color-scheme;
+   enforce sensible defaults here and override aggressive rules elsewhere. */
+.donation-form .form-select,
+.form-select {
+  color: var(--color-text-primary) !important;
+  background: var(--color-input-bg) !important;
+  border-color: var(--color-border) !important;
+  padding-right: 2.5rem !important;
+  appearance: none !important;
+}
+
+/* Dark-mode fallbacks when site toggles dark via body class or data-theme attr */
+body.dark-mode .donation-form .form-select,
+[data-theme="dark"] .donation-form .form-select,
+body.dark-mode .form-select,
+[data-theme="dark"] .form-select {
+  color: #e5e7eb !important; /* light text */
+  background: #2d1b4e !important; /* dark bg */
+  border-color: #3d2b5e !important;
+}
+
+body.dark-mode .donation-form .form-select option,
+[data-theme="dark"] .donation-form .form-select option,
+body.dark-mode .form-select option,
+[data-theme="dark"] .form-select option {
+  color: #e5e7eb !important;
+  background: #2d1b4e !important;
+}
+
+/* Make hovered/selected options clearly visible in selects */
+.form-select option,
+.donation-form .form-select option {
+  color: var(--color-text-primary) !important;
+  background: var(--color-input-bg) !important;
+}
+
+.form-select option:hover,
+.form-select option:focus,
+.form-select option:checked,
+.form-select option[selected] {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Dark mode: stronger highlight color for hovered/selected option */
+body.dark-mode .form-select option:hover,
+[data-theme="dark"] .form-select option:hover,
+body.dark-mode .donation-form .form-select option:hover,
+[data-theme="dark"] .donation-form .form-select option:hover,
+body.dark-mode .form-select option:checked,
+[data-theme="dark"] .form-select option:checked {
+  background: rgba(123, 47, 242, 0.9) !important; /* vivid purple */
+  color: #ffffff !important;
+}
+
+/* Strong override for light mode selects: undo any transparent text tricks elsewhere */
+html body:not(.dark-mode) .donation-form .form-select,
+html body:not(.dark-mode) .donation-form select.form-select,
+body:not(.dark-mode) .donation-form .form-select,
+body:not(.dark-mode) .donation-form select.form-select,
+.donation-form .form-select:not([data-dark]) {
+  color: var(--color-text-primary) !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  -webkit-text-stroke-color: initial !important;
+  -webkit-text-stroke-width: 0 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  background-clip: border-box !important;
+}
+
+/* Also ensure the closed select shows the selected text (for Edge/IE) */
+.donation-form .form-select::-ms-value,
+.donation-form select.form-select::-ms-value,
+.form-select::-ms-value {
+  color: var(--color-text-primary) !important;
+}
+
 /* CSS Variables for theming */
 :root {
   --color-primary: #6366f1;

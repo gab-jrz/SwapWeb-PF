@@ -8,9 +8,22 @@ const router = express.Router();
 // Obtener cantidad de mensajes no leídos para un usuario
 router.get('/unread/:userId', async (req,res)=>{
   try{
+    // Resolve canonical app user id: try to find User by app id or by Mongo _id
+    let userIdToUse = req.params.userId;
+    try {
+      const found = await User.findOne({ id: req.params.userId }).select('id');
+      if (found && found.id) userIdToUse = found.id;
+      else {
+        const byMongo = await User.findById(req.params.userId).select('id');
+        if (byMongo && byMongo.id) userIdToUse = byMongo.id;
+      }
+    } catch (e) {
+      // ignore resolution errors and fallback to provided param
+    }
+
     const total = await Message.countDocuments({
-      paraId: req.params.userId,
-      leidoPor: { $ne: req.params.userId }
+      paraId: userIdToUse,
+      leidoPor: { $ne: userIdToUse }
     });
     res.json({ total });
   }catch(err){
@@ -21,10 +34,21 @@ router.get('/unread/:userId', async (req,res)=>{
 // Marcar mensajes como leídos para un usuario
 router.put('/mark-read/:userId', async (req,res)=>{
   try{
+    // Resolve canonical app user id
+    let userIdToUse = req.params.userId;
+    try {
+      const found = await User.findOne({ id: req.params.userId }).select('id');
+      if (found && found.id) userIdToUse = found.id;
+      else {
+        const byMongo = await User.findById(req.params.userId).select('id');
+        if (byMongo && byMongo.id) userIdToUse = byMongo.id;
+      }
+    } catch (e) {}
+
     await Message.updateMany({
-      paraId: req.params.userId,
-      leidoPor: { $ne: req.params.userId }
-    }, { $push: { leidoPor: req.params.userId }});
+      paraId: userIdToUse,
+      leidoPor: { $ne: userIdToUse }
+    }, { $push: { leidoPor: userIdToUse }});
     res.json({ ok:true });
   }catch(err){
     res.status(500).json({ message: err.message });
@@ -34,10 +58,21 @@ router.put('/mark-read/:userId', async (req,res)=>{
 // Get messages for a user
 router.get('/:userId', async (req, res) => {
   try {
+    // Resolve canonical app user id (in case client passed Mongo _id)
+    let userIdToUse = req.params.userId;
+    try {
+      const found = await User.findOne({ id: req.params.userId }).select('id');
+      if (found && found.id) userIdToUse = found.id;
+      else {
+        const byMongo = await User.findById(req.params.userId).select('id');
+        if (byMongo && byMongo.id) userIdToUse = byMongo.id;
+      }
+    } catch (e) {}
+
     const messages = await Message.find({
       $or: [
-        { paraId: req.params.userId },
-        { deId: req.params.userId }
+        { paraId: userIdToUse },
+        { deId: userIdToUse }
       ]
     })
       .select('-__v')

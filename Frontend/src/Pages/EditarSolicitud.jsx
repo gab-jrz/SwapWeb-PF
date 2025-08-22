@@ -11,7 +11,8 @@ const EditarSolicitud = () => {
   const navigate = useNavigate();
 
   const [solicitud, setSolicitud] = useState({
-    category: "",
+  category: "",
+  title: "",
     needDescription: "",
     specificNeeds: [],
     location: "",
@@ -221,6 +222,21 @@ const EditarSolicitud = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta solicitud? Esta acción no se puede deshacer.')) return;
+    try {
+      const response = await fetch(`${API_URL}/donation-requests/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Error eliminando la solicitud');
+      showNotification('Solicitud eliminada correctamente', 'success');
+      setTimeout(() => navigate('/perfil'), 1200);
+    } catch (err) {
+      console.error(err);
+      showNotification('Error al eliminar la solicitud', 'error');
+    }
+  };
+
   if (isLoading) {
     return (
       <div>
@@ -243,10 +259,23 @@ const EditarSolicitud = () => {
           </div>
         )}
         
-        <h2>Editar Solicitud de Ayuda</h2>
+  <h2>Editar Solicitud de Ayuda</h2>
         <form onSubmit={handleSubmit} className="editar-producto-form">
           
           {/* Categoría */}
+          {/* ...botones de acción movidos al final del formulario... */}
+          <div className="form-group">
+            <label htmlFor="title">Título de la solicitud *</label>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              value={solicitud.title || ''}
+              onChange={handleChange}
+              maxLength={120}
+              required
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="category">Categoría de ayuda necesaria *</label>
             <select
@@ -428,6 +457,9 @@ const EditarSolicitud = () => {
             </button>
             <button type="submit" className="btn-actualizar">
               Actualizar Solicitud
+            </button>
+            <button type="button" className="btn-danger" onClick={handleDelete}>
+              Eliminar publicación
             </button>
           </div>
         </form>

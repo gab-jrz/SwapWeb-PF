@@ -12,6 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const RequestCreateNew = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const prevTitleRef = useRef(document.title);
   const [user, setUser] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
@@ -20,8 +21,9 @@ const RequestCreateNew = () => {
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
   const [formData, setFormData] = useState({
-    category: '',
-    needDescription: '',
+  category: '',
+  title: '',
+  needDescription: '',
     location: '',
     urgency: 'med',
     privacy: false,
@@ -40,12 +42,19 @@ const RequestCreateNew = () => {
 
   useEffect(() => {
     initDarkModeDetector();
+    // Set page title when this component mounts and restore on unmount
+    prevTitleRef.current = document.title;
+    document.title = 'Solicitar Ayuda — SwapWeb';
     const userData = JSON.parse(localStorage.getItem('usuarioActual'));
     if (!userData) {
       navigate('/login');
       return;
     }
     setUser(userData);
+    return () => {
+      // restore previous document title
+      document.title = prevTitleRef.current || 'SwapWeb';
+    };
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -142,6 +151,7 @@ const RequestCreateNew = () => {
       formDataToSend.append('location', formData.location);
       formDataToSend.append('urgency', formData.urgency);
       formDataToSend.append('privacy', formData.privacy);
+  formDataToSend.append('title', formData.title);
       
       // Usar _id o id según lo que esté disponible
       const userId = user._id || user.id;
@@ -299,6 +309,21 @@ const RequestCreateNew = () => {
 
               <div className="form-row">
                 <div className="form-group full-width">
+                  <label htmlFor="title" className="form-label">
+                    <i className="fas fa-heading"></i>
+                    Título de la solicitud *
+                  </label>
+                  <input
+                    id="title"
+                    name="title"
+                    className="form-input"
+                    placeholder="Ej: Necesito una cama plegable para emergencia"
+                    value={formData.title}
+                    onChange={handleChange}
+                    maxLength={120}
+                    required
+                  />
+
                   <label htmlFor="needDescription" className="form-label">
                     <i className="fas fa-align-left"></i>
                     Describe tu necesidad *

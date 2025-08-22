@@ -787,14 +787,14 @@ body.dark-mode .user-icon-button {
 .dropdown-menu,
 .user-menu {
   z-index: 9999 !important;
-  position: relative !important;
+  position: absolute !important;
 }
 
 /* Ensure user dropdown container has high z-index */
 .user-dropdown-container,
 .dropdown {
   z-index: 9999 !important;
-  position: relative !important;
+  position: absolute !important;
 }
 
 /* Dark mode user dropdown styling with MAXIMUM z-index */
@@ -850,6 +850,17 @@ body.dark-mode .dropdown-item {
 body.dark-mode .dropdown-item:hover {
   background: #333 !important;
   color: #fff !important;
+}
+
+/* Force visible, correctly positioned dropdown when open in dark mode */
+body.dark-mode .dropdown-menu.show {
+  position: absolute !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* Main content dark mode */
@@ -993,6 +1004,40 @@ body.dark-mode body::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
 }
+
+/* Safety rules: ensure dropdowns are never clipped or hidden in dark mode. */
+/* These are deliberately specific and use !important to override aggressive global rules. */
+body.dark-mode header,
+body.dark-mode header .container-fluid,
+body.dark-mode header .row,
+body.dark-mode header .col-md-3,
+body.dark-mode header .col-md-6 {
+  overflow: visible !important;
+  z-index: 1001 !important; /* keep header above content but below dropdown forced z-index */
+}
+
+/* Make any open dropdown render as an overlay (fixed) and visible in dark mode. */
+body.dark-mode .dropdown-menu.show,
+body.dark-mode .user-dropdown,
+body.dark-mode .notification-dropdown,
+body.dark-mode .categories-overlay + .dropdown-menu {
+  position: fixed !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  z-index: 2147483647 !important;
+  max-height: 72vh !important;
+  overflow: auto !important;
+}
+
+/* Small safety for dropdown inner items so they remain interactable */
+body.dark-mode .dropdown-menu.show .dropdown-item {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
 
 /* Hide any remaining scrollbars on main containers */
 body.dark-mode .container,

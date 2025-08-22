@@ -9,6 +9,7 @@ import "../styles/RequestsList.css";
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const RequestsList = () => {
+  const prevTitleRef = React.useRef(document.title);
   const [requests, setRequests] = useState([]);
   const [filteredRequests, setFilteredRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,15 @@ const RequestsList = () => {
   ];
 
   useEffect(() => {
+    // set document title for this page
+    prevTitleRef.current = document.title;
+    document.title = 'Solicitudes de Ayuda — SwapWeb';
+
     fetchRequests();
+
+    return () => {
+      document.title = prevTitleRef.current || 'SwapWeb';
+    };
   }, []);
 
   useEffect(() => {
@@ -88,6 +97,12 @@ const RequestsList = () => {
       case 'low': return 'Baja';
       default: return urgency;
     }
+  };
+
+  const categoryLabel = (catKey) => {
+    if (!catKey) return 'No especificada';
+    const found = categorias.find(c => c.id === catKey || c.name === catKey);
+    return found ? found.name : catKey;
   };
 
   if (loading) {
@@ -204,7 +219,10 @@ const RequestsList = () => {
                     <div className="card shadow-sm h-100" style={{ borderRadius: '14px', overflow: 'hidden' }}>
                       <div className="card-body">
                         <div className="d-flex justify-content-between align-items-start mb-2">
-                          <h5 className="card-title mb-0">{request.category}</h5>
+                          <div>
+                            <h5 className="card-title mb-0">{request.title || categoryLabel(request.category)}</h5>
+                            {request.title && <small className="text-muted">{categoryLabel(request.category)}</small>}
+                          </div>
                           <span className={`badge ${getUrgencyBadgeClass(request.urgency)}`}>
                             {getUrgencyText(request.urgency)}
                           </span>
@@ -254,6 +272,7 @@ const RequestsList = () => {
           </div>
         </div>
       </div>
+  <Footer />
     </>
   );
 };

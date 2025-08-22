@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../styles/EditarProducto.css";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
+import { categorias } from "../categorias";
 
 const API_URL = 'http://localhost:3001/api';
 
@@ -27,13 +28,21 @@ const EditarDonacion = () => {
   const fileInputRef = React.useRef(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-  const categorias = [
-    "Electrodomésticos", "Muebles", "Ropa", "Libros", "Deportes",
-    "Juguetes", "Tecnología", "Hogar", "Jardinería", "Mascotas", "Otros"
+  // Usar las mismas keys/valores que el formulario de creación para mantener consistencia
+  const conditionOptions = [
+    { value: 'nuevo', label: 'Nuevo' },
+    { value: 'como_nuevo', label: 'Como nuevo' },
+    { value: 'muy_bueno', label: 'Muy bueno' },
+    { value: 'bueno', label: 'Bueno' },
+    { value: 'regular', label: 'Regular' }
   ];
 
-  const condiciones = ["Nuevo", "Como nuevo", "Usado - Buen estado", "Usado - Estado regular"];
-  const metodosRecogida = ["Recogida en domicilio", "Punto de encuentro", "Envío", "A convenir"];
+  const metodosRecogida = [
+    { value: 'domicilio', label: 'Recogida en domicilio' },
+    { value: 'punto_encuentro', label: 'Punto de encuentro' },
+    { value: 'envio', label: 'Envío' },
+    { value: 'a_convenir', label: 'A convenir' }
+  ];
 
   useEffect(() => {
     const fetchDonacion = async () => {
@@ -45,8 +54,33 @@ const EditarDonacion = () => {
         }
         
         const data = await response.json();
+        // Normalizar valores de condition y pickupMethod para compatibilidad con selects
+        const conditionMap = {
+          'Nuevo': 'nuevo',
+          'Como nuevo': 'como_nuevo',
+          'Usado - Buen estado': 'bueno',
+          'Usado - Estado regular': 'regular',
+          'Muy bueno': 'muy_bueno'
+        };
+
+        const pickupMap = {
+          'Recogida en domicilio': 'domicilio',
+          'Punto de encuentro': 'punto_encuentro',
+          'Envío': 'envio',
+          'A convenir': 'a_convenir',
+          'Flexible (a coordinar)': 'a_convenir'
+        };
+
+        const normalized = { ...data };
+        if (normalized.condition && conditionMap[normalized.condition]) {
+          normalized.condition = conditionMap[normalized.condition];
+        }
+        if (normalized.pickupMethod && pickupMap[normalized.pickupMethod]) {
+          normalized.pickupMethod = pickupMap[normalized.pickupMethod];
+        }
+
         setDonacion({ 
-          ...data, 
+          ...normalized, 
           images: Array.isArray(data.images) ? data.images : data.image ? [data.image] : [] 
         });
         setPreviewImages(Array.isArray(data.images) ? data.images : data.image ? [data.image] : []);
@@ -195,6 +229,21 @@ const EditarDonacion = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta donación? Esta acción no se puede deshacer.')) return;
+    try {
+      const response = await fetch(`${API_URL}/donations/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Error eliminando la donación');
+      showNotification('Donación eliminada correctamente', 'success');
+      setTimeout(() => navigate('/perfil'), 1200);
+    } catch (err) {
+      console.error(err);
+      showNotification('Error al eliminar la donación', 'error');
+    }
+  };
+
   if (isLoading) {
     return (
       <div>
@@ -250,6 +299,7 @@ const EditarDonacion = () => {
           </div>
 
           {/* Categoría */}
+          {/* ...botones de acción movidos al final del formulario... */}
           <div className="form-group">
             <label htmlFor="category">Categoría *</label>
             <select
@@ -261,8 +311,8 @@ const EditarDonacion = () => {
             >
               <option value="">Selecciona una categoría</option>
               {categorias.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
                 </option>
               ))}
             </select>
@@ -278,9 +328,9 @@ const EditarDonacion = () => {
               onChange={handleChange}
             >
               <option value="">Selecciona el estado</option>
-              {condiciones.map((cond) => (
-                <option key={cond} value={cond}>
-                  {cond}
+              {conditionOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </select>
@@ -309,9 +359,9 @@ const EditarDonacion = () => {
               onChange={handleChange}
             >
               <option value="">Selecciona método de entrega</option>
-              {metodosRecogida.map((metodo) => (
-                <option key={metodo} value={metodo}>
-                  {metodo}
+              {metodosRecogida.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
                 </option>
               ))}
             </select>
@@ -383,6 +433,9 @@ const EditarDonacion = () => {
             </button>
             <button type="submit" className="btn-actualizar">
               Actualizar Donación
+            </button>
+            <button type="button" className="btn-danger" onClick={handleDelete}>
+              Eliminar publicación
             </button>
           </div>
         </form>

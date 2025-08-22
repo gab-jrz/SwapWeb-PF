@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../Component/Header';
 import Footer from '../Component/Footer';
+import { categorias } from '../categorias';
 import '../styles/DetalleProducto.css';
 import '../styles/DonationDetailPremium.css';
 
@@ -166,7 +167,8 @@ const DonationDetail = () => {
         donacionTitle: donation.title,
         donacionImage: Array.isArray(donation.images) && donation.images.length > 0 ? donation.images[0] : '',
         donacionDescription: donation.description,
-        donadorId: donation.donor,
+  // Use the application's user id (donor.id) when available so messages use the same identifier
+  donadorId: donor?.id || donation.donor,
         donadorNombre: donor?.nombre || "Usuario",
         donadorApellido: donor?.apellido || ""
       }
@@ -191,6 +193,33 @@ const DonationDetail = () => {
         {statusInfo.text}
       </div>
     );
+  };
+
+  const conditionLabel = (key) => {
+    const map = {
+      'nuevo': 'Nuevo',
+      'como_nuevo': 'Como nuevo',
+      'muy_bueno': 'Muy bueno',
+      'bueno': 'Bueno',
+      'regular': 'Regular'
+    };
+    return map[key] || key || 'No especificada';
+  };
+
+  const pickupLabel = (key) => {
+    const map = {
+      'domicilio': 'Retiro en domicilio',
+      'punto_encuentro': 'Punto de encuentro',
+      'envio': 'Envío postal',
+      'a_convenir': 'Flexible / A convenir'
+    };
+    return map[key] || key;
+  };
+
+  const categoryLabel = (catKey) => {
+    if (!catKey) return 'No especificada';
+    const found = categorias.find(c => c.id === catKey || c.name === catKey);
+    return found ? found.name : catKey;
   };
 
   if (loading) return (
@@ -314,7 +343,7 @@ const DonationDetail = () => {
                 <div className="atributo-icon">📂</div>
                 <div className="atributo-content">
                   <span className="atributo-label-premium">Categoría</span>
-                  <span className="atributo-valor-premium">{donation.category || 'No especificada'}</span>
+                  <span className="atributo-valor-premium">{categoryLabel(donation.category)}</span>
                 </div>
               </div>
 
@@ -322,7 +351,7 @@ const DonationDetail = () => {
                 <div className="atributo-icon">⭐</div>
                 <div className="atributo-content">
                   <span className="atributo-label-premium">Condición</span>
-                  <span className="atributo-valor-premium">{donation.condition || 'No especificada'}</span>
+                  <span className="atributo-valor-premium">{conditionLabel(donation.condition)}</span>
                 </div>
               </div>
               
@@ -359,7 +388,7 @@ const DonationDetail = () => {
                   <div className="atributo-icon">🚚</div>
                   <div className="atributo-content">
                     <span className="atributo-label-premium">Método de entrega</span>
-                    <span className="atributo-valor-premium">{donation.pickupMethod}</span>
+                    <span className="atributo-valor-premium">{pickupLabel(donation.pickupMethod)}</span>
                   </div>
                 </div>
               )}
