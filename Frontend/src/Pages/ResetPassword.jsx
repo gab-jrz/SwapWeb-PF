@@ -6,6 +6,7 @@ import Logo from '../components/Logo.jsx';
 const ResetPassword = () => {
   const { token } = useParams();
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -42,14 +43,29 @@ const ResetPassword = () => {
         <h2>Nueva contraseña</h2>
         {message && <p className="error-message">{message}</p>}
         <form onSubmit={handleSubmit}>
-          <input
-            type="password"
-            placeholder="Nueva contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-          />
+          <div className="input-group">
+            <div className="password-label-row">
+              <span>Nueva contraseña</span>
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((s) => !s)}
+                disabled={loading}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Nueva contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
           <button type="submit" disabled={loading}>
             {loading ? 'Actualizando...' : 'Actualizar'}
           </button>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 import { useNotifications } from '../hooks/useNotifications';
+import { useNavigate } from 'react-router-dom';
 import '../styles/NotificationDropdown.css';
 
-const NotificationDropdown = ({ userId, isOpen, onClose, anchorRef }) => {
+const NotificationDropdown = ({ userId, isOpen, onClose, anchorRef, onAfterAction }) => {
   const dropdownRef = useRef(null);
   const [coords, setCoords] = useState({ top: 90, left: 10 });
+  const navigate = useNavigate();
   const { 
     notifications, 
     unreadCount, 
@@ -80,22 +82,37 @@ const NotificationDropdown = ({ userId, isOpen, onClose, anchorRef }) => {
     // Marcar como leída si no lo está
     if (!notification.read) {
       await markAsRead(notification._id);
+      // Informar al padre para refrescar el badge
+      if (typeof onAfterAction === 'function') onAfterAction();
     }
 
     // Aquí puedes agregar lógica para navegar a la página relacionada
     // Por ejemplo, si es un mensaje, ir al chat
-    if (notification.data?.messageId) {
-      // navigate(`/chat/${notification.data.messageId}`);
+    if (notification.type?.includes('mensaje')) {
+      // Llevar al usuario a su perfil en la pestaña de mensajes
+      navigate('/perfil', { state: { activeTab: 'mensajes' } });
+    } else if (notification.type === 'propuesta_intercambio' || notification.type === 'cambio_estado' || notification.type === 'intercambio_completado') {
+      // Propuestas y estados de intercambio: ir a Transacciones
+      navigate('/perfil', { state: { activeTab: 'transacciones' } });
+    } else if (notification.data?.productId) {
+      navigate(`/producto/${notification.data.productId}`);
+    } else if (notification.data?.donacionId) {
+      navigate(`/donaciones/${notification.data.donacionId}`);
     }
+
+    // Cerrar el dropdown tras navegar
+    onClose && onClose();
   };
 
   const handleMarkAllRead = async () => {
     await markAllAsRead();
+    if (typeof onAfterAction === 'function') onAfterAction();
   };
 
   const handleDeleteNotification = async (e, notificationId) => {
     e.stopPropagation();
     await deleteNotification(notificationId);
+    if (typeof onAfterAction === 'function') onAfterAction();
   };
 
   const getNotificationIcon = (type) => {

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../Component/Header';
 import { categorias } from "../categorias";
 import Footer from '../Component/Footer';
@@ -144,6 +144,7 @@ const Modal = ({ isOpen, onClose, onConfirm, title, message, isLoading }) => {
 };
 
 const PublicarProducto = () => {
+  const location = useLocation();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -344,6 +345,22 @@ const PublicarProducto = () => {
     }
   };
 
+  // Hacer scroll al formulario si la URL tiene #form
+  useEffect(() => {
+    const doScroll = () => {
+      if (location.hash === '#form') {
+        const el = document.getElementById('form');
+        if (el && typeof el.scrollIntoView === 'function') {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    };
+    // Ejecutar al montar y ligeramente después para asegurar render
+    doScroll();
+    const t = setTimeout(doScroll, 50);
+    return () => clearTimeout(t);
+  }, [location.hash]);
+
   return (
     <div className="perfil-usuario-container">
       <Header search={false} />
@@ -367,7 +384,7 @@ const PublicarProducto = () => {
             </div>
           )}
 
-          <form className="publicar-producto-form" onSubmit={handleSubmit}>
+          <form id="form" className="publicar-producto-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="title">Título del Producto</label>
             <input

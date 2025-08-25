@@ -81,14 +81,12 @@ const PerfilUsuario = () => {
     return () => window.removeEventListener('userProfileUpdated', handleProfileUpdated);
   }, []);
 
-  // Pestaña activa ('articulos', 'transacciones', 'mensajes', 'favoritos', 'donaciones', 'solicitudes')
+  // Pestaña activa ('articulos', 'transacciones', 'mensajes', 'favoritos', 'donaciones')
   const [activeTab, setActiveTab] = useState('articulos');
 
-  // Estados para donaciones y solicitudes
+  // Estados para donaciones
   const [donaciones, setDonaciones] = useState([]);
-  const [solicitudesAyuda, setSolicitudesAyuda] = useState([]);
   const [loadingDonaciones, setLoadingDonaciones] = useState(false);
-  const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
 
   // Cargar favoritos desde localStorage
   useEffect(() => {
@@ -242,9 +240,27 @@ const PerfilUsuario = () => {
       }
     });
     
-    // Ordenar mensajes por fecha en cada chat
+    // Ordenar mensajes por fecha en cada chat y asegurar que los nombres sean consistentes
     Object.keys(chatsAgrupados).forEach(chatId => {
-      chatsAgrupados[chatId].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const chatMensajes = chatsAgrupados[chatId];
+      chatMensajes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      
+      // Asegurar que los nombres sean consistentes en todo el chat
+      if (chatMensajes.length > 0) {
+        const primerMensaje = chatMensajes[0];
+        const nombreConsistente = primerMensaje.deId === userId ? 
+          (primerMensaje.paraNombre || primerMensaje.para || 'Usuario') : 
+          (primerMensaje.deNombre || primerMensaje.de || 'Usuario');
+        
+        // Actualizar todos los mensajes del chat con el nombre consistente
+        chatMensajes.forEach(msg => {
+          if (msg.deId === userId) {
+            msg.paraNombre = nombreConsistente;
+          } else {
+            msg.deNombre = nombreConsistente;
+          }
+        });
+      }
     });
     
     return { chatsAgrupados, noLeidosPorChat };
@@ -340,55 +356,26 @@ const PerfilUsuario = () => {
   }, []);
 
   // Agrupar mensajes en chats y contar no leídos
+  // Reemplazá TODO el cuerpo de updateChatsAndUnread por esto:
   const updateChatsAndUnread = React.useCallback(() => {
-    if (mensajes.length === 0) return;
-    
-    const agrupado = {};
-    const unreadMap = {};
-    const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-    
-    mensajes.forEach(m => {
-      let key;
-      
-      if (m.donacionId) {
-        // Para donaciones, usar el título de la donación
-        const tituloDonacion = m.donacionTitle || '(donación sin título)';
-        key = `❤️ ${tituloDonacion}`;
-      } else {
-        // Para productos (intercambios), usar el formato actual
-        const titulo1 = m.productoTitle || '(sin título)';
-        const titulo2 = m.productoOfrecido || '(sin título)';
-        key = `${titulo1}↔${titulo2}`;
-      }
-      
-      if (!agrupado[key]) {
-        agrupado[key] = [];
-        unreadMap[key] = 0;
-      }
-      
-      agrupado[key].push(m);
-      
-      // Verificar si el mensaje no ha sido leído y no es del usuario actual
-      if (usuarioActual && m.paraId === usuarioActual.id && !(m.leidoPor || []).includes(usuarioActual.id)) {
-        unreadMap[key]++;
-      }
-    });
-    
-    // Ordenar mensajes por fecha en cada chat
-    Object.values(agrupado).forEach(chat => {
-      chat.sort((a, b) => new Date(a.fecha || a.createdAt) - new Date(b.fecha || b.createdAt));
-    });
-    
-    // Actualizar estados
-    setChats(agrupado);
-    setUnreadByChat(unreadMap);
-  }, [mensajes]);
+    const uid = userData?.id || JSON.parse(localStorage.getItem('usuarioActual'))?.id;
+    if (!uid) return;
+  
+    const { chatsAgrupados, noLeidosPorChat } = agruparMensajes(mensajes, uid);
+  
+    setChats(chatsAgrupados);
+    setUnreadByChat(noLeidosPorChat);
+  }, [mensajes, userData?.id]);
+  
   
   // Efecto para actualizar chats cuando cambian los mensajes
   useEffect(() => {
-    updateChatsAndUnread();
-  }, [updateChatsAndUnread]);
-
+    if (mensajes.length === 0) return;
+    const { chatsAgrupados, noLeidosPorChat } = agruparMensajes(mensajes, userData?.id);
+    setChats(chatsAgrupados);
+    setUnreadByChat(noLeidosPorChat);
+  }, [mensajes, userData?.id]);
+  
   // --- SCROLL INTELIGENTE ---
   // Guardar si el usuario estaba abajo ANTES del update
   const wasUserAtBottomRef = useRef(true);
@@ -415,38 +402,28 @@ const PerfilUsuario = () => {
 
   const fetchMensajes = (uid) => {
     const idToUse = uid || userData?.id;
-    console.log('🔍 fetchMensajes para usuario ID:', idToUse);
     if (!idToUse) {
       console.log('❌ No hay ID de usuario');
       return;
     }
     
-    console.log(`🌐 Haciendo petición a: ${API_URL}/messages/${idToUse}`);
     fetch(`${API_URL}/messages/${idToUse}`)
       .then(res => {
-        console.log('📥 Respuesta del servidor - Status:', res.status);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
       })
       .then(data => {
-        console.log('📩 Datos recibidos:', data);
-        try {
-          const inspect = data.slice(0, 5).map(m => ({
-            id: m._id || m.id,
-            deId: m.deId,
-            paraId: m.paraId,
-            deImagen: m.deImagen,
-            paraImagen: m.paraImagen,
-            hasImagenNombre: !!m.imagenNombre,
-            imagenNombreLen: m.imagenNombre?.length || 0,
-          }));
-          console.log('🧪 Inspect imágenes (primeros):', inspect);
-        } catch {}
         const mapped = data.map(m => ({
           ...m,
-          nombreRemitente: m.de || 'Usuario',
+          descripcion: m.descripcion || m.texto || '',
+          deId: m.deId || m.de || null,
+          paraId: m.paraId || m.para || null,
+          deNombre: m.deNombre || m.de || '',
+          paraNombre: m.paraNombre || m.para || '',
           fecha: m.createdAt || m.fecha || new Date().toISOString()
         }));
+        
+        
         
         // Actualizar mensajes
         const mensajesUnicos = uniqMessages(mapped);
@@ -454,9 +431,6 @@ const PerfilUsuario = () => {
         
         // Agrupar mensajes en chats
         const { chatsAgrupados, noLeidosPorChat } = agruparMensajes(mensajesUnicos, idToUse);
-        
-        console.log('💬 Chats agrupados:', chatsAgrupados);
-        console.log('🔔 No leídos por chat:', noLeidosPorChat);
         
         setChats(chatsAgrupados);
         setUnreadByChat(noLeidosPorChat);
@@ -471,65 +445,87 @@ const PerfilUsuario = () => {
       });
   };
 
-// --- FUNCIÓN handleEnviarMensaje ---
-async function handleEnviarMensaje() {
-  if (!nuevoTexto.trim() && !imagenAdjunta) return;
-  if (!chatSeleccionado || !chats[chatSeleccionado] || chats[chatSeleccionado].length === 0) return;
-  const base = chats[chatSeleccionado][0];
-  const otherId = base.deId === userData.id ? base.paraId : base.deId;
-  const paraNombre = base.deId === userData.id ? (base.de || base.deNombre || '') : `${userData.nombre} ${userData.apellido}`;
-
-  // Si hay imagen adjunta, convertir a Base64 y enviarla en imagenNombre (backend schema)
-  let imagenNombre = undefined;
-  if (imagenAdjunta instanceof File) {
-    imagenNombre = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(imagenAdjunta);
-    });
-  }
-
-  const payload = {
-    deId: userData.id,
-    paraId: otherId,
-    de: `${userData.nombre} ${userData.apellido}`,
-    paraNombre,
-    // Backend requiere descripcion; si hay imagen y no hay texto, enviar placeholder
-    descripcion: nuevoTexto || (imagenNombre ? '(imagen)' : ''),
-    // Campos para productos (intercambios)
-    productoId: base.productoId,
-    productoTitle: base.productoTitle,
-    productoOfrecido: base.productoOfrecido || 'Mensaje directo',
-    // Campos para donaciones
-    donacionId: base.donacionId,
-    donacionTitle: base.donacionTitle,
-    imagenDonacion: base.imagenDonacion,
-    tipoPeticion: base.tipoPeticion || (base.donacionId ? 'donacion' : 'mensaje'),
-    ...(imagenNombre ? { imagenNombre } : {})
-  };
-
-  try {
-    const res = await fetch(`${API_URL}/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (res.ok) {
-      const saved = await res.json();
-      try { console.log('[ENVIADO OK]', { hasImagenNombre: !!saved.imagenNombre, len: saved.imagenNombre?.length, id: saved._id || saved.id }); } catch {}
-      setMensajes(prev => uniqMessages([...prev, saved]));
-    }
-  } catch (err) {
-    console.error('Error enviando mensaje', err);
-  } finally {
+  async function handleEnviarMensaje() {
+    if (!nuevoTexto.trim() && !imagenAdjunta) return;
+    if (!chatSeleccionado || !chats[chatSeleccionado]?.length) return;
+  
+    const base = chats[chatSeleccionado][0];
+    const otherId = base.deId === userData.id ? base.paraId : base.deId;
+    const paraNombre = base.deId === userData.id ? (base.de || base.deNombre || '') : `${userData.nombre} ${userData.apellido}`;
+  
+    const tempId = `temp-${Date.now()}`;
+    const mensajeOptimista = {
+      _id: tempId,
+      deId: userData.id,
+      paraId: otherId,
+      de: `${userData.nombre} ${userData.apellido}`,
+      paraNombre,
+      // 🔴 usar el campo que renderiza el chat:
+      descripcion: nuevoTexto.trim(),
+      // copiar contexto del intercambio para que caiga en el mismo chat
+      productoId: base.productoId,
+      productoOfrecidoId: base.productoOfrecidoId,
+      productoTitle: base.productoTitle,
+      productoOfrecido: base.productoOfrecido,
+      donacionId: base.donacionId,
+      donacionTitle: base.donacionTitle,
+      fecha: new Date().toISOString(),
+      esTemporal: true
+    };
+  
+    setMensajes(prev => [...prev, mensajeOptimista]);
     setNuevoTexto('');
     setImagenAdjunta(null);
-    fetchMensajes(userData.id);
+  
+    try {
+      let imagenBase64 = null;
+      if (imagenAdjunta instanceof File) {
+        imagenBase64 = await fileToDataUrl(imagenAdjunta); // o tu lector actual
+      }
+  
+      const payload = {
+        deId: userData.id,
+        paraId: otherId,
+        de: `${userData.nombre} ${userData.apellido}`,
+        paraNombre,
+        // 🔴 enviar como descripcion (si tu backend espera "texto", mandá ambos):
+        descripcion: mensajeOptimista.descripcion,
+        texto: mensajeOptimista.descripcion,
+        imagenNombre: imagenBase64,
+        // contexto del intercambio:
+        productoId: base.productoId,
+        productoOfrecidoId: base.productoOfrecidoId,
+        productoTitle: base.productoTitle,
+        productoOfrecido: base.productoOfrecido,
+        donacionId: base.donacionId,
+        donacionTitle: base.donacionTitle,
+        leido: false
+      };
+  
+      const res = await fetch(`${API_URL}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+  
+      if (!res.ok) throw new Error('Error al enviar');
+  
+      const saved = await res.json();
+      // normalizá el mensaje que vuelve del backend
+      const normalizado = {
+        ...saved,
+        descripcion: saved.descripcion ?? saved.texto ?? '',
+        fecha: saved.createdAt ?? saved.fecha ?? new Date().toISOString()
+      };
+  
+      setMensajes(prev => prev.map(m => (m._id === tempId ? normalizado : m)));
+    } catch (err) {
+      // revertir optimista
+      setMensajes(prev => prev.filter(m => m._id !== tempId));
+      alert('Error al enviar el mensaje. Por favor, intentá de nuevo.');
+    }
   }
-}
-// --- FIN handleEnviarMensaje ---
-
+  
 // Mantener el chat seleccionado tras polling/fetch
   useEffect(() => {
     // Si el chat seleccionado ya no existe tras un fetch, selecciona el primero disponible
@@ -1310,7 +1306,7 @@ async function handleEnviarMensaje() {
   const transaccionesSectionRef = React.useRef(null);
   const favoritosSectionRef = React.useRef(null);
   const donacionesSectionRef = React.useRef(null);
-  const solicitudesSectionRef = React.useRef(null);
+
   
   // Detectar si el usuario está al final del chat
   const isUserAtBottom = React.useCallback(() => {
@@ -1319,13 +1315,16 @@ async function handleEnviarMensaje() {
     return scrollHeight - scrollTop - clientHeight < 50; // 50px de tolerancia
   }, []);
   
-  // Scroll inteligente: solo cuando el usuario envía mensaje o está al final
   const scrollToBottom = React.useCallback((force = false) => {
-    if (!(force || userSentMessage || isUserAtBottom())) return;
+    // Deshabilitar scroll automático al enviar mensajes
+    if (!force) return;
+    
     const container = chatContainerRef.current;
     if (!container) return;
-    const behavior = userSentMessage ? 'smooth' : 'auto';
-    // usar rAF para asegurar layout final antes de medir
+    
+    // Solo hacer scroll suave cuando se fuerza explícitamente
+    const behavior = force ? 'smooth' : 'auto';
+    
     requestAnimationFrame(() => {
       container.scrollTo({ top: container.scrollHeight, behavior });
       setUserSentMessage(false);
@@ -1370,13 +1369,14 @@ async function handleEnviarMensaje() {
   useEffect(() => {
     if (activeTab === 'mensajes') {
       const t = setTimeout(() => {
-        if (userSentMessage) {
+        // Solo hacer scroll automático si el usuario está al final del chat
+        if (userSentMessage && autoScroll) {
           scrollToBottom(false);
         }
       }, 50);
       return () => clearTimeout(t);
     }
-  }, [chats, chatSeleccionado, activeTab, userSentMessage, scrollToBottom]);
+  }, [chats, chatSeleccionado, activeTab, userSentMessage, scrollToBottom, autoScroll]);
 
   // Optimizar renderizado de mensajes del chat
   const chatMessages = React.useMemo(() => {
@@ -1412,10 +1412,7 @@ async function handleEnviarMensaje() {
     if (tab === 'donaciones') {
       loadDonaciones();
     }
-    // Si se cambia a la pestaña de solicitudes, cargar solicitudes
-    if (tab === 'solicitudes') {
-      loadSolicitudesAyuda();
-    }
+
   };
 
   // Función para cargar donaciones del usuario
@@ -1443,30 +1440,7 @@ async function handleEnviarMensaje() {
     }
   };
   
-  // Función para cargar solicitudes de ayuda del usuario
-  const loadSolicitudesAyuda = async () => {
-    const usuario = JSON.parse(localStorage.getItem('usuarioActual'));
-    if (!usuario) return;
-    
-    setLoadingSolicitudes(true);
-    try {
-      console.log('🆘 Cargando solicitudes de ayuda del usuario:', usuario.id);
-      const response = await fetch(`${API_URL}/donation-requests?requester=${usuario._id || usuario.id}`);
-      
-      if (!response.ok) {
-        throw new Error(`Error HTTP ${response.status}`);
-      }
-      
-      const solicitudesData = await response.json();
-      console.log('✅ Solicitudes de ayuda cargadas:', solicitudesData);
-      setSolicitudesAyuda(solicitudesData);
-    } catch (error) {
-      console.error('❌ Error al cargar solicitudes de ayuda:', error);
-      setSolicitudesAyuda([]);
-    } finally {
-      setLoadingSolicitudes(false);
-    }
-  };
+
 
   const handleEliminarTransaccion = () => {
     const idx = transToDelete.idx;
@@ -1620,7 +1594,7 @@ async function handleEnviarMensaje() {
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
                 <span className="detalle-label-premium">Provincia:</span>
-                <span className="detalle-value-premium">{(userData.zona || userData.ubicacion || 'Tucumán')}</span>
+                <span className="detalle-value-premium">{(userData.zona ||  'Tucumán')}</span>
               </div>
               
               {userData.mostrarContacto ? (
@@ -1710,14 +1684,7 @@ async function handleEnviarMensaje() {
             </svg>
             Mis Donaciones
           </button>
-          <button className={`tab-btn-premium ${activeTab === 'solicitudes' ? 'active' : ''}`} onClick={() => handleTabChange('solicitudes')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M12 17h.01"></path>
-            </svg>
-            Solicitudes de Ayuda
-          </button>
+
         </div>
 
         <div className="perfil-tab-content">
@@ -1854,90 +1821,7 @@ async function handleEnviarMensaje() {
             </div>
           )}
 
-          {activeTab === 'solicitudes' && (
-            <div className="mis-solicitudes" ref={solicitudesSectionRef}>
-              <h2>Mis Solicitudes de Ayuda</h2>
-              <button className="btn-publicar" onClick={() => navigate("/donaciones/solicitar")} style={{ marginBottom: '1rem' }}>
-                + Nueva Solicitud
-              </button>
-              {loadingSolicitudes ? (
-                <div className="loading-spinner">Cargando solicitudes...</div>
-              ) : solicitudesAyuda.length === 0 ? (
-                <p>No has creado ninguna solicitud de ayuda aún.</p>
-              ) : (
-                <div className="articulos-grid">
-                  {solicitudesAyuda.map((solicitud) => (
-                    <div key={solicitud._id || solicitud.id} className="solicitud-card">
-                      {/* Imagen de la solicitud (attachments) */}
-                      <div className="solicitud-image-container">
-                        {solicitud.attachments && solicitud.attachments.length > 0 ? (
-                          <img 
-                            src={getDonationImageUrl(solicitud.attachments[0])} 
-                            alt={`Solicitud ${solicitud.category}`}
-                            className="solicitud-image"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div className="solicitud-image-placeholder" style={{display: solicitud.attachments && solicitud.attachments.length > 0 ? 'none' : 'flex'}}>
-                          <i className="fas fa-hands-helping"></i>
-                        </div>
-                      </div>
-                      
-                      <div className="solicitud-content">
-                        <div className="solicitud-header">
-                          <div>
-                            <h4 className="solicitud-titulo">{solicitud.title || solicitud.category}</h4>
-                            {solicitud.title && <small className="solicitud-categoria">{solicitud.category}</small>}
-                          </div>
-                          <span className={`solicitud-urgencia ${solicitud.urgency || 'med'}`}>
-                            {solicitud.urgency === 'high' ? 'Urgente' : 
-                             solicitud.urgency === 'low' ? 'Baja' : 'Media'}
-                          </span>
-                        </div>
-                        <h4 className="solicitud-title">Ayuda con {solicitud.category}</h4>
-                        <p className="solicitud-desc">{solicitud.needDescription}</p>
-                        {solicitud.specificNeeds && solicitud.specificNeeds.length > 0 && (
-                          <div className="solicitud-necesidades">
-                            <span>Necesidades específicas:</span>
-                            <div className="necesidades-tags">
-                              {solicitud.specificNeeds.map((need, index) => (
-                                <span key={index} className="necesidad-tag">{need}</span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        <div className="solicitud-meta">
-                          <div className="solicitud-fecha">
-                            {new Date(solicitud.createdAt).toLocaleDateString()}
-                          </div>
-                          <div className="solicitud-ubicacion">
-                            {solicitud.location || 'Sin especificar'}
-                          </div>
-                        </div>
-                        <div className="solicitud-actions">
-                          <button 
-                            className="btn-ver"
-                            onClick={() => navigate(`/request/${solicitud._id || solicitud.id}`)}
-                          >
-                            Ver Detalles
-                          </button>
-                          <button 
-                            className="btn-editar"
-                            onClick={() => navigate(`/request-edit/${solicitud._id || solicitud.id}`)}
-                          >
-                            Editar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+
 
           {activeTab === 'articulos' && (
             <div className="mis-articulos" ref={articulosSectionRef}>
@@ -2183,8 +2067,10 @@ async function handleEnviarMensaje() {
           {activeTab === 'mensajes' && (
             <div className="mis-mensajes" ref={mensajesSectionRef}>
               <h2>Mensajes</h2>
-              {Object.keys(chats).length === 0 ? (
+              {Object.keys(chats).length === 0 && mensajes.length === 0 ? (
                 <p>No tienes mensajes nuevos.</p>
+              ) : Object.keys(chats).length === 0 && mensajes.length > 0 ? (
+                <p>Cargando mensajes...</p>
               ) : (
                 <div className="chat-layout" style={{display:'flex',gap:'1rem'}}>
                   {/* lista de chats */}
@@ -2203,16 +2089,15 @@ async function handleEnviarMensaje() {
                         }
                       }
                       // Texto del último mensaje
-                      let textoUltimo = '';
-                      if (ultimoMensaje) {
-                        if (ultimoMensaje.descripcion && ultimoMensaje.descripcion.length > 0) {
-                          textoUltimo = ultimoMensaje.descripcion.length > 30 ? ultimoMensaje.descripcion.slice(0, 30) + '…' : ultimoMensaje.descripcion;
-                        } else if (ultimoMensaje.imagen) {
-                          textoUltimo = '[Imagen]';
-                        } else {
-                          textoUltimo = '(Sin mensaje)';
-                        }
-                      }
+                      // donde armás textoUltimo:
+let textoUltimo = '';
+if (ultimoMensaje) {
+  const t = ultimoMensaje.descripcion ?? ultimoMensaje.texto ?? '';
+  textoUltimo = t ? (t.length > 30 ? t.slice(0,30) + '…' : t)
+                  : (ultimoMensaje.imagen ? '[Imagen]' : '(Sin mensaje)');
+}
+
+                      
                       const noLeidos = unreadByChat[key] > 0;
                       return (
                         <div
@@ -3059,16 +2944,22 @@ async function handleEnviarMensaje() {
         isOpen={showConfirmChatDelete}
         onClose={() => setShowConfirmChatDelete(false)}
         onConfirm={async () => {
+          
           // Eliminar todos los mensajes de ese chat del backend y la UI
           const mensajesChat = chats[chatToDelete] || [];
           for (const msg of mensajesChat) {
             await fetch(`${API_URL}/messages/${msg._id || msg.id}`, { method: 'DELETE' });
           }
-          setMensajes(prev => prev.filter(m => {
-            const t1 = m.productoTitle || '(sin título)';
-            const t2 = m.productoOfrecido || '(sin título)';
-            return `${t1}↔${t2}` !== chatToDelete;
-          }));
+         // Dentro de onConfirm del ConfirmModal de chat:
+setMensajes(prev => prev.filter(m => {
+  const uid = userData?.id || JSON.parse(localStorage.getItem('usuarioActual'))?.id;
+  const otroId = m.deId === uid ? m.paraId : m.deId;
+  const key = m.donacionId
+    ? [m.donacionId, otroId].sort().join('_donacion_')
+    : [m.productoId,  otroId].sort().join('_');
+  return key !== chatToDelete;
+}));
+
           setShowConfirmChatDelete(false);
           if (chatSeleccionado === chatToDelete) setChatSeleccionado(null);
         }}

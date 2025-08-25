@@ -1371,3 +1371,61 @@ button[class*="nuevo"],
     height: 120px;
   }
 }
+
+/* Exchanged state */
+.articulo-card-premium.exchanged {
+  opacity: 0.8;
+  position: relative;
+  background-color: #f9f9f9;
+}
+
+.articulo-card-premium.exchanged::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 100%);
+  pointer-events: none;
+}
+
+/* Exchanged badge */
+.exchanged-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #dc2626;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Dark mode support */
+[data-theme='dark'] .articulo-card-premium.exchanged {
+  background-color: #2d2d2d;
+}
+
+[data-theme='dark'] .articulo-card-premium.exchanged::after {
+  background: linear-gradient(135deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
+}
+
+[data-theme='dark'] .exchanged-badge {
+  background-color: #ef4444;
+}
+
+/* Disable hover effects on exchanged items */
+.articulo-card-premium.exchanged:hover {
+  transform: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  cursor: default;
+}
+
+/* Hide action buttons for exchanged items */
+.articulo-card-premium.exchanged .articulo-actions {
+  display: none;
+}

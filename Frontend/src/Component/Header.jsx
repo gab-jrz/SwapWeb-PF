@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../styles/Header.css";
-import { FaUserCircle, FaSun, FaMoon, FaBell } from "react-icons/fa";
+import { FaUserCircle, FaSun, FaMoon, FaBell, FaGift } from "react-icons/fa";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { useNotifications } from "../hooks/useNotifications";
 import { useDarkMode } from "../hooks/useDarkMode";
@@ -216,6 +216,16 @@ const Header = ({
     return () => cancelAnimationFrame(id);
   }, [categoryMenuOpen]);
 
+  // Abrir menú de categorías si llega ?openCats=1 en la URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('openCats') === '1') {
+      setCategoryMenuOpen(true);
+      // Asegurar desbloqueo de scroll del body si venimos de overlay
+      document.body.classList.remove('no-scroll');
+    }
+  }, [location.search]);
+
   // refrescar cada 30s
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
@@ -257,7 +267,8 @@ const Header = ({
     <>
       <header
         className="bg-light border-bottom w-100"
-        style={{ position: "relative", zIndex: 10 }}>
+        style={{ position: "relative", zIndex: 10 }}
+      >
         <div className="container-fluid py-2 px-4">
           <div className="row align-items-center justify-content-between">
             <div className="col-md-3 d-flex align-items-center">
@@ -320,33 +331,6 @@ const Header = ({
             {/* Navegación central */}
             <div className="col-md-6 d-flex justify-content-center align-items-center">
               <nav className="main-nav d-flex gap-4">
-                <button
-                  className="nav-link-button"
-                  onClick={() => navigate("/")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: darkMode ? "#e5e7eb" : "#4b5563",
-                    fontWeight: "600",
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    transition: "all 0.2s ease",
-                    textDecoration: "none"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = darkMode ? "rgba(139, 92, 246, 0.1)" : "rgba(59, 130, 246, 0.1)";
-                    e.target.style.color = darkMode ? "#8b5cf6" : "#3b82f6";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                    e.target.style.color = darkMode ? "#e5e7eb" : "#4b5563";
-                  }}
-                >
-                  Intercambios
-                </button>
-
                 <div className="position-relative" style={{ display: "inline-block" }}>
                   <button
                     id="donacionesMenu"
@@ -372,13 +356,13 @@ const Header = ({
                       fontWeight: "600",
                       fontSize: "1rem",
                       cursor: "pointer",
-                      padding: "8px 12px",
+                      padding: "8px 16px 8px 12px",
                       borderRadius: "8px",
                       transition: "all 0.2s ease",
                       textDecoration: "none",
                       display: "flex",
                       alignItems: "center",
-                      gap: "4px"
+                      gap: "8px"
                     }}
                     onMouseEnter={(e) => {
                       if (!donacionesMenuOpen) {
@@ -393,6 +377,12 @@ const Header = ({
                       }
                     }}
                   >
+                    <FaGift style={{
+                      color: donacionesMenuOpen 
+                        ? (darkMode ? "#8b5cf6" : "#3b82f6")
+                        : (darkMode ? "#e5e7eb" : "#4b5563"),
+                      transition: "all 0.2s ease"
+                    }} />
                     Donaciones
                     <svg
                       width="12"
@@ -462,7 +452,7 @@ const Header = ({
                           e.target.style.backgroundColor = "transparent";
                         }}
                       >
-                        🔍 Explorar Donaciones
+                        Explorar Donaciones
                       </button>
                       <button
                         className="dropdown-item"
@@ -488,7 +478,7 @@ const Header = ({
                           e.target.style.backgroundColor = "transparent";
                         }}
                       >
-                        ✨ Publicar Donación
+                        Publicar Donación
                       </button>
                       <div style={{ 
                         height: "1px", 
@@ -519,7 +509,7 @@ const Header = ({
                           e.target.style.backgroundColor = "transparent";
                         }}
                       >
-                        📋 Ver Solicitudes
+                        Ver Solicitudes
                       </button>
                       <button
                         className="dropdown-item"
@@ -545,7 +535,7 @@ const Header = ({
                           e.target.style.backgroundColor = "transparent";
                         }}
                       >
-                        🙏 Solicitar Ayuda
+                        Solicitar Ayuda
                       </button>
                     </div>
                   )}
@@ -618,6 +608,7 @@ const Header = ({
                       isOpen={notificationDropdownOpen}
                       onClose={() => setNotificationDropdownOpen(false)}
                       anchorRef={notificationIconRef}
+                      onAfterAction={updateUnreadCount}
                     />
                   )}
 
@@ -821,17 +812,19 @@ const Header = ({
                           setMenuOpen(false);
                         }}
                       >
-                        <span className="menu-icon">👤</span>
+                        <span className="menu-icon"></span>
                         Mi Perfil
                       </button>
                       <button
                         className="dropdown-item user-menu-item"
                         onClick={() => {
-                          navigate(`/chat`);
+                          navigate(`/perfil`, {
+                            state: { activeTab: "mensajes" },
+                          });
                           setMenuOpen(false);
                         }}
                       >
-                        <span className="menu-icon">💬</span>
+                        <span className="menu-icon"></span>
                         Mis Mensajes
                       </button>
                       <button
@@ -843,7 +836,7 @@ const Header = ({
                           setMenuOpen(false);
                         }}
                       >
-                        <span className="menu-icon">❤️</span>
+                        <span className="menu-icon"></span>
                         Favoritos
                       </button>
                       <button
@@ -855,7 +848,7 @@ const Header = ({
                           setMenuOpen(false);
                         }}
                       >
-                        <span className="menu-icon">🔄</span>
+                        <span className="menu-icon"></span>
                         Mis Intercambios
                       </button>
                       <button
@@ -867,7 +860,7 @@ const Header = ({
                           setMenuOpen(false);
                         }}
                       >
-                        <span className="menu-icon">📦</span>
+                        <span className="menu-icon"></span>
                         Publicar un Producto
                       </button>
                       <button
@@ -877,7 +870,7 @@ const Header = ({
                           setMenuOpen(false);
                         }}
                       >
-                        <span className="menu-icon">⚙️</span>
+                        <span className="menu-icon"></span>
                         Configuración
                       </button>
                       <hr className="menu-divider" />
@@ -888,7 +881,7 @@ const Header = ({
                           setMenuOpen(false);
                         }}
                       >
-                        <span className="menu-icon">🚺</span>
+                        <span className="menu-icon"></span>
                         Cerrar sesión
                       </button>
                     </>

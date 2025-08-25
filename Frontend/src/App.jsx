@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Pages/Home';
 import DetalleProducto from './Pages/DetalleProducto';
 import Login from './Pages/Login';
@@ -15,7 +15,9 @@ import EditarProducto from './Pages/EditarProducto';
 import ProtectedRoute from './Component/ProtectedRoute';
 import ForgotPassword from './Pages/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword';
-
+import ComoFunciona from './Pages/ComoFunciona';
+import SobreNosotros from './Pages/SobreNosotros';
+import Privacidad from './Pages/Privacidad';
 import DonationsList from './Pages/DonationsList';
 import DonationCreate from './Pages/DonationCreateNew';
 import DonationDetail from './Pages/DonationDetail';
@@ -25,12 +27,21 @@ import RequestsList from './Pages/RequestsList';
 import RequestCreate from './Pages/RequestCreateNew';
 import RequestDetail from './Pages/RequestDetail';
 import EditarSolicitud from './Pages/EditarSolicitud';
+import Contactanos from './Pages/Contactanos';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        {/* Páginas informativas */}
+        <Route path="/sobre-nosotros" element={<SobreNosotros />} />
+        <Route path="/como-funciona" element={<ComoFunciona />} />
+
+        <Route path="/privacidad" element={<Privacidad />} />
+        {/* Alias antiguo para publicar */}
+        <Route path="/publicar" element={<Navigate to="/publicarproducto" replace />} />
+        <Route path="/categorias" element={<Navigate to="/" replace />} />
         <Route path="/producto/:id" element={<DetalleProducto />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -40,8 +51,8 @@ function App() {
         <Route path="/editar" element={<Editar />} />
 
         <Route path="/perfil" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
-        <Route path="/chat" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
         <Route path="/perfil/:id" element={<PerfilPublico />} />
+        <Route path="/perfil-publico/:id" element={<PerfilPublico />} />
         <Route path="/calificaciones/:id" element={<Calificaciones />} />
         <Route path="/configuracion" element={<Configuracion />} />
         <Route path="/publicarproducto" element={
@@ -66,10 +77,10 @@ function App() {
             <EditarProducto />
          </ProtectedRoute>
         } />
+        <Route path="/contactanos" element={<Contactanos />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
-

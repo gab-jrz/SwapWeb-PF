@@ -368,7 +368,7 @@ const DonationDetail = () => {
                   <div className="atributo-icon">❤️</div>
                   <div className="atributo-content">
                     <span className="atributo-label-premium">Donador</span>
-                    <span className="atributo-valor-premium clickeable" onClick={() => navigate(`/perfil/${donor._id}`)}>
+                    <span className="atributo-valor-premium clickeable" onClick={() => navigate(`/perfil-publico/${donor._id}`)}>
                       {donor.nombre} {donor.apellido}
                     </span>
                   </div>

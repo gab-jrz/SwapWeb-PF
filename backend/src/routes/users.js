@@ -190,5 +190,211 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+router.get('/:id/favoritos', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔍 Buscando favoritos para usuario:', req.params.id);
+    console.log('🔑 Usuario autenticado:', req.user.id);
+    
+    const user = await User.findOne({ id: req.params.id }).populate('favoritos');
+    
+    console.log('👤 Usuario encontrado:', !!user);
+    
+    if (!user) {
+      console.log('❌ Usuario no encontrado');
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    console.log('💝 Favoritos sin filtrar:', user.favoritos?.length || 0);
+    
+    // Filtrar productos que aún existen y están disponibles
+    const favoritosValidos = (user.favoritos || []).filter(producto => {
+      if (!producto) {
+        console.log('⚠️ Producto null/undefined encontrado');
+        return false;
+      }
+      
+      // Verificar que el producto no esté intercambiado
+      if (producto.intercambiado) {
+        console.log('🔄 Producto intercambiado filtrado:', producto.id);
+        return false;
+      }
+      
+      return true;
+    });
+    
+    console.log('✅ Favoritos válidos:', favoritosValidos.length);
+    
+    // Mapear los productos para incluir información del owner
+    const favoritosConOwner = await Promise.all(
+      favoritosValidos.map(async (producto) => {
+        try {
+          // Buscar información del propietario
+          const owner = await User.findOne({ id: producto.ownerId }).select('id nombre apellido username');
+          
+          return {
+            ...producto.toObject(),
+            owner: owner ? {
+              id: owner.id,
+              nombre: owner.nombre,
+              apellido: owner.apellido,
+              username: owner.username
+            } : null,
+            ownerName: owner ? `${owner.nombre} ${owner.apellido}`.trim() : null
+          };
+        } catch (error) {
+          console.error('Error obteniendo owner para producto:', producto.id, error);
+          return {
+            ...producto.toObject(),
+            owner: null,
+            ownerName: null
+          };
+        }
+      })
+    );
+    
+    console.log('📦 Favoritos con owner:', favoritosConOwner.length);
+    
+    res.json(favoritosConOwner);
+  } catch (error) {
+    console.error('❌ Error al obtener favoritos:', error);
+    res.status(500).json({ 
+      message: 'Error interno del servidor al obtener favoritos',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Agregar producto a favoritos
+router.post('/:id/favoritos/:productId', authenticateToken, async (req, res) => {
+  try {
+    const { id: userId, productId } = req.params;
+    
+    console.log('➕ Agregando producto a favoritos:', { userId, productId });
+    
+    // Verificar que el usuario autenticado coincida con el ID del parámetro
+    if (req.user.id !== userId) {
+      console.log('❌ Usuario no autorizado:', req.user.id, 'vs', userId);
+      return res.status(403).json({ message: 'No autorizado para modificar favoritos de otro usuario' });
+    }
+
+    const user = await User.findOne({ id: userId });
+    if (!user) {
+      console.log('❌ Usuario no encontrado:', userId);
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Verificar que el producto existe
+    const Product = (await import('../models/Product.js')).default;
+    const producto = await Product.findOne({ id: Number(productId) });
+    if (!producto) {
+      console.log('❌ Producto no encontrado:', productId);
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    // Verificar que el usuario no esté agregando su propio producto
+    if (producto.ownerId === Number(userId)) {
+      console.log('❌ Intento de agregar producto propio:', { ownerId: producto.ownerId, userId });
+      return res.status(400).json({ message: 'No puedes agregar tu propio producto a favoritos' });
+    }
+
+    // Verificar si ya está en favoritos
+    const yaEsFavorito = user.favoritos.some(fav => fav.toString() === producto._id.toString());
+    if (yaEsFavorito) {
+      console.log('⚠️ Producto ya está en favoritos:', productId);
+      return res.status(400).json({ message: 'El producto ya está en favoritos' });
+    }
+
+    // Agregar a favoritos
+    user.favoritos.push(producto._id);
+    await user.save();
+
+    console.log('✅ Producto agregado a favoritos exitosamente');
+    res.json({ 
+      message: 'Producto agregado a favoritos', 
+      favoritos: user.favoritos.length,
+      productId: producto.id
+    });
+  } catch (error) {
+    console.error('❌ Error al agregar a favoritos:', error);
+    res.status(500).json({ 
+      message: 'Error interno del servidor al agregar a favoritos',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Quitar producto de favoritos
+router.delete('/:id/favoritos/:productId', authenticateToken, async (req, res) => {
+  try {
+    const { id: userId, productId } = req.params;
+    
+    // Verificar que el usuario autenticado coincida con el ID del parámetro
+    if (req.user.id !== userId) {
+      return res.status(403).json({ message: 'No autorizado para modificar favoritos de otro usuario' });
+    }
+
+    const user = await User.findOne({ id: userId });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Verificar que el producto existe
+    const Product = (await import('../models/Product.js')).default;
+    const producto = await Product.findOne({ id: Number(productId) });
+    if (!producto) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    // Verificar si el producto está en favoritos
+    if (!user.favoritos.includes(producto._id)) {
+      return res.status(400).json({ message: 'El producto no está en favoritos' });
+    }
+
+    // Quitar de favoritos
+    user.favoritos = user.favoritos.filter(fav => fav.toString() !== producto._id.toString());
+    await user.save();
+
+    res.json({ message: 'Producto quitado de favoritos', favoritos: user.favoritos });
+  } catch (error) {
+    console.error('Error al quitar de favoritos:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Verificar si un producto está en favoritos
+router.get('/:id/favoritos/check/:productId', authenticateToken, async (req, res) => {
+  try {
+    const { id: userId, productId } = req.params;
+    
+    console.log('🔍 Verificando si producto está en favoritos:', { userId, productId });
+    
+    const user = await User.findOne({ id: userId });
+    if (!user) {
+      console.log('❌ Usuario no encontrado:', userId);
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Verificar que el producto existe
+    const Product = (await import('../models/Product.js')).default;
+    const producto = await Product.findOne({ id: Number(productId) });
+    if (!producto) {
+      console.log('❌ Producto no encontrado:', productId);
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    // Verificar si está en favoritos
+    const isFavorite = user.favoritos.some(fav => fav.toString() === producto._id.toString());
+    
+    console.log('💝 Es favorito:', isFavorite);
+    
+    res.json({ isFavorite });
+  } catch (error) {
+    console.error('❌ Error al verificar favorito:', error);
+    res.status(500).json({ 
+      message: 'Error interno del servidor al verificar favorito',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
 
 export default router; 

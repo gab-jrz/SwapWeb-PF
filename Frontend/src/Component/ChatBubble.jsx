@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import '../styles/ChatBubble.css';
 import Notification from './Notification';
 
@@ -24,7 +25,10 @@ const ChatBubble = ({
   senderProfileImage,
   currentUserProfileImage
 }) => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
+  const [imageError, setImageError] = useState(false); // Estado para manejar errores de imagen
+  const [profileImage, setProfileImage] = useState(fromMe ? (currentUserProfileImage || '/images/fotoperfil.jpg') : (senderProfileImage || '/images/fotoperfil.jpg'));
 
   // Render especial para mensajes del sistema
   if (mensaje.system) {
@@ -40,13 +44,6 @@ const ChatBubble = ({
   const [showMenu, setShowMenu] = useState(false);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0, visible: false });
   const menuRef = useRef(null);
-  
-  // Efecto para manejar el scroll automático cuando se recibe un nuevo mensaje
-  useEffect(() => {
-    if (bubbleRef.current && scrollToBottom) {
-      bubbleRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [mensaje, scrollToBottom]);
   
   // Efecto para configurar los listeners de socket
   useEffect(() => {
@@ -184,29 +181,20 @@ const ChatBubble = ({
     }
   };
 
-  if (mensaje.system) {
-    return (
-      <div className="chat-system">
-        ⚠️ {mensaje.descripcion}
-        {mensaje.rating === undefined && (
-          <div className="rating-stars">
-            {[1, 2, 3, 4, 5].map((v) => (
-              <span
-                key={v}
-                onClick={() => handleRate(v)}
-                style={{
-                  cursor: 'pointer',
-                  color: (localRating || mensaje.rating) >= v ? '#ffc107' : '#ccc',
-                }}
-              >
-                ★
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
+  // Derivar nombre "otro" de forma consistente con los campos del mensaje
+  const displayName = fromMe
+    ? 'Yo'
+    : (mensaje.deId !== currentUserId
+        ? (mensaje.deNombre || mensaje.de || 'Usuario')
+        : (mensaje.paraNombre || mensaje.para || 'Usuario'));
+  const targetProfileId = fromMe
+    ? null
+    : (mensaje.deId !== currentUserId ? mensaje.deId : mensaje.paraId);
+
+  const handleImageError = () => {
+    setImageError(true);
+    setProfileImage('/images/fotoperfil.jpg');
+  };
 
   return (
     <div
@@ -228,12 +216,9 @@ const ChatBubble = ({
       >
         <img
           className="chat-profile-image"
-src={fromMe ? (currentUserProfileImage || '/images/fotoperfil.jpg') : (senderProfileImage || '/images/fotoperfil.jpg')}
-          alt={fromMe ? 'Mi perfil' : mensaje.nombreRemitente}
-          onError={(e) => {
-            console.log('❌ Error cargando imagen de perfil:', e.target.src);
-            e.target.src = '/images/fotoperfil.jpg';
-          }}
+          src={profileImage}
+          alt={displayName}
+          onError={handleImageError}
         />
       </div>
       
@@ -256,9 +241,16 @@ src={fromMe ? (currentUserProfileImage || '/images/fotoperfil.jpg') : (senderPro
             fontWeight: 500,
             paddingLeft: fromMe ? 0 : 4,
             paddingRight: fromMe ? 4 : 0,
+            cursor: fromMe ? 'default' : 'pointer',
+            textDecoration: fromMe ? 'none' : 'underline',
+          }}
+          onClick={() => {
+            if (!fromMe && targetProfileId) {
+              navigate(`/perfil/${targetProfileId}`, { state: { fromChat: true } });
+            }
           }}
         >
-          {fromMe ? 'Yo' : mensaje.nombreRemitente}
+          {displayName}
         </span>
       <div
         className={`chat-bubble ${fromMe ? 'me' : 'other'}`}

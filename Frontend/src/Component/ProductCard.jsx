@@ -117,7 +117,9 @@ const ProductCard = ({
         <div className="product-categoria-badge">
           {categoria}
         </div>
-        <h3 className="product-title">{title}</h3>
+        <h3 className="product-title" onClick={onConsultar} style={{cursor: 'pointer'}}>
+          {title}
+        </h3>
         <p className="product-desc">{description}</p>
         <div className="product-meta-box">
           <div className="product-fecha-simple">

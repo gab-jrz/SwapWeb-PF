@@ -6,6 +6,7 @@ import Logo from "../components/Logo.jsx";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -68,8 +69,21 @@ const Login = () => {
             required
             disabled={loading}
           />
+          <div className="password-label-row">
+            <span>Contraseña</span>
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((s) => !s)}
+              disabled={loading}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

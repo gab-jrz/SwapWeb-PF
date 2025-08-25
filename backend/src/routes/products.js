@@ -19,10 +19,15 @@ router.get('/', async (req, res) => {
     
     // Si se proporciona owner, filtrar por ownerId
     if (req.query.owner) {
-      // Intentar convertir a número si es posible, sino usar como string
-      const ownerValue = isNaN(req.query.owner) ? req.query.owner : Number(req.query.owner);
-      filter.ownerId = ownerValue;
-      console.log(' Filtrando productos por owner:', req.query.owner, '(convertido a:', ownerValue, ')');
+      // Usar como string para que coincida con el tipo del modelo Product
+      filter.ownerId = req.query.owner;
+      console.log(' Filtrando productos por owner:', req.query.owner);
+    }
+
+    // Por defecto, solo mostrar productos no intercambiados
+    // a menos que se solicite explícitamente lo contrario
+    if (req.query.mostrarIntercambiados !== 'true') {
+      filter.intercambiado = { $ne: true };
     }
     
     console.log(' Filtro aplicado:', filter);
@@ -35,14 +40,14 @@ router.get('/', async (req, res) => {
     const User = (await import('../models/User.js')).default;
     const enrichedProducts = await Promise.all(products.map(async (prod) => {
       let ownerName = 'Usuario';
-      let provincia = 'Sin especificar';
+      let zona = 'Sin especificar';
       let ownerId = prod.ownerId;
       try {
-        // Buscar usuario por id (puede ser string o number)
-        const owner = await User.findOne({ id: String(prod.ownerId) });
+        // Buscar usuario por id (string)
+        const owner = await User.findOne({ id: prod.ownerId });
         if (owner) {
           ownerName = owner.nombre + (owner.apellido ? ' ' + owner.apellido : '');
-          provincia = owner.provincia || 'Sin especificar';
+          zona = owner.zona || 'Sin especificar';
           ownerId = owner.id;
         }
       } catch (e) {
@@ -51,7 +56,7 @@ router.get('/', async (req, res) => {
       return {
         ...prod.toObject(),
         ownerName,
-        provincia,
+        zona,
         ownerId,
         fechaPublicacion: prod.createdAt
       };
@@ -138,7 +143,7 @@ router.post('/batch', async (req, res) => {
 // Get products by user ID
 router.get('/user/:userId', async (req, res) => {
   try {
-    const products = await Product.find({ ownerId: Number(req.params.userId) })
+    const products = await Product.find({ ownerId: req.params.userId })
       .select('-_id -__v')
       .sort({ createdAt: -1 });
     res.json(products);

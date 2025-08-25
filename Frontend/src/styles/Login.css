@@ -157,6 +157,38 @@
     text-decoration: underline;
 }
 
+/* Inline label + toggle for password */
+.password-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.password-label-row span {
+    font-weight: 600;
+    color: #495057;
+}
+
+.login-form .password-toggle {
+    background: transparent !important;
+    border: none !important;
+    color: #667eea;
+    cursor: pointer;
+    width: auto !important;
+    padding: 4px 6px !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+.login-form .password-toggle:hover {
+    color: #5b21b6;
+    background: rgba(102, 126, 234, 0.08);
+}
+
 /* Dark mode variants */
 body.dark-mode .login-container {
     background: linear-gradient(135deg, #1a0f2e 0%, #0a0510 50%, #000000 100%);

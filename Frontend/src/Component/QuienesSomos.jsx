@@ -1,8 +1,9 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "../styles/QuienesSomos.css";
 
 const QuienesSomos = () => (
-  <section className="quienes-somos-modern">
+  <section className="quienes-somos-modern" id="sobre-nosotros">
     <div className="qs-wave-top">
       <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
         <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" className="qs-wave-fill"></path>
@@ -85,22 +86,26 @@ const QuienesSomos = () => (
                 <h2 className="qs-cta-title">¿Listo para intercambiar?</h2>
                 <p className="qs-cta-desc">Sumate a nuestra comunidad y dale una segunda vida a tus objetos</p>
                 <div className="qs-cta-buttons">
-                  <a href="/publicar" className="btn-cta-primary">
+                  <Link to="/publicarproducto#form" className="btn-cta-primary">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                       <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                     Publicar producto
-                  </a>
-                  <a href="/como-funciona" className="btn-cta-secondary">
+                  </Link>
+                  <Link to="/como-funciona#top" className="btn-cta-secondary">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
                       <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40913C11.0108 7.05016 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M12 17H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                     Cómo funciona
-                  </a>
+                  </Link>
                 </div>
               </div>
+            </div>
+            
+            <div className="qs-cards">
+              {/* Más contenido si aplica */}
             </div>
           </div>
         </div>

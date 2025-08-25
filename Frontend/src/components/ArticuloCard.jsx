@@ -5,7 +5,7 @@ import '../styles/ArticuloCard.css';
 /**
  * Card premium para artículos en el perfil de usuario
  * Props esperadas:
- * - producto: { id, title, description, image, categoria, fechaPublicacion, estado }
+ * - producto: { id, title, description, image, categoria, fechaPublicacion, estado, intercambiado }
  * - onEdit: función para editar
  * - onMarkAsExchanged: función para marcar como intercambiado
  */
@@ -16,6 +16,7 @@ const ArticuloCard = ({ producto, onEdit, onMarkAsExchanged }) => {
   const categoria = producto.categoria || producto.category || 'Sin categoría';
   const provincia = producto.provincia || producto.zona || 'Tucumán';
   const fechaPublicacion = producto.fechaPublicacion || producto.createdAt || producto.fecha || null;
+  const isExchanged = producto.intercambiado || producto.estado === 'intercambiado';
 
   const primaryImage = Array.isArray(producto.images) && producto.images.length > 0
     ? getProductImageUrl(producto.images[0])
@@ -23,8 +24,13 @@ const ArticuloCard = ({ producto, onEdit, onMarkAsExchanged }) => {
   const imageSrc = primaryImage || producto.image || '/images/placeholder-product.jpg';
 
   return (
-    <div className="articulo-card-premium">
+    <div className={`articulo-card-premium ${isExchanged ? 'exchanged' : ''}`}>
       <div className="articulo-img-wrap">
+        {isExchanged && (
+          <div className="exchanged-badge">
+            <span>Intercambiado</span>
+          </div>
+        )}
         <img
           src={imageSrc}
           alt={title}
@@ -74,15 +80,23 @@ const ArticuloCard = ({ producto, onEdit, onMarkAsExchanged }) => {
           )}
         </div>
 
-        <div className="articulo-actions">
-          <button className="articulo-edit-btn" onClick={() => onEdit && onEdit(producto)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            Editar
-          </button>
-        </div>
+        {!isExchanged && (
+          <div className="articulo-actions">
+            <button 
+              className="articulo-edit-btn" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit && onEdit(producto);
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Editar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

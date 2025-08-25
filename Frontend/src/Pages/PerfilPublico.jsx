@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../Component/Header';
 import Footer from '../Component/Footer';
 import TransactionCard from '../Component/TransactionCard';
@@ -12,6 +12,7 @@ const API_URL = 'http://localhost:3001/api';
 const PerfilPublico = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [usuario, setUsuario] = useState(null);
 
   // Sincronización en caliente si el usuario visualizado es el mismo que el logueado
@@ -61,9 +62,7 @@ const PerfilPublico = () => {
         setUsuario(dataUsuario);
 
         // Obtener productos del usuario usando el hook con sincronización automática
-        console.log('📱 Fetching productos para usuario:', id);
-        await fetchProducts({ owner: id });
-        console.log('✅ Productos del usuario cargados con sincronización automática');
+        await fetchProducts({ ownerId: dataUsuario.id });
         
         console.log('🎉 Carga de datos completada exitosamente');
       } catch (err) {
@@ -111,10 +110,40 @@ const PerfilPublico = () => {
   const intercambiosTotal = Array.isArray(usuario?.transacciones) ? usuario.transacciones.length : 0;
   const productosActivos = Array.isArray(productos) ? productos.filter(p => !p.intercambiado).length : 0;
   const productosPublicados = Array.isArray(productos) ? productos.length : 0;
+  
+
 
   return (
     <div className="perfil-publico">
       <Header isHome={false} />
+      
+      {/* Botón de regreso si se accede desde el chat */}
+      {location.state?.fromChat && (
+        <div className="regresar-container-premium" style={{ padding: '1rem 2rem' }}>
+          <button 
+            className="btn-regresar" 
+            onClick={() => navigate(-1)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Volver al chat
+          </button>
+        </div>
+      )}
       
       <main className="perfil-publico-container">
         <section className="perfil-header-premium">
@@ -185,7 +214,7 @@ const PerfilPublico = () => {
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
           <span className="detalle-label-premium">Provincia:</span>
-          <span className="detalle-value-premium">En: {usuario.provincia || usuario.provincia || 'Sin especificar'}</span>
+          <span className="detalle-value-premium">{usuario.zona || 'Sin especificar'}</span>
         </div>
         {usuario.mostrarContacto ? (
           <>
@@ -222,6 +251,7 @@ const PerfilPublico = () => {
         
         <section className="perfil-productos">
           <h2 className="seccion-titulo-premium">Productos Disponibles</h2>
+
           {/* Filtrar productos activos (no intercambiados) */}
           {productos.filter(p => !p.intercambiado).length > 0 ? (
             <div className="productos-grid">
@@ -235,7 +265,7 @@ const PerfilPublico = () => {
                   image={producto.image}
                   images={producto.images}
                   fechaPublicacion={producto.fechaPublicacion || producto.createdAt}
-                  provincia={producto.provincia || producto.ubicacion}
+                                     provincia={producto.zona || producto.provincia || producto.ubicacion}
                   ownerName={usuario.nombre}
                   ownerId={usuario.id}
                   condicion={producto.condicion}

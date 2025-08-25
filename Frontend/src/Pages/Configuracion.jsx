@@ -71,6 +71,10 @@ const Configuracion = () => {
     confirmPassword: "",
   });
 
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   useEffect(() => {
     const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
     if (!usuarioActual) {
@@ -434,78 +438,78 @@ const Configuracion = () => {
           </div>
         </div>
 
-        {/* PREFERENCIAS */}
-        <div className="config-section">
-          <h3 className="config-section-title">Preferencias</h3>
-          <div className="config-option">
-            <label>
-              Zona de cobertura para intercambios:
-              <select name="zona" value={config.zona} onChange={handleChange}>
-                <option value="Tucumán">Tucumán</option>
-                <option value="Buenos Aires">Buenos Aires</option>
-                <option value="Córdoba">Córdoba</option>
-                <option value="Argentina">Toda Argentina</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </label>
-          </div>
-          <div className="config-option">
-            <label>
-              Idioma de la aplicación:
-              <select name="idioma" value={config.idioma} onChange={handleChange}>
-                <option value="es">Español</option>
-                <option value="en">Inglés</option>
-                <option value="pt">Portugués</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
         {/* CONTRASEÑA */}
         <div className="config-section config-password-section">
           <h3 className="config-section-title">Cambiar Contraseña</h3>
           <form onSubmit={handlePasswordSave}>
             <div className="config-option">
-              <label>
-                Contraseña actual:
-                <input
-                  type="password"
-                  name="currentPassword"
-                  value={passwords.currentPassword}
-                  onChange={handlePasswordChange}
-                  className="config-password-input"
-                  placeholder="Escribe tu contraseña actual"
-                  required
-                />
-              </label>
+              <div className="password-label-row">
+                <span>Contraseña actual</span>
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowCurrentPassword((s) => !s)}
+                  aria-label={showCurrentPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  title={showCurrentPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showCurrentPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <input
+                type={showCurrentPassword ? "text" : "password"}
+                name="currentPassword"
+                value={passwords.currentPassword}
+                onChange={handlePasswordChange}
+                className="config-password-input"
+                placeholder="Escribe tu contraseña actual"
+                required
+              />
             </div>
             <div className="config-option">
-              <label>
-                Nueva contraseña:
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={passwords.newPassword}
-                  onChange={handlePasswordChange}
-                  className="config-password-input"
-                  placeholder="Escribe una nueva contraseña"
-                  required
-                />
-              </label>
+              <div className="password-label-row">
+                <span>Nueva contraseña</span>
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowNewPassword((s) => !s)}
+                  aria-label={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  title={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showNewPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                name="newPassword"
+                value={passwords.newPassword}
+                onChange={handlePasswordChange}
+                className="config-password-input"
+                placeholder="Escribe una nueva contraseña"
+                required
+              />
             </div>
             <div className="config-option">
-              <label>
-                Confirmar nueva contraseña:
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={passwords.confirmPassword}
-                  onChange={handlePasswordChange}
-                  className="config-password-input"
-                  placeholder="Confirma tu contraseña"
-                  required
-                />
-              </label>
+              <div className="password-label-row">
+                <span>Confirmar nueva contraseña</span>
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword((s) => !s)}
+                  aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  title={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showConfirmPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={passwords.confirmPassword}
+                onChange={handlePasswordChange}
+                className="config-password-input"
+                placeholder="Confirma tu contraseña"
+                required
+              />
             </div>
             <button type="submit" className="btn-guardar" style={{ marginTop: 15 }}>
               Actualizar Contraseña

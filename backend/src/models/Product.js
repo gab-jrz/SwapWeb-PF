@@ -27,7 +27,7 @@ const productSchema = new mongoose.Schema({
     required: true
   },
   ownerId: {
-    type: Number,
+    type: String,
     required: true
   },
   caracteristicas: {

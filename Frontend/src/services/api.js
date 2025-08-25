@@ -14,6 +14,19 @@ export const getProducts = async () => {
   }
 };
 
+export const getUserProducts = async (userId) => {
+  try {
+    const response = await fetch(`${API_URL}/products?owner=${userId}`);
+    if (!response.ok) {
+      throw new Error('Error al obtener productos del usuario');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+};
+
 export const getProduct = async (id) => {
   try {
     const response = await fetch(`${API_URL}/products/${id}`);

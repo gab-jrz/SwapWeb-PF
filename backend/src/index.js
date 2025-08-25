@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import process from 'process';
 import ratingsRoutes from './routes/ratings.js';
 import setupStatic from './static.js';
+import contactoRoutes from './routes/contacto.js';
 
 // Load environment variables
 dotenv.config();
@@ -28,11 +29,99 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Parse JSON bodies
+app.use(express.json());
+
+// Parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true }));
+
+// Log de rutas
+console.log('=== Configuración de rutas ===');
+console.log('Ruta de contacto configurada en /api/contacto');
+console.log('Ruta de ratings configurada en /api/ratings');
+console.log('===============================');
+
+// Rutas de la API
+app.use('/api/contacto', contactoRoutes);
+app.use('/api/ratings', ratingsRoutes);
+
+// Import routes
+import userRoutes from './routes/users.js';
+import swapRoutes from './routes/swaps.js';
+import messageRoutes from './routes/messages.js';
+import authRoutes from './routes/auth.js';
+import notificationRoutes from './routes/notifications.js';
+import donationRoutes from './routes/donations.js';
+import donationRequestRoutes from './routes/donationRequests.js';
+import matchRoutes from './routes/matches.js';
+import transactionRoutes from './routes/transactions.js';
+import productRoutes from './routes/products.js';
+
+// Use routes
+app.use('/api/users', userRoutes);
+app.use('/api/swaps', swapRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/donations', donationRoutes);
+app.use('/api/donation-requests', (req, res, next) => {
+  console.log(' MIDDLEWARE DEBUG - donation-requests');
+  console.log(' Método:', req.method);
+  console.log(' URL completa:', req.originalUrl);
+  console.log(' Content-Type:', req.headers['content-type']);
+  next();
+});
+app.use('/api/donation-requests', donationRequestRoutes);
+app.use('/api/matches', matchRoutes);
+app.use('/api/products', productRoutes);
+
+// Ruta de prueba
+app.get('/api/health', (req, res) => {
+  console.log('Solicitud recibida en /api/health');
+  res.json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    nodeEnv: process.env.NODE_ENV || 'development'
+  });
+});
 
 // Servir archivos estáticos de uploads
 setupStatic(app);
+
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+  console.error('Error no manejado:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    body: req.body
+  });
+  
+  res.status(500).json({
+    error: 'Error interno del servidor',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Algo salió mal',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+// Middleware para rutas no encontradas
+app.use((req, res) => {
+  console.error('Ruta no encontrada:', {
+    path: req.path,
+    method: req.method,
+    headers: req.headers,
+    body: req.body
+  });
+  
+  res.status(404).json({
+    error: 'Ruta no encontrada',
+    path: req.path,
+    method: req.method
+  });
+});
 
 // Setup Morgan logger
 app.use(morgan('dev')); // Logs HTTP requests
@@ -51,70 +140,35 @@ const mongooseOptions = {
 // MongoDB connection with enhanced logging
 mongoose.connect(process.env.MONGODB_URI, mongooseOptions)
   .then(() => {
-    console.log('✅ Conexión exitosa a MongoDB Atlas');
-    console.log('📊 Base de datos lista para operaciones');
+    console.log(' Conexión exitosa a MongoDB Atlas');
+    console.log(' Base de datos lista para operaciones');
   })
   .catch((error) => {
-    console.error('❌ Error al conectar a MongoDB:');
+    console.error(' Error al conectar a MongoDB:');
     console.error('   Detalles:', error.message);
     console.error('   Código:', error.code || 'N/A');
   });
 
 // Monitor database events
 mongoose.connection.on('error', (err) => {
-  console.error('🔴 Error en la conexión de MongoDB:', err);
+  console.error(' Error en la conexión de MongoDB:', err);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.log('🔸 Desconectado de MongoDB');
+  console.log(' Desconectado de MongoDB');
 });
 
 mongoose.connection.on('reconnected', () => {
-  console.log('🔄 Reconectado a MongoDB');
+  console.log(' Reconectado a MongoDB');
 });
-
-// Import routes
-import userRoutes from './routes/users.js';
-import productRoutes from './routes/products.js';
-import swapRoutes from './routes/swaps.js';
-import messageRoutes from './routes/messages.js';
-import authRoutes from './routes/auth.js';
-import transactionRoutes from './routes/transactions.js';
-import notificationRoutes from './routes/notifications.js';
-import donationRoutes from './routes/donations.js';
-import donationRequestRoutes from './routes/donationRequests.js';
-import matchRoutes from './routes/matches.js';
-
-// Use routes
-app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/swaps', swapRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/ratings', ratingsRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/donations', donationRoutes);
-
-// Debug middleware para donation-requests
-app.use('/api/donation-requests', (req, res, next) => {
-  console.log('🔥 MIDDLEWARE DEBUG - donation-requests');
-  console.log('🔥 Método:', req.method);
-  console.log('🔥 URL completa:', req.originalUrl);
-  console.log('🔥 Content-Type:', req.headers['content-type']);
-  next();
-});
-
-app.use('/api/donation-requests', donationRequestRoutes);
-app.use('/api/matches', matchRoutes);
 
 // Error handler global
 app.use((err, req, res, next) => {
-  console.error('💥 ERROR GLOBAL CAPTURADO:');
-  console.error('💥 URL:', req.originalUrl);
-  console.error('💥 Método:', req.method);
-  console.error('💥 Error:', err.message);
-  console.error('💥 Stack:', err.stack);
+  console.error(' ERROR GLOBAL CAPTURADO:');
+  console.error(' URL:', req.originalUrl);
+  console.error(' Método:', req.method);
+  console.error(' Error:', err.message);
+  console.error(' Stack:', err.stack);
   
   res.status(500).json({
     error: 'Error interno del servidor',
@@ -134,8 +188,8 @@ app.get('/health', (req, res) => {
 
 // Start server
 app.listen(port, () => {
-  console.log(`🚀 Servidor iniciado en el puerto ${port}`);
-  console.log(`🌐 API disponible en http://localhost:${port}`);
+  console.log(` Servidor iniciado en el puerto ${port}`);
+  console.log(` API disponible en http://localhost:${port}`);
 });
 
 export default app; 

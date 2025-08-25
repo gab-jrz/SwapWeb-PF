@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../Component/Header";
 import ProductCard from "../Component/ProductCard";
 import Footer from "../Component/Footer";
@@ -14,6 +14,7 @@ import "../styles/Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   // Usar hook personalizado para productos con sincronización automática
   const { productos, loading, error, fetchProducts } = useProducts([]);
   // Ref para hacer scroll a la sección de artículos
@@ -201,6 +202,24 @@ const Home = () => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory, dateFilter, userFilter, provinceFilter, sortBy, productsPerPage]);
 
+  // Scroll a productos cuando la URL trae hash #productos o ?scroll=productos
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const shouldScroll = location.hash === "#productos" || params.get("scroll") === "productos";
+    if (!shouldScroll) return;
+    const t = setTimeout(() => {
+      const target = document.getElementById('productos') || document.querySelector('.product-list') || productSectionRef.current;
+      if (!target) return;
+      const headerEl = document.querySelector('header');
+      const offset = (headerEl ? headerEl.offsetHeight : 80) + 10;
+      const rect = target.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const top = rect.top + scrollTop - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [location.hash, location.search]);
+
   // Scroll automático usando el ID del buscador como ancla cuando se elige una categoría
   useEffect(() => {
     if (!selectedCategory) return;
@@ -306,6 +325,22 @@ const Home = () => {
     const category = categorias.find(cat => cat.id === categoryId);
     return category ? category.name : 'Todas las categorías';
   };
+
+  // Scroll a sección "Sobre nosotros" cuando la ruta sea /sobre-nosotros
+  useEffect(() => {
+    if (location.pathname !== "/sobre-nosotros") return;
+    const t = setTimeout(() => {
+      const target = document.getElementById("sobre-nosotros");
+      if (!target) return;
+      const headerEl = document.querySelector('header');
+      const offset = (headerEl ? headerEl.offsetHeight : 80) + 10;
+      const rect = target.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const top = rect.top + scrollTop - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [location.pathname]);
 
   return (
     <div className="home-container">
@@ -657,7 +692,7 @@ const Home = () => {
         </div>
       </div>
 
-      <main className="main-content" ref={productSectionRef} style={{ scrollMarginTop: 90 }}>
+      <main id="productos" className="main-content" ref={productSectionRef} style={{ scrollMarginTop: 90 }}>
         {/* Mostrar mensaje de carga o error */}
         {loading && <p className="text-center">Cargando productos...</p>}
         {error && <p className="text-center text-danger">{error}</p>}

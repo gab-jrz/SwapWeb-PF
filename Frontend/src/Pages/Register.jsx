@@ -6,6 +6,7 @@ import Logo from "../components/Logo.jsx";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
@@ -131,27 +132,43 @@ const Register = () => {
           disabled={loading}
         />
 
-        <div className="input-group">
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-          />
+        <div className="password-label-row">
+          <span>Contraseña</span>
           <button
             type="button"
             className="password-toggle"
             onClick={() => setShowPassword(!showPassword)}
             disabled={loading}
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
           >
             {showPassword ? "🙈" : "👁️"}
           </button>
         </div>
-
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={loading}
+        />
+
+        <div className="password-label-row">
+          <span>Confirmar contraseña</span>
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={() => setShowConfirmPassword((s) => !s)}
+            disabled={loading}
+            aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            title={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          >
+            {showConfirmPassword ? "🙈" : "👁️"}
+          </button>
+        </div>
+        <input
+          type={showConfirmPassword ? "text" : "password"}
           placeholder="Confirmar contraseña"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
