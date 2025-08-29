@@ -1,0 +1,358 @@
+/* Variables CSS para modo claro */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --header-bg: #ffffff;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --button-primary: #007bff;
+  --button-hover: #0056b3;
+}
+
+/* Variables CSS para modo oscuro con paleta violeta */
+[data-theme="dark"] {
+  --bg-primary: #0a0510;
+  --bg-secondary: #1a0f2e;
+  --bg-tertiary: #2d1b4e;
+  --text-primary: #e5e7eb;
+  --text-secondary: #b0b0b0;
+  --border-color: #2d1b4e;
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --header-bg: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #0a0510 25%,
+    #1a0f2e 60%,
+    #2d1b4e 100%
+  );
+  --card-bg: #1a0f2e;
+  --input-bg: #2d1b4e;
+  --button-primary: #7b2ff2;
+  --button-hover: #6d28d9;
+}
+
+/* Aplicar variables a elementos principales */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Header en modo oscuro */
+[data-theme="dark"] header {
+  background: var(--header-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Cards en modo oscuro */
+[data-theme="dark"] .card {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Inputs en modo oscuro */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--input-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Botones en modo oscuro */
+[data-theme="dark"] .btn {
+  background-color: var(--button-primary) !important;
+  border-color: var(--button-primary) !important;
+}
+
+[data-theme="dark"] .btn:hover {
+  background-color: var(--button-hover) !important;
+  border-color: var(--button-hover) !important;
+}
+
+/* Estilos adicionales para asegurar compatibilidad con las clases existentes */
+.dark-mode {
+  background: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #0a0510 25%,
+    #1a0f2e 60%,
+    #2d1b4e 100%
+  ) !important;
+  color: #e5e7eb !important;
+}
+
+.dark-mode * {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Asegurar que el header use los estilos del modo oscuro */
+.dark-mode header {
+  background: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #0a0510 25%,
+    #1a0f2e 60%,
+    #2d1b4e 100%
+  ) !important;
+}
+
+.dark-mode .bg-light {
+  background-color: #1a0f2e !important;
+  color: #e5e7eb !important;
+}
+
+.dark-mode .text-dark {
+  color: #e5e7eb !important;
+}
+
+/* ===== ESTILOS ESPECÍFICOS PARA LA PÁGINA HOME ===== */
+
+/* Contenedor principal del Home */
+.dark-mode .home-container {
+  background: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #0a0510 25%,
+    #1a0f2e 60%,
+    #2d1b4e 100%
+  ) !important;
+  color: #e5e7eb !important;
+}
+
+/* Panel de filtros avanzados */
+.dark-mode .advanced-filters-panel {
+  background: linear-gradient(
+    to bottom,
+    #0a0510 0%,
+    #1a0f2e 50%,
+    #2d1b4e 100%
+  ) !important;
+  border-color: #2d1b4e !important;
+  color: #e5e7eb !important;
+}
+
+.dark-mode .advanced-filters-panel .form-label {
+  color: #e5e7eb !important;
+}
+
+.dark-mode .advanced-filters-panel .form-control,
+.dark-mode .advanced-filters-panel .form-select {
+  background-color: #2d1b4e !important;
+  border-color: #3d2b5e !important;
+  color: #e5e7eb !important;
+}
+
+/* Productos y cards */
+.dark-mode .product-card {
+  background: linear-gradient(to bottom, #1a0f2e 0%, #2d1b4e 100%) !important;
+  border-color: #3d2b5e !important;
+  color: #e5e7eb !important;
+}
+
+.dark-mode .product-card .card-title {
+  color: #e5e7eb !important;
+}
+
+.dark-mode .product-card .card-text {
+  color: #b0b0b0 !important;
+}
+
+/* ProductCard específico - Solo aplicar cuando body tiene clase dark-mode */
+body.dark-mode .product-card-premium {
+  background: linear-gradient(to bottom, #1a0f2e 0%, #2d1b4e 100%) !important;
+  border-color: #3d2b5e !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 4px 12px rgba(45, 27, 78, 0.3) !important;
+}
+
+body.dark-mode .product-card-premium .product-title {
+  color: #e5e7eb !important;
+}
+
+body.dark-mode .product-card-premium .product-desc {
+  color: #b0b0b0 !important;
+}
+
+body.dark-mode .product-card-premium .product-categoria-badge {
+  background: linear-gradient(135deg, #7b2ff2 0%, #6d28d9 100%) !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .product-card-premium .product-meta-box {
+  color: #b0b0b0 !important;
+}
+
+body.dark-mode .product-card-premium .product-owner-name {
+  color: #7b2ff2 !important;
+}
+
+body.dark-mode .product-card-premium .btn-consultar-premium {
+  background: linear-gradient(135deg, #7b2ff2 0%, #6d28d9 100%) !important;
+  border-color: #7b2ff2 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .product-card-premium .btn-consultar-premium:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #5b21b7 100%) !important;
+  border-color: #6d28d9 !important;
+}
+
+/* Botones de "Mostrar más" y otros */
+.dark-mode .btn-primary {
+  background: linear-gradient(135deg, #7b2ff2 0%, #6d28d9 100%) !important;
+  border-color: #7b2ff2 !important;
+  color: #ffffff !important;
+}
+
+.dark-mode .btn-primary:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #5b21b7 100%) !important;
+  border-color: #6d28d9 !important;
+}
+
+/* Footer */
+.dark-mode footer {
+  background: linear-gradient(to bottom, #1a0f2e 0%, #2d1b4e 100%) !important;
+  color: #e5e7eb !important;
+  border-top-color: #3d2b5e !important;
+}
+
+.dark-mode footer.bg-dark {
+  background: linear-gradient(to bottom, #1a0f2e 0%, #2d1b4e 100%) !important;
+}
+
+.dark-mode footer.text-light {
+  color: #e5e7eb !important;
+}
+
+/* Carousel */
+.dark-mode .custom-carousel-container {
+  background: linear-gradient(to bottom, #0a0510 0%, #1a0f2e 100%) !important;
+}
+
+.dark-mode .custom-carousel-slide {
+  background: linear-gradient(to bottom, #1a0f2e 0%, #2d1b4e 100%) !important;
+}
+
+/* Contenedores generales */
+.dark-mode .container,
+.dark-mode .container-fluid {
+  background-color: transparent !important;
+}
+
+/* Textos */
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode h6 {
+  color: #e5e7eb !important;
+}
+
+.dark-mode p {
+  color: #b0b0b0 !important;
+}
+
+/* Links */
+.dark-mode a {
+  color: #7b2ff2 !important;
+}
+
+.dark-mode a:hover {
+  color: #6d28d9 !important;
+}
+
+/* ===== ESTILOS PARA LA BARRA DE CATEGORÍAS ===== */
+
+/* Cambiar el fondo blanco de la barra de categorías */
+.dark-mode .categories-bar-horizontal {
+  background: linear-gradient(to bottom, #0a0510 0%, #1a0f2e 100%) !important;
+  border-bottom-color: #2d1b4e !important;
+  backdrop-filter: none !important;
+}
+
+/* Mantener el botón como está (no cambiar su color) */
+.dark-mode .btn-categories-horizontal {
+  /* Mantener los estilos originales del botón */
+  background: linear-gradient(135deg, #7b2ff2 0%, #1e90ff 100%) !important;
+  border: none !important;
+  color: white !important;
+}
+
+/* ===== ESTILOS ELEGANTES PARA EL BUSCADOR EN MODO OSCURO ===== */
+
+/* Contenedor del buscador - mantiene estilos heredados */
+
+/* Wrapper del input del buscador */
+.dark-mode .search-input-wrapper-v2 {
+  background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 100%) !important;
+  border: 2px solid #3d2b5e !important;
+  box-shadow: 0 4px 12px rgba(45, 27, 78, 0.3) !important;
+}
+
+.dark-mode .search-input-wrapper-v2:hover {
+  border-color: #7b2ff2 !important;
+  box-shadow: 0 6px 16px rgba(123, 47, 242, 0.25) !important;
+}
+
+.dark-mode .search-input-wrapper-v2:focus-within {
+  border-color: #7b2ff2 !important;
+  box-shadow: 0 0 0 3px rgba(123, 47, 242, 0.1),
+    0 6px 16px rgba(123, 47, 242, 0.3) !important;
+}
+
+/* Ícono de búsqueda */
+.dark-mode .search-icon-container {
+  color: #b0b0b0 !important;
+}
+
+.dark-mode .search-icon-v2 {
+  color: #b0b0b0 !important;
+}
+
+.dark-mode .search-input-wrapper-v2:focus-within .search-icon-v2 {
+  color: #7b2ff2 !important;
+}
+
+/* Input de búsqueda */
+.dark-mode .search-input-premium-v2 {
+  color: #e5e7eb !important;
+  background: transparent !important;
+}
+
+.dark-mode .search-input-premium-v2::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Divisor entre secciones */
+.dark-mode .search-divider {
+  background: #3d2b5e !important;
+}
+
+/* Botón de filtros */
+.dark-mode .btn-filters-premium-v2 {
+  background: linear-gradient(135deg, #7b2ff2 0%, #6d28d9 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(123, 47, 242, 0.2) !important;
+}
+
+.dark-mode .btn-filters-premium-v2:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #5b21b7 100%) !important;
+  box-shadow: 0 4px 12px rgba(123, 47, 242, 0.35) !important;
+}
+
+.dark-mode .btn-filters-premium-v2:active {
+  transform: translateY(0) !important;
+}
+
+/* Texto de filtros */
+.dark-mode .filters-text-v2 {
+  color: #ffffff !important;
+}

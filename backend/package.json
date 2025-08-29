@@ -1,0 +1,49 @@
+{
+  "name": "swapweb-backend",
+  "version": "1.0.0",
+  "description": "Backend for SwapWeb application using MongoDB",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "node scripts/test-warning.js && nyc mocha",
+    "test:notifications": "node scripts/test-warning.js && nyc mocha test/notifications.test.js --timeout 15000",
+    "test:notifications:cjs": "node scripts/test-warning.js && nyc mocha test/notifications.cjs",
+    "test:auth": "node scripts/test-warning.js && nyc mocha test/auth.test.js --timeout 15000",
+    "test:users": "node scripts/test-warning.js && nyc mocha test/users.test.js --timeout 15000", 
+    "test:products": "node scripts/test-warning.js && nyc mocha test/products.test.js --timeout 15000",
+    "test:donations": "node scripts/test-warning.js && nyc mocha test/donations.test.js --timeout 15000",
+    "test:donations-basic": "node scripts/test-warning.js && nyc mocha test/donations.basic.test.js --timeout 15000",
+    "test:swaps": "node scripts/test-warning.js && nyc mocha test/swaps.test.js --timeout 15000",
+    "test:messages": "node scripts/test-warning.js && nyc mocha test/messages.test.js --timeout 15000",
+    "test:donation-requests": "node scripts/test-warning.js && nyc mocha test/donationRequests.test.js --timeout 15000",
+    "test:ratings": "node scripts/test-warning.js && nyc mocha test/ratings.test.js --timeout 15000",
+    "test:middleware": "node scripts/test-warning.js && nyc mocha test/middleware/*.test.js --timeout 15000",
+    "test:utils": "node scripts/test-warning.js && nyc mocha test/utils/*.test.js --timeout 15000",
+    "test:watch": "mocha --watch",
+    "coverage": "nyc --reporter=text --reporter=html mocha",
+    "coverage:report": "nyc report --reporter=text --reporter=html"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.2.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.3"
+  },
+  "devDependencies": {
+    "chai": "^4.5.0",
+    "chai-http": "^4.4.0",
+    "mocha": "^11.7.1",
+    "mongodb-memory-server": "^10.1.4",
+    "nodemon": "^3.1.0",
+    "nyc": "^17.1.0",
+    "sinon": "^21.0.0",
+    "supertest": "^7.1.1"
+  }
+}

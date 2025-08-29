@@ -1,0 +1,1082 @@
+/* Donation Form Styles */
+.donation-form-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #8b5cf6 100%);
+  border-radius: 16px;
+  color: white;
+}
+
+.form-header h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.form-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 300;
+}
+
+.donation-form {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Form Sections */
+.form-section {
+  background: var(--color-card);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.form-section:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.section-title i {
+  color: var(--color-primary);
+  font-size: 1.1rem;
+}
+
+.optional-text {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-left: auto;
+}
+
+/* Form Layout */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group.full-width {
+  flex: 1;
+}
+
+.form-group.half-width {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Form Labels */
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.form-label i {
+  color: var(--color-primary);
+  font-size: 0.9rem;
+}
+
+/* Form Inputs */
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  background: var(--color-input-bg);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+.input-helper {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Characteristics Section */
+.caracteristicas-input-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.caracteristica-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+}
+
+.caracteristica-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.btn-agregar-caracteristica {
+  padding: 10px 16px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-agregar-caracteristica:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-agregar-caracteristica:disabled {
+  background: var(--color-disabled);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.caracteristicas-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.caracteristica-chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-chip-bg, #f1f5f9);
+  color: var(--color-chip-text, #334155);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-chip-border, #e2e8f0);
+}
+
+.caracteristica-chip span {
+  margin-right: 6px;
+}
+
+.remove-caracteristica {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-chip-remove, #64748b);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.remove-caracteristica:hover {
+  background: var(--color-chip-remove-hover, #e2e8f0);
+  color: var(--color-chip-remove-hover-text, #334155);
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.add-characteristic-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.add-characteristic-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.add-characteristic-btn:disabled {
+  background: var(--color-disabled);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.characteristics-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.characteristic-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-primary-border);
+}
+
+.characteristic-text {
+  font-weight: 500;
+}
+
+.remove-characteristic-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  transition: all 0.2s ease;
+}
+
+.remove-characteristic-btn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.characteristics-info {
+  padding: 8px 12px;
+  background: var(--color-info-bg);
+  border-radius: 6px;
+  border-left: 3px solid var(--color-info);
+}
+
+.characteristics-info small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-info);
+  font-size: 0.85rem;
+}
+
+/* Photo Upload Section */
+.photo-upload-container {
+  margin-top: 8px;
+}
+
+.photo-drop-zone {
+  border: 2px dashed var(--color-border);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--color-upload-bg);
+  margin-bottom: 16px;
+}
+
+.photo-drop-zone:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.photo-drop-zone.dragging {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  transform: scale(1.02);
+}
+
+.photo-drop-zone.has-images {
+  padding: 20px;
+}
+
+.upload-placeholder {
+  color: var(--color-text-secondary);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+
+.upload-placeholder h4 {
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.upload-placeholder p {
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.upload-specs {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--color-success);
+}
+
+.upload-specs span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.photo-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.photo-preview-item:hover .photo-overlay {
+  opacity: 1;
+}
+
+.remove-photo-btn {
+  background: var(--color-danger);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.remove-photo-btn:hover {
+  background: var(--color-danger-hover);
+  transform: scale(1.1);
+}
+
+.main-photo-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--color-warning);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.add-more-photos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-border-light);
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  aspect-ratio: 1;
+  transition: all 0.3s ease;
+}
+
+.add-more-photos:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.photo-tips {
+  background: var(--color-tip-bg);
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 3px solid var(--color-primary);
+}
+
+.photo-tips h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.photo-tips ul {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--color-text-secondary);
+}
+
+.photo-tips li {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 24px 0;
+  margin-top: 32px;
+  border-top: 1px solid var(--color-border);
+}
+
+.btn-primary, .btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-secondary {
+  background: var(--color-secondary);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-border-light);
+  transform: translateY(-1px);
+}
+
+/* Privacy Option Styles */
+.privacy-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-card);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.privacy-option:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.privacy-checkbox {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.privacy-label {
+  flex: 1;
+  cursor: pointer;
+  margin: 0;
+}
+
+.privacy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.privacy-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+.privacy-title i {
+  color: var(--color-primary);
+}
+
+.privacy-description {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* File Preview Styles */
+.files-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.file-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  background: var(--color-card);
+}
+
+.document-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 8px;
+  text-align: center;
+  background: var(--color-border-light);
+}
+
+.document-preview i {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+
+.document-name {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.file-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.file-preview-item:hover .file-overlay {
+  opacity: 1;
+}
+
+.remove-file-btn {
+  background: var(--color-danger);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.remove-file-btn:hover {
+  background: var(--color-danger-hover);
+  transform: scale(1.1);
+}
+
+.add-more-files {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-border-light);
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  aspect-ratio: 1;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.add-more-files:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Request specific styling */
+.form-header h2 i.fa-hands-helping {
+  color: #10b981;
+}
+
+/* Urgency level styling */
+.form-select[name="urgency"] option[value="high"] {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.form-select[name="urgency"] option[value="med"] {
+  color: var(--color-warning);
+  font-weight: 500;
+}
+
+.form-select[name="urgency"] option[value="low"] {
+  color: var(--color-success);
+}
+
+/* Enhanced tips for requests */
+.photo-tips h4 i.fa-lightbulb {
+  color: #f59e0b;
+}
+
+/* Error Messages */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  border-left: 3px solid var(--color-error);
+}
+
+/* Notification Styles */
+.notification {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.notification.success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-left: 4px solid var(--color-success);
+}
+
+.notification.error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border-left: 4px solid var(--color-error);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .form-group.half-width {
+    flex: none;
+  }
+  
+  .characteristics-input-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .upload-specs {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .photo-preview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .form-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .photo-preview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fix: Ensure select's selected text is visible in light and dark themes.
+   Some pages use body.dark-mode while others use data-theme="dark" or prefers-color-scheme;
+   enforce sensible defaults here and override aggressive rules elsewhere. */
+.donation-form .form-select,
+.form-select {
+  color: var(--color-text-primary) !important;
+  background: var(--color-input-bg) !important;
+  border-color: var(--color-border) !important;
+  padding-right: 2.5rem !important;
+  appearance: none !important;
+}
+
+/* Dark-mode fallbacks when site toggles dark via body class or data-theme attr */
+body.dark-mode .donation-form .form-select,
+[data-theme="dark"] .donation-form .form-select,
+body.dark-mode .form-select,
+[data-theme="dark"] .form-select {
+  color: #e5e7eb !important; /* light text */
+  background: #2d1b4e !important; /* dark bg */
+  border-color: #3d2b5e !important;
+}
+
+body.dark-mode .donation-form .form-select option,
+[data-theme="dark"] .donation-form .form-select option,
+body.dark-mode .form-select option,
+[data-theme="dark"] .form-select option {
+  color: #e5e7eb !important;
+  background: #2d1b4e !important;
+}
+
+/* Make hovered/selected options clearly visible in selects */
+.form-select option,
+.donation-form .form-select option {
+  color: var(--color-text-primary) !important;
+  background: var(--color-input-bg) !important;
+}
+
+.form-select option:hover,
+.form-select option:focus,
+.form-select option:checked,
+.form-select option[selected] {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Dark mode: stronger highlight color for hovered/selected option */
+body.dark-mode .form-select option:hover,
+[data-theme="dark"] .form-select option:hover,
+body.dark-mode .donation-form .form-select option:hover,
+[data-theme="dark"] .donation-form .form-select option:hover,
+body.dark-mode .form-select option:checked,
+[data-theme="dark"] .form-select option:checked {
+  background: rgba(123, 47, 242, 0.9) !important; /* vivid purple */
+  color: #ffffff !important;
+}
+
+/* Strong override for light mode selects: undo any transparent text tricks elsewhere */
+html body:not(.dark-mode) .donation-form .form-select,
+html body:not(.dark-mode) .donation-form select.form-select,
+body:not(.dark-mode) .donation-form .form-select,
+body:not(.dark-mode) .donation-form select.form-select,
+.donation-form .form-select:not([data-dark]) {
+  color: var(--color-text-primary) !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  -webkit-text-stroke-color: initial !important;
+  -webkit-text-stroke-width: 0 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  background-clip: border-box !important;
+}
+
+/* Also ensure the closed select shows the selected text (for Edge/IE) */
+.donation-form .form-select::-ms-value,
+.donation-form select.form-select::-ms-value,
+.form-select::-ms-value {
+  color: var(--color-text-primary) !important;
+}
+
+/* CSS Variables for theming */
+:root {
+  --color-primary: #6366f1;
+  --color-primary-hover: #5855eb;
+  --color-primary-light: #eef2ff;
+  --color-primary-border: #c7d2fe;
+  --color-secondary: #f8fafc;
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-input-bg: #ffffff;
+  --color-upload-bg: #fafbfc;
+  --color-info: #3b82f6;
+  --color-info-bg: #eff6ff;
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-error-bg: #fef2f2;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-disabled: #94a3b8;
+  --color-tip-bg: #f8fafc;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-card: #1e293b;
+    --color-border: #334155;
+    --color-border-light: #475569;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+    --color-input-bg: #334155;
+    --color-upload-bg: #1e293b;
+    --color-secondary: #334155;
+    --color-primary-light: #1e1b4b;
+    --color-info-bg: #1e3a8a;
+    --color-error-bg: #7f1d1d;
+    --color-tip-bg: #1e293b;
+  }
+}
+
+/* Light-mode donation overrides: force black text and white backgrounds */
+.donation-light {
+  --color-text-primary: #000000;
+  --color-text-secondary: #000000;
+  --color-card: #ffffff;
+  --color-input-bg: #ffffff;
+  --color-upload-bg: #ffffff;
+  --color-border-light: #ffffff;
+  --color-secondary: #ffffff;
+  --color-info-bg: #ffffff;
+  --color-error-bg: #ffffff;
+  --color-tip-bg: #ffffff;
+  --color-primary-light: #ffffff;
+}
+
+.donation-light .form-header {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid var(--color-border);
+}
+
+.donation-light .section-title,
+.donation-light .form-label,
+.donation-light .upload-placeholder h4,
+.donation-light .upload-placeholder p,
+.donation-light .photo-tips h4,
+.donation-light .photo-tips li,
+.donation-light .input-helper,
+.donation-light .optional-text,
+.donation-light .notification,
+.donation-light .privacy-title,
+.donation-light .privacy-description {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* Extra specificity for labels and section titles to ensure visibility */
+.donation-light .form-section .form-label,
+.donation-light .form-section .section-title {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* Ensure any plain labels/headings inside donation-light are visible */
+.donation-light label,
+.donation-light .form-group label,
+.donation-light legend,
+.donation-light h1,
+.donation-light h2,
+.donation-light h3,
+.donation-light h4,
+.donation-light h5,
+.donation-light h6 {
+  color: #000000 !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+.donation-light .form-input,
+.donation-light .form-select,
+.donation-light .form-textarea,
+.donation-light .characteristics-input {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: var(--color-border) !important;
+}
+
+.donation-light .form-select option {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.donation-light .form-section,
+.donation-light .privacy-option,
+.donation-light .file-preview-item,
+.donation-light .document-preview,
+.donation-light .photo-drop-zone,
+.donation-light .add-more-photos,
+.donation-light .add-more-files {
+  background: #ffffff !important;
+}
+
+/* Neutralize premium gradients/blur/shadows coming from PublicarProducto.css inside donation light form */
+.donation-light .publicar-producto-container .form-group input[type="text"],
+.donation-light .publicar-producto-container .form-group textarea,
+.donation-light .publicar-producto-container .form-group select,
+.donation-light .donation-form .form-input,
+.donation-light .donation-form .form-textarea,
+.donation-light .donation-form .form-select {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: 2px solid #cbd5e1 !important; /* light slate border for contrast */
+}
+
+.donation-light .publicar-producto-container .form-group input[type="text"]::placeholder,
+.donation-light .publicar-producto-container .form-group textarea::placeholder,
+.donation-light .donation-form .form-input::placeholder,
+.donation-light .donation-form .form-textarea::placeholder {
+  color: #6b7280 !important; /* readable grey */
+  -webkit-text-fill-color: #6b7280 !important;
+}
+
+/* On focus keep white bg and subtle primary border only */
+.donation-light .publicar-producto-container .form-group input[type="text"]:focus,
+.donation-light .publicar-producto-container .form-group textarea:focus,
+.donation-light .publicar-producto-container .form-group select:focus,
+.donation-light .donation-form .form-input:focus,
+.donation-light .donation-form .form-textarea:focus,
+.donation-light .donation-form .form-select:focus {
+  background: #ffffff !important;
+  box-shadow: none !important;
+  border-color: var(--color-primary) !important;
+}
