@@ -5,7 +5,7 @@ import '../styles/PerfilUsuario.css';
 import '../styles/PerfilUsuario-Remodelado.css';
 import BackButton from '../Component/BackButton';
 import Header from '../Component/Header.jsx';
-import ArticuloCard from '../components/ArticuloCard.jsx';
+import ArticuloCard from "../Component/ArticuloCard.jsx";
 import Footer from '../Component/Footer.jsx';
 import DeleteModal from '../Component/DeleteModal.jsx';
 import ConfirmModal from '../Component/ConfirmModal.jsx';
@@ -1772,25 +1772,27 @@ const PerfilUsuario = () => {
     }
   };
 
-  // Estilos para la notificación
+  // Estilos para la notificación mejorada
   const notificationStyle = {
     position: 'fixed',
-    top: '80px',
+    top: '20px',
     right: '20px',
-    zIndex: 1000,
     padding: '15px 25px',
     borderRadius: '8px',
     color: 'white',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    zIndex: 1000,
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    transition: 'all 0.3s ease',
-    transform: notification.show ? 'translateX(0)' : 'translateX(120%)',
-    opacity: notification.show ? 1 : 0,
+    gap: '12px',
     background: notification.type === 'success' 
-      ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)' 
-      : 'linear-gradient(135deg, #f44336 0%, #e57373 100%)'
+      ? '#4CAF50' 
+      : '#F44336',
+    animation: 'slideIn 0.3s ease-out',
+    maxWidth: '350px',
+    opacity: notification.show ? 1 : 0,
+    transform: notification.show ? 'translateX(0)' : 'translateX(120%)',
+    transition: 'all 0.3s ease-out'
   };
 
   return (
@@ -1799,11 +1801,17 @@ const PerfilUsuario = () => {
       
       {/* Notificación */}
       {notification.show && (
-        <div style={notificationStyle}>
-          <span style={{ fontSize: '18px' }}>
-            {notification.type === 'success' ? '✓' : '⚠'}
-          </span>
-          <span>{notification.message}</span>
+        <div className={`notification ${notification.type}`} style={notificationStyle}>
+          <div className="notification-content">
+            <span>{notification.message}</span>
+            <button 
+              className="notification-close"
+              onClick={() => setNotification(prev => ({ ...prev, show: false }))}
+              aria-label="Cerrar notificación"
+            >
+              &times;
+            </button>
+          </div>
         </div>
       )}
       

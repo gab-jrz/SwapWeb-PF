@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
-import Logo from '../components/Logo.jsx';
+import Logo from "../Component/Logo.jsx";
 import { FaHome } from 'react-icons/fa';
 
 const ResetPassword = () => {

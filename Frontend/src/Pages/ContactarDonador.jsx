@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
+import BackButton from "../Component/BackButton";
 import "../styles/Intercambiar.css";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -163,16 +164,12 @@ Enviado por ${usuarioActual.nombre} ${usuarioActual.apellido}
       <Header search={false} />
       
       <div className="container mt-4">
+        <div style={{ marginBottom: '1.5rem' }}>
+          <BackButton />
+        </div>
         {/* Encabezado */}
         <div className="intercambiar-header">
           <div className="col-lg-8 mx-auto px-0">
-            <button 
-              className="btn-volver"
-              onClick={() => navigate(`/donaciones/${donacionId}`)}
-            >
-              <i className="fas fa-arrow-left me-2"></i>
-              Volver a la donación
-            </button>
             <h1 className="intercambiar-title">
               <i className="fas fa-heart text-danger me-2"></i>
               Contactar al Donador
@@ -305,28 +302,37 @@ Enviado por ${usuarioActual.nombre} ${usuarioActual.apellido}
                   Esta solicitud se enviará como mensaje al donador. Podrás continuar con la conversación desde tu perfil en la sección "Mis mensajes".
                 </div>
 
-                <div className="form-actions">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary me-3"
-                    onClick={() => navigate(`/donaciones/${donacionId}`)}
-                  >
-                    <i className="fas fa-times me-2"></i>
-                    Cancelar
-                  </button>
+                <div className="form-actions" style={{textAlign: 'center', marginTop: '2rem'}}>
                   <button 
                     type="submit" 
-                    className="btn btn-primary"
+                    className="btn-consultar-premium"
                     disabled={isSubmitting}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '220px',
+                      padding: '0.8rem 2rem',
+                      fontSize: '1.05rem',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      zIndex: 1,
+                      margin: '0 auto',
+                      border: 'none',
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      opacity: isSubmitting ? 0.8 : 1
+                    }}
                   >
                     {isSubmitting ? (
                       <>
-                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        <span className="spinner-border spinner-border-sm me-2" style={{borderWidth: '0.15em'}}></span>
                         Enviando...
                       </>
                     ) : (
                       <>
-                        <i className="fas fa-paper-plane me-2"></i>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="me-2">
+                          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2 .01 7z"/>
+                        </svg>
                         Enviar Solicitud
                       </>
                     )}

@@ -14,11 +14,15 @@
 /* BackButton spacing near header */
 .intercambiar-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: .75rem;
-  padding: 0 2rem;
-  margin-top: 1rem;
+  gap: 0.5rem;
+  padding: 1rem 2rem 0;
+  margin: 0 auto;
   z-index: 2;
+  width: 100%;
+  max-width: 1000px;
+  text-align: center;
 }
 
 .intercambiar-header .icon-back-btn {
@@ -231,6 +235,48 @@
   margin-bottom: 2rem !important;
 }
 
+.intercambiar-container .btn-volver-premium {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.6rem 1.25rem 0.6rem 1rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: #4f46e5 !important;
+  background: rgba(239, 246, 255, 0.8) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  margin-bottom: 1rem !important;
+  text-decoration: none !important;
+}
+
+.intercambiar-container .btn-volver-premium svg {
+  transition: transform 0.3s ease !important;
+  margin-right: 0.5rem !important;
+  color: #4f46e5 !important;
+}
+
+.intercambiar-container .btn-volver-premium:hover {
+  background: rgba(224, 231, 255, 0.9) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.15) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+.intercambiar-container .btn-volver-premium:hover svg {
+  transform: translateX(-3px) !important;
+}
+
+.intercambiar-container .btn-volver-premium:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1) !important;
+}
+
+/* Mantener el estilo original para otros botones btn-volver */
 .intercambiar-container .btn-volver {
   background: #eef2ff !important;
   color: #4338ca !important;
@@ -249,19 +295,51 @@
 }
 
 .intercambiar-container .intercambiar-title {
-  font-size: 2rem !important;
+  font-size: 2.5rem !important;
   font-weight: 800 !important;
-  margin: 0 !important;
+  margin: 1.5rem 0 0.5rem 0 !important;
   letter-spacing: -0.02em !important;
   color: #111827 !important;
   text-shadow: none !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-align: center !important;
+  width: 100% !important;
+  position: relative !important;
+  display: inline-block !important;
+  padding: 0 1rem !important;
+}
+
+.intercambiar-container .intercambiar-title::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -8px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 80px !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3) !important;
 }
 
 .intercambiar-container .intercambiar-subtitle {
   width: 100% !important;
-  margin: .25rem 0 0 0 !important;
-  color: #6b7280 !important;
-  font-size: 1.1rem !important;
+  max-width: 600px !important;
+  margin: 0.5rem auto 2.5rem !important;
+  color: #4b5563 !important;
+  font-size: 1.25rem !important;
+  line-height: 1.6 !important;
+  font-weight: 500 !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  padding: 0.8rem 1.5rem !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  text-align: center !important;
+  display: inline-block !important;
 }
 
 /* ===== Donación solicitada - Card ===== */

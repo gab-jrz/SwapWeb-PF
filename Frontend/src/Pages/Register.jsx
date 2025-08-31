@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Register.css";
-import { useToast } from "../components/ToastProvider.jsx";
-import Logo from "../components/Logo.jsx";
+import { useToast } from "../Component/ToastProvider.jsx";
+import Logo from "../Component/Logo.jsx";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
