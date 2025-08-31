@@ -60,6 +60,12 @@
   color: #111827;
 }
 
+/* Force text color in hero section */
+.intercambiar-hero,
+.intercambiar-hero * {
+  color: #111827 !important;
+}
+
 .hero-content {
   max-width: 800px;
   margin: 0 auto;
@@ -73,6 +79,7 @@
   font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  color: #111827 !important; /* Force dark text color */
 }
 
 .hero-subtitle {
@@ -82,12 +89,15 @@
   font-weight: 300;
 }
 
-.user-highlight {
-  font-weight: 600;
-  background: rgba(0, 0, 0, 0.05);
-  color: inherit;
+.hero-title .user-highlight {
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.1);
+  color: #111827 !important;
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
+  display: inline-block;
+  text-shadow: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* PRODUCTO SHOWCASE */
@@ -377,8 +387,8 @@
 }
 
 .intercambiar-container .required { 
-  color: #ef4444 !important; 
-  font-weight: 700 !important; 
+  color: #1f2937 !important; 
+  font-weight: 600 !important; 
 }
 
 .intercambiar-container .optional { 

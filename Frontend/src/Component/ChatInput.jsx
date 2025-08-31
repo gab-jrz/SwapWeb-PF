@@ -20,12 +20,16 @@ const ChatInput = ({ onSendMessage, currentUserId, recipientId, socket }) => {
         const formData = new FormData();
         formData.append('image', image);
         
-        const response = await fetch('http://localhost:3001/api/upload', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/upload`, {
           method: 'POST',
+          credentials: 'include',
           body: formData,
         });
         
-        if (!response.ok) throw new Error('Error al subir la imagen');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Error al subir la imagen');
+        }
         const data = await response.json();
         imageUrl = data.imageUrl;
       }
@@ -73,17 +77,20 @@ const ChatInput = ({ onSendMessage, currentUserId, recipientId, socket }) => {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
+    const file = files[0]; // Solo tomamos el primer archivo
+    
     // Validar tipo de archivo
     if (!file.type.match('image.*')) {
-      alert('Por favor, selecciona un archivo de imagen válido.');
+      alert('Por favor, selecciona un archivo de imagen válido (JPEG, PNG, etc.).');
       return;
     }
 
     // Validar tamaño (máx 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
       alert('La imagen no debe superar los 5MB');
       return;
     }
@@ -94,6 +101,10 @@ const ChatInput = ({ onSendMessage, currentUserId, recipientId, socket }) => {
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result);
+    };
+    reader.onerror = () => {
+      console.error('Error al leer el archivo');
+      alert('Error al procesar la imagen. Por favor, inténtalo de nuevo.');
     };
     reader.readAsDataURL(file);
   };
@@ -233,6 +244,7 @@ const ChatInput = ({ onSendMessage, currentUserId, recipientId, socket }) => {
               onChange={handleImageChange}
               ref={fileInputRef}
               style={{ display: 'none' }}
+              multiple={false}
             />
           </label>
           

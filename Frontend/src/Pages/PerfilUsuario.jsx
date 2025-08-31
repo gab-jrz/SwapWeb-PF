@@ -9,6 +9,7 @@ import ArticuloCard from '../components/ArticuloCard.jsx';
 import Footer from '../Component/Footer.jsx';
 import DeleteModal from '../Component/DeleteModal.jsx';
 import ConfirmModal from '../Component/ConfirmModal.jsx';
+import DeliveryConfirmationModal from '../Component/DeliveryConfirmationModal.jsx';
 import StepperIntercambio from '../Component/StepperIntercambio.jsx';
 import '../styles/StepperIntercambio.css';
 import ChatBubble from '../Component/ChatBubble.jsx';
@@ -342,6 +343,25 @@ const PerfilUsuario = () => {
     if (location?.state?.activeTab) {
       setActiveTab(location.state.activeTab);
     }
+    
+    // Manejar mensajes de éxito/error de la navegación
+    if (location?.state?.showSuccess || location?.state?.showError) {
+      setNotification({
+        show: true,
+        message: location.state.message || '',
+        type: location.state.showSuccess ? 'success' : 'error'
+      });
+      
+      // Limpiar el estado de navegación para no mostrar el mensaje nuevamente al recargar
+      window.history.replaceState({}, document.title);
+      
+      // Ocultar la notificación después de 5 segundos
+      const timer = setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
   }, [location?.pathname, location?.state]);
 
   const [userData, setUserData] = useState({
@@ -357,6 +377,13 @@ const PerfilUsuario = () => {
   });
 
   const [userListings, setUserListings] = useState([]);
+  
+  // Estado para manejar notificaciones
+  const [notification, setNotification] = useState({
+    show: false,
+    message: '',
+    type: 'success' // 'success' o 'error'
+  });
   const [mensajes, setMensajes] = useState([]);
   const [unreadByChat, setUnreadByChat] = useState({});
   const [showChatMenu, setShowChatMenu] = useState(null);
@@ -1578,11 +1605,34 @@ const PerfilUsuario = () => {
     loadDonaciones();
   }, []);
 
+  // Estados para el modal de confirmación
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [currentDonation, setCurrentDonation] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Función para abrir el modal de confirmación
+  const confirmDelivery = (donacion) => {
+    setCurrentDonation(donacion);
+    setShowConfirmModal(true);
+  };
+
+  // Cerrar el modal
+  const closeModal = () => {
+    setShowConfirmModal(false);
+    setCurrentDonation(null);
+    setIsProcessing(false);
+  };
+
   // Marcar donación como entregada y refrescar datos/eventos globales
-  const handleMarkDonationDelivered = async (donacion) => {
-    if (!donacion?._id && !donacion?.id) return;
-    const donationId = donacion._id || donacion.id;
-    if (!window.confirm(`¿Confirmás que la donación "${donacion.title || donacion.itemName}" fue entregada?`)) return;
+  const handleMarkDonationDelivered = async () => {
+    if (!currentDonation) return;
+    const donationId = currentDonation._id || currentDonation.id;
+    
+    // Cerrar el modal inmediatamente
+    setShowConfirmModal(false);
+    setCurrentDonation(null);
+    
+    setIsProcessing(true);
     try {
       // Backend: cambiar estado a delivered
       const res = await fetch(`${API_URL}/donations/${donationId}/status`, {
@@ -1590,21 +1640,18 @@ const PerfilUsuario = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'delivered' })
       });
+      
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Error HTTP ${res.status}`);
       }
+      
       const updated = await res.json();
+      
       // Actualizar estado local de lista
-      setDonaciones(prev => prev.map(d => ( (d._id || d.id) === donationId ? { ...d, status: updated.status } : d )));
-      // Si el chat seleccionado está vinculado a esta donación, refrescar detalle
-      if (chatDonation && (chatDonation._id === donationId || chatDonation.id === donationId)) {
-        try {
-          const ref = await fetch(`${API_URL}/donations/${donationId}`);
-          if (ref.ok) setChatDonation(await ref.json());
-        } catch {}
-      }
-      // Refrescar datos del usuario (transacciones y contadores) después de marcar como entregada
+      setDonaciones(prev => prev.map(d => (d._id || d.id) === donationId ? { ...d, status: 'delivered' } : d));
+      
+      // Refrescar datos del usuario
       try {
         const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
         const uid = usuarioActual?.id || userData?.id;
@@ -1617,26 +1664,33 @@ const PerfilUsuario = () => {
               ...freshUser,
               imagen: prev?.imagen || freshUser?.imagen,
             }));
-            localStorage.setItem('usuarioActual', JSON.stringify({
-              ...(JSON.parse(localStorage.getItem('usuarioActual')) || {}),
-              ...freshUser,
-              imagen: (JSON.parse(localStorage.getItem('usuarioActual')) || {}).imagen || freshUser?.imagen,
-            }));
           }
         }
       } catch (e) {
-        console.warn('No se pudo refrescar el usuario tras entregar donación:', e);
+        console.warn('No se pudo actualizar datos del usuario:', e);
       }
-      // Forzar recarga de donaciones para mantener contador y listado al día
-      loadDonaciones();
-      // Emitir evento global para que otras vistas se actualicen
-      window.dispatchEvent(new CustomEvent('donationsUpdated', { detail: { id: donationId, status: 'delivered' } }));
-      window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: { reason: 'donation-delivered', donationId } }));
-      // Feedback visual
-      alert('✅ Donación marcada como entregada');
+      
+      // Redirigir a la sección de mensajes
+      navigate('/perfil', { 
+        state: { 
+          activeTab: 'mensajes',
+          showSuccess: true,
+          message: '✅ Donación marcada como entregada correctamente'
+        } 
+      });
+      
     } catch (e) {
-      console.error('❌ Error al marcar donación como entregada:', e);
-      alert(e.message || 'No se pudo actualizar la donación');
+      console.error('Error al marcar donación como entregada:', e);
+      // Mostrar mensaje de error
+      navigate('/perfil', { 
+        state: { 
+          activeTab: 'donaciones',
+          showError: true,
+          message: '❌ No se pudo marcar la donación como entregada: ' + (e.message || 'Error desconocido')
+        } 
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -1718,9 +1772,40 @@ const PerfilUsuario = () => {
     }
   };
 
+  // Estilos para la notificación
+  const notificationStyle = {
+    position: 'fixed',
+    top: '80px',
+    right: '20px',
+    zIndex: 1000,
+    padding: '15px 25px',
+    borderRadius: '8px',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    transition: 'all 0.3s ease',
+    transform: notification.show ? 'translateX(0)' : 'translateX(120%)',
+    opacity: notification.show ? 1 : 0,
+    background: notification.type === 'success' 
+      ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)' 
+      : 'linear-gradient(135deg, #f44336 0%, #e57373 100%)'
+  };
+
   return (
     <div className="perfil-usuario-container">
       <Header search={false} />
+      
+      {/* Notificación */}
+      {notification.show && (
+        <div style={notificationStyle}>
+          <span style={{ fontSize: '18px' }}>
+            {notification.type === 'success' ? '✓' : '⚠'}
+          </span>
+          <span>{notification.message}</span>
+        </div>
+      )}
       
       {/* Contenedor del botón de regresar */}
       <div style={{
@@ -2795,69 +2880,88 @@ if (ultimoMensaje) {
                             }
 
                             return (
-                              <div style={{ display: 'flex', gap: 8 }}>
-                                <button
-                                  onClick={() => window.open(`/perfil/${otherId}`, '_blank')}
-                                  style={{ 
-                                    background: 'linear-gradient(135deg, #2d9cdb 0%, #38a3e2 100%)', 
-                                    color: 'white', 
-                                    border: 'none', 
-                                    borderRadius: 20, 
-                                    padding: '8px 16px', 
-                                    fontSize: 14, 
-                                    cursor: 'pointer', 
-                                    fontWeight: 600,
-                                    boxShadow: '0 2px 8px rgba(45, 156, 219, 0.3)',
-                                    transition: 'all 0.2s'
-                                  }}
-                                  title="Ver perfil del usuario"
-                                  onMouseEnter={(e) => {
-                                    e.target.style.transform = 'translateY(-1px)';
-                                    e.target.style.boxShadow = '0 4px 12px rgba(45, 156, 219, 0.4)';
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.transform = 'translateY(0)';
-                                    e.target.style.boxShadow = '0 2px 8px rgba(45, 156, 219, 0.3)';
-                                  }}
-                                >
-                                  Ver Perfil
-                                </button>
-
-                                {base?.donacionId && (chatDonationLoading ? (
-                                  <div style={{ fontSize: 12, color: '#666' }}>Cargando donación…</div>
-                                ) : canMarkDelivered ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
                                   <button
-                                    onClick={handleMarkDonationDelivered}
+                                    onClick={() => window.open(`/perfil/${otherId}`, '_blank')}
                                     style={{ 
-                                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                                      background: 'linear-gradient(135deg, #2d9cdb 0%, #38a3e2 100%)', 
                                       color: 'white', 
                                       border: 'none', 
-                                      borderRadius: 20, 
-                                      padding: '8px 16px', 
-                                      fontSize: 14, 
+                                      borderRadius: 16, 
+                                      padding: '6px 12px', 
+                                      fontSize: 12, 
                                       cursor: 'pointer', 
-                                      fontWeight: 700,
-                                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
-                                      transition: 'all 0.2s'
+                                      fontWeight: 600,
+                                      boxShadow: '0 2px 8px rgba(45, 156, 219, 0.3)',
+                                      transition: 'all 0.2s',
+                                      width: '100%',
+                                      maxWidth: '160px'
                                     }}
-                                    title="Marcar esta donación como entregada"
+                                    title="Ver perfil del usuario"
                                     onMouseEnter={(e) => {
                                       e.target.style.transform = 'translateY(-1px)';
-                                      e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+                                      e.target.style.boxShadow = '0 4px 12px rgba(45, 156, 219, 0.4)';
                                     }}
                                     onMouseLeave={(e) => {
                                       e.target.style.transform = 'translateY(0)';
-                                      e.target.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.3)';
+                                      e.target.style.boxShadow = '0 2px 8px rgba(45, 156, 219, 0.3)';
                                     }}
                                   >
-                                    Marcar como entregada
+                                    Ver Perfil
                                   </button>
+                                </div>
+
+                                {base?.donacionId && (chatDonationLoading ? (
+                                  <div style={{ fontSize: 12, color: '#666', textAlign: 'center' }}>Cargando donación…</div>
+                                ) : canMarkDelivered ? (
+                                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <button
+                                      onClick={() => chatDonation && confirmDelivery(chatDonation)}
+                                      style={{ 
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                                        color: 'white', 
+                                        border: 'none', 
+                                        borderRadius: 16, 
+                                        padding: '6px 12px', 
+                                        fontSize: 12, 
+                                        cursor: 'pointer', 
+                                        fontWeight: 600,
+                                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                                        transition: 'all 0.2s',
+                                        width: '100%',
+                                        maxWidth: '160px'
+                                      }}
+                                      title="Marcar esta donación como entregada"
+                                      onMouseEnter={(e) => {
+                                        e.target.style.transform = 'translateY(-1px)';
+                                        e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.3)';
+                                      }}
+                                    >
+                                      Marcar como entregada
+                                    </button>
+                                  </div>
                                 ) : (alreadyDelivered ? (
                                   <span style={{
-                                    background: '#e7f9f2', color: '#059669', borderRadius: 20,
-                                    padding: '6px 12px', fontSize: 13, fontWeight: 700, alignSelf: 'center',
-                                    border: '1px solid #b7f0d9'
-                                  }}>Entregada</span>
+                                    background: '#e7f9f2', 
+                                    color: '#059669', 
+                                    borderRadius: 16,
+                                    padding: '4px 10px', 
+                                    fontSize: 12, 
+                                    fontWeight: 600, 
+                                    alignSelf: 'center',
+                                    border: '1px solid #b7f0d9',
+                                    textAlign: 'center',
+                                    width: '100%',
+                                    maxWidth: '160px',
+                                    margin: '0 auto'
+                                  }}>
+                                    Entregada
+                                  </span>
                                 ) : null))}
                               </div>
                             );
@@ -3342,8 +3446,17 @@ setMensajes(prev => prev.filter(m => {
         message="¿Estás seguro que deseas eliminar este mensaje? Esta acción no se puede deshacer."
         confirmText="Eliminar mensaje"
       />
+
+      {/* Modal de confirmación de entrega */}
+      <DeliveryConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={closeModal}
+        onConfirm={handleMarkDonationDelivered}
+        donation={currentDonation}
+        isProcessing={isProcessing}
+      />
     </div>
   );
-}
+};
 
 export default PerfilUsuario;

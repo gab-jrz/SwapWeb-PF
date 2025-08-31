@@ -170,10 +170,21 @@ const Intercambiar = () => {
         <div className="intercambiar-header">
           <BackButton className="icon-back-btn" to={-1} aria-label="Volver" />
         </div>
-        <div className="intercambiar-hero">
+        <div className="intercambiar-hero" style={{ color: '#111827' }}>
           <div className="hero-content">
-            <h1 className="hero-title">
-              Enviar propuesta a <span className="user-highlight">{ownerNombre} {ownerApellido}</span>
+            <h1 className="hero-title" style={{ color: '#111827 !important' }}>
+              <span style={{ color: '#111827' }}>Enviar propuesta a </span>
+              <span className="user-highlight" style={{
+                color: '#111827 !important',
+                fontWeight: '600',
+                background: 'rgba(0,0,0,0.1)',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                display: 'inline-block',
+                marginLeft: '4px'
+              }}>
+                {ownerNombre} {ownerApellido}
+              </span>
             </h1>
           </div>
         </div>

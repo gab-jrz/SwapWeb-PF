@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/Login.css"; // Asegúrate de tener el archivo CSS
+import "../styles/Login.css";
 import Logo from "../components/Logo.jsx";
-import DarkModeToggle from "../Component/DarkModeToggle.jsx";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -10,18 +9,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved) return saved;
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'dark' : 'light';
-  });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    document.body.classList.toggle('dark-mode', theme === 'dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -67,10 +55,6 @@ const Login = () => {
       <header className="register-header">
         <Logo style={{ fontSize: "1.8rem !important" }} />
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <DarkModeToggle
-            darkMode={theme === 'dark'}
-            toggleDarkMode={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-          />
           <Link to="/" className="login-home-link" aria-label="Inicio">
             <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" aria-hidden="true">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />

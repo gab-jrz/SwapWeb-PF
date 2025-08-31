@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/Register.css"; // Asegúrate de tener el archivo CSS
+import "../styles/Register.css";
 import { useToast } from "../components/ToastProvider.jsx";
 import Logo from "../components/Logo.jsx";
-import DarkModeToggle from "../Component/DarkModeToggle.jsx";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,12 +15,6 @@ const Register = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [provincia, setProvincia] = useState('Tucumán');
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) return saved;
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'dark' : 'light';
-  });
 
   const PROVINCIAS = [
     'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
@@ -37,10 +30,6 @@ const Register = () => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
-  useEffect(() => {
-    document.body.classList.toggle('dark-mode', theme === 'dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,11 +100,7 @@ const Register = () => {
       <header className="register-header">
         <Logo style={{ fontSize: "1.8rem !important" }} />
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <DarkModeToggle
-            darkMode={theme === 'dark'}
-            toggleDarkMode={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-          />
-          <Link to="/" className="register-home-link" aria-label="Inicio">
+          <Link to="/" className="login-home-link" aria-label="Inicio">
             <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" aria-hidden="true">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>

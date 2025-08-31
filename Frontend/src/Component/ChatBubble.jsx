@@ -319,15 +319,30 @@ const ChatBubble = ({
     return raw;
   }, [mensaje?.descripcion, mensaje?.tipoPeticion]);
 
-  // Parsear secciones específicas para donación en dos burbujas
+  // Parsear secciones específicas para donación
   const donationParsed = React.useMemo(() => {
     if (mensaje?.tipoPeticion !== 'donacion') return null;
     const text = descriptionToShow || '';
+    
+    // Extraer cada sección del mensaje
     const msgMatch = text.match(/Mensaje del interesado:\s*([\s\S]*?)(?:\n{2,}|\n?Razón del interés:|$)/i);
-    const reasonMatch = text.match(/Razón del interés:\s*([\s\S]*)$/i);
-    const message = (msgMatch && msgMatch[1] ? msgMatch[1].trim() : '').trim();
-    const reason = (reasonMatch && reasonMatch[1] ? reasonMatch[1].trim() : '').trim();
-    return { message, reason };
+    const reasonMatch = text.match(/Razón del interés:\s*([\s\S]*?)(?:\n{2,}|\n?Teléfono de contacto:|$)/i);
+    const phoneMatch = text.match(/Teléfono de contacto:\s*([\s\S]*?)(?:\n{2,}|\n?Disponibilidad para recoger:|$)/i);
+    const availabilityMatch = text.match(/Disponibilidad para recoger:\s*([\s\S]*?)(?:\n{2,}|\n?[-]{3,}|$)/i);
+    
+    // Función para limpiar el texto de asteriscos
+    const cleanText = (text) => {
+      if (!text) return '';
+      // Eliminar asteriscos al inicio y final del texto
+      return text.replace(/^\*+|\*+$/g, '').trim();
+    };
+    
+    return {
+      message: cleanText(msgMatch && msgMatch[1] ? msgMatch[1] : ''),
+      reason: cleanText(reasonMatch && reasonMatch[1] ? reasonMatch[1] : ''),
+      phone: cleanText(phoneMatch && phoneMatch[1] ? phoneMatch[1] : ''),
+      availability: cleanText(availabilityMatch && availabilityMatch[1] ? availabilityMatch[1] : '')
+    };
   }, [mensaje?.tipoPeticion, descriptionToShow]);
 
   return (
@@ -556,7 +571,7 @@ const ChatBubble = ({
             <div style={{ width: '100%', marginTop: 2, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {donationParsed && (donationParsed.message || donationParsed.reason) ? (
                 <>
-                  {donationParsed.message ? (
+                  {donationParsed.message && (
                     <div style={{
                       background: '#ffffff',
                       border: '1px solid #dbeafe',
@@ -567,13 +582,14 @@ const ChatBubble = ({
                       fontSize: 15,
                       lineHeight: 1.5,
                       whiteSpace: 'pre-line',
-                      fontFamily: 'inherit'
+                      fontFamily: 'inherit',
+                      marginBottom: 8
                     }}>
                       <div style={{ fontSize: 15, fontWeight: 700, color: '#1d4ed8', marginBottom: 6, fontFamily: 'inherit' }}>Mensaje del interesado</div>
                       {donationParsed.message}
                     </div>
-                  ) : null}
-                  {donationParsed.reason ? (
+                  )}
+                  {donationParsed.reason && (
                     <div style={{
                       background: '#ffffff',
                       border: '1px solid #fde68a',
@@ -584,12 +600,49 @@ const ChatBubble = ({
                       fontSize: 15,
                       lineHeight: 1.5,
                       whiteSpace: 'pre-line',
-                      fontFamily: 'inherit'
+                      fontFamily: 'inherit',
+                      marginBottom: 8
                     }}>
                       <div style={{ fontSize: 15, fontWeight: 700, color: '#b45309', marginBottom: 6, fontFamily: 'inherit' }}>Razón del interés</div>
                       {donationParsed.reason}
                     </div>
-                  ) : null}
+                  )}
+                  {donationParsed.phone && (
+                    <div style={{
+                      background: '#ffffff',
+                      border: '1px solid #d1fae5',
+                      borderRadius: 12,
+                      padding: '10px 12px',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                      color: '#0f172a',
+                      fontSize: 15,
+                      lineHeight: 1.5,
+                      whiteSpace: 'pre-line',
+                      fontFamily: 'inherit',
+                      marginBottom: 8
+                    }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#047857', marginBottom: 6, fontFamily: 'inherit' }}>Teléfono de contacto</div>
+                      {donationParsed.phone}
+                    </div>
+                  )}
+                  {donationParsed.availability && (
+                    <div style={{
+                      background: '#ffffff',
+                      border: '1px solid #e0e7ff',
+                      borderRadius: 12,
+                      padding: '10px 12px',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                      color: '#0f172a',
+                      fontSize: 15,
+                      lineHeight: 1.5,
+                      whiteSpace: 'pre-line',
+                      fontFamily: 'inherit',
+                      marginBottom: 8
+                    }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#4338ca', marginBottom: 6, fontFamily: 'inherit' }}>Disponibilidad para recoger</div>
+                      {donationParsed.availability}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div style={{

@@ -571,8 +571,51 @@ const DonationCreateNew = () => {
                 Cancelar
               </button>
               
-              <button type="submit" className="btn-publicar" style={{display:'inline-flex', alignItems:'center', justifyContent:'center', width:'auto', padding:'12px 24px', whiteSpace:'nowrap'}}>
-                <i className="fas fa-heart" style={{marginRight:8}}></i>
+              <button 
+                type="submit" 
+                className="btn-publicar"
+                style={{
+                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '14px 32px',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '1.05rem',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  minWidth: '200px',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(79, 70, 229, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.querySelector('i').style.transform = 'scale(1.1)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = '';
+                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                  e.currentTarget.querySelector('i').style.transform = '';
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.transform = 'translateY(1px)';
+                  e.currentTarget.style.boxShadow = '0 2px 4px -1px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(79, 70, 229, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                }}
+              >
+                <i className="fas fa-heart" style={{ 
+                  fontSize: '1.1em',
+                  transition: 'transform 0.3s ease' 
+                }}></i>
                 Publicar Donación
               </button>
             </div>

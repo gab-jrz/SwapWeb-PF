@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Login.css';
 import Logo from '../components/Logo.jsx';
-import DarkModeToggle from "../Component/DarkModeToggle.jsx";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) return saved;
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'dark' : 'light';
-  });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -35,21 +28,13 @@ const ForgotPassword = () => {
     }
   };
 
-  useEffect(() => {
-    document.body.classList.toggle('dark-mode', theme === 'dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   return (
     <>
       <header className="register-header">
         <Logo style={{ fontSize: "1.8rem !important" }} />
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <DarkModeToggle
-            darkMode={theme === 'dark'}
-            toggleDarkMode={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-          />
-          <Link to="/" className="forgot-home-link" aria-label="Inicio">
+          <Link to="/" className="login-home-link" aria-label="Inicio">
             <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" aria-hidden="true">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>

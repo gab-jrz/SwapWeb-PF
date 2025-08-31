@@ -223,7 +223,7 @@ Enviado por ${usuarioActual.nombre} ${usuarioActual.apellido}
                 
                 <div className="form-group">
                   <label htmlFor="mensaje" className="form-label">
-                    Mensaje principal <span className="required">*</span>
+                    Mensaje principal
                   </label>
                   <textarea
                     id="mensaje"
@@ -242,7 +242,7 @@ Enviado por ${usuarioActual.nombre} ${usuarioActual.apellido}
 
                 <div className="form-group">
                   <label htmlFor="razonInteres" className="form-label">
-                    ¿Por qué te interesa esta donación? <span className="required">*</span>
+                    ¿Por qué te interesa esta donación?
                   </label>
                   <textarea
                     id="razonInteres"
