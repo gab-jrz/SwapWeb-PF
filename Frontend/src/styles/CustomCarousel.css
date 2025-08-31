@@ -1,0 +1,125 @@
+.custom-carousel-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto 40px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 500px;
+}
+
+.custom-carousel-slide {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  height: 500px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-carousel-slide:hover img {
+  transform: scale(1.08);
+}
+
+.custom-carousel-overlay {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 70%;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.85) 60%,
+    rgba(0, 0, 0, 0.5) 85%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 48px;
+  font-size: 2.4rem;
+  font-weight: 400;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-carousel-slide:hover .custom-carousel-overlay {
+  opacity: 1;
+}
+
+.custom-carousel-overlay span {
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.custom-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  width: 38px;
+  height: 38px;
+  font-size: 2.2rem;
+  color: #fff;
+  cursor: pointer;
+  z-index: 2;
+  margin: 0;
+  transition: color 0.2s;
+}
+.custom-carousel-arrow.left {
+  left: 18px;
+}
+.custom-carousel-arrow.right {
+  right: 18px;
+}
+.custom-carousel-arrow:hover {
+  color: #999999;
+}
+
+.carousel-text-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-title {
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.carousel-subtitle {
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #e0e0e09a;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+  margin-bottom: 0;
+}
