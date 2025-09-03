@@ -90,6 +90,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Health check endpoint (colocado antes del middleware 404)
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Servir archivos estáticos de uploads
 setupStatic(app);
 
@@ -182,14 +191,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'ok',
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    timestamp: new Date().toISOString()
-  });
-});
+// (ruta /health movida arriba del 404)
 
 // Start server (skip during tests)
 if (!isTest) {
