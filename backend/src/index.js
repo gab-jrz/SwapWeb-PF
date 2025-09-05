@@ -3,7 +3,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import process from 'process';
+import process from 'node:process';
+import helmet from 'helmet';
+import compression from 'compression';
 import ratingsRoutes from './routes/ratings.js';
 import setupStatic from './static.js';
 import contactoRoutes from './routes/contacto.js';
@@ -16,21 +18,43 @@ const app = express();
 const port = (typeof process !== 'undefined' && process.env && process.env.PORT) ? process.env.PORT : 3001;
 const isTest = process.env.NODE_ENV === 'test';
 
-// Middleware
-app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://127.0.0.1:3000',
-    'http://localhost:5173', // Vite default port
-    'http://127.0.0.1:5173',
-    'http://localhost:4173', // Vite preview port
-    'http://127.0.0.1:4173'
-  ],
+// Middleware de seguridad y rendimiento
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+app.use(compression());
+
+// CORS estricto con soporte de variables de entorno
+const defaultOrigins = [
+  'https://swap-web-pf.vercel.app',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+];
+const envOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // permitir herramientas como Postman
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   exposedHeaders: ['Content-Range', 'X-Content-Range']
-}));
+};
+
+// Registrar CORS para todas las rutas y también manejar preflights explícitamente
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Parse JSON bodies (increase limit to allow base64 images in messages)
 app.use(express.json({ limit: '15mb' }));
