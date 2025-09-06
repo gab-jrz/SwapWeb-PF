@@ -123,6 +123,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Raíz simple para sondas externas
+app.get('/', (req, res) => {
+  res.status(200).send('ok');
+});
+
 // Servir archivos estáticos de uploads
 setupStatic(app);
 
