@@ -44,12 +44,20 @@ const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true); // permitir herramientas como Postman
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    try {
+      const u = new URL(origin);
+      // Permitir subdominios de Vercel (previews), solo sobre HTTPS
+      if (u.protocol === 'https:' && u.hostname.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+    } catch (_) {}
     return callback(new Error(`Origen no permitido por CORS: ${origin}`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  optionsSuccessStatus: 204
 };
 
 // Registrar CORS para todas las rutas y también manejar preflights explícitamente
