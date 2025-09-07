@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import morgan from 'morgan';
+import morgan from 'morgan'; // Logger
 import process from 'node:process';
 import helmet from 'helmet';
 import compression from 'compression';
