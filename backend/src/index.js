@@ -60,7 +60,33 @@ const corsOptions = {
   optionsSuccessStatus: 204
 };
 
-// Registrar CORS para todas las rutas y también manejar preflights explícitamente
+// Middleware CORS de seguridad (refleja Origin permitido y maneja preflight)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const isAllowed = (() => {
+    if (!origin) return false;
+    if (allowedOrigins.includes(origin)) return true;
+    try {
+      const u = new URL(origin);
+      return u.protocol === 'https:' && u.hostname.endsWith('.vercel.app');
+    } catch (_) {
+      return false;
+    }
+  })();
+
+  if (isAllowed) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+    res.header('Access-Control-Expose-Headers', 'Content-Range,X-Content-Range');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
+// Registrar CORS para todas las rutas y también manejar preflights explícitamente (capa adicional)
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
