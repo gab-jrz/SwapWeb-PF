@@ -8,11 +8,24 @@ import '../styles/DonationDetailPremium.css';
 import '../styles/ProductCard.css';
 import { API_URL } from '../config';
 
-// Función para construir URLs de imágenes
+// Función para construir URLs de imágenes (forzando HTTPS y normalizando rutas)
 const getImageUrl = (imageName) => {
   if (!imageName) return null;
-  if (imageName.startsWith('http')) return imageName;
-  return `${API_URL.replace('/api', '')}/uploads/products/${imageName}`;
+  const base = API_URL.replace('/api', '');
+
+  // Si viene absoluta
+  if (/^https?:\/\//i.test(imageName)) {
+    // Forzar https si viene con http
+    return imageName.replace(/^http:\/\//i, 'https://');
+  }
+
+  // Si viene como ruta relativa (comienza con /)
+  if (imageName.startsWith('/')) {
+    return `${base}${imageName}`;
+  }
+
+  // Caso filename simple
+  return `${base}/uploads/products/${imageName}`;
 };
 
 // Slider de imágenes para donaciones (usando el mismo componente que productos)
