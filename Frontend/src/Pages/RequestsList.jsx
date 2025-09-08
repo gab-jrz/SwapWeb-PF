@@ -5,8 +5,7 @@ import Footer from '../components/Footer';
 import { categorias } from "../categorias";
 import "../styles/DonationForm.css";
 import "../styles/RequestsList.css";
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from "../config";
 
 const RequestsList = () => {
   const prevTitleRef = React.useRef(document.title);

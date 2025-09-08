@@ -5,6 +5,7 @@ import BackButton from "../components/BackButton";
 import Footer from "../components/Footer";
 import NotificationService from "../services/notificationService";
 import "../styles/Configuracion.css";
+import { API_URL } from "../config";
 
 // Toast simple
 const Toast = ({ show, message, onClose }) => show ? (
@@ -173,7 +174,7 @@ const Configuracion = () => {
       };
       
       // Actualizar configuraciones en el backend
-      const response = await fetch(`http://localhost:3001/api/users/${usuarioActual.id}`, {
+      const response = await fetch(`${API_URL}/users/${usuarioActual.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),

@@ -6,8 +6,7 @@ import { categorias } from '../categorias';
 import '../styles/DetalleProducto.css';
 import '../styles/DonationDetailPremium.css';
 import '../styles/ProductCard.css';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 // Función para construir URLs de imágenes
 const getImageUrl = (imageName) => {

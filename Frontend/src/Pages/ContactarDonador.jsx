@@ -3,8 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../styles/Intercambiar.css";
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from "../config";
 
 const ContactarDonador = () => {
   const navigate = useNavigate();

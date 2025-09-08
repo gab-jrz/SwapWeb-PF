@@ -5,9 +5,9 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { categorias } from "../categorias";
 
-// Use env API URL and derive base URL for static files (without '/api')
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const FILE_BASE_URL = API_URL.replace(/\/api$/, '');
+// Usar API_URL global y derivar base para archivos (sin '/api')
+import { API_URL } from "../config";
+const FILE_BASE_URL = (API_URL || '').replace(/\/api$/, '');
 
 const EditarDonacion = () => {
   const { id } = useParams();

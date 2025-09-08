@@ -5,8 +5,8 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { getProductImageUrl } from "../utils/getProductImageUrl";
 import BackButton from "../components/BackButton";
+import { API_URL } from "../config";
 
-const API_URL = 'http://localhost:3001/api';
 
 const Intercambiar = () => {
   const navigate = useNavigate();

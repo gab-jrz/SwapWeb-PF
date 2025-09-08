@@ -23,6 +23,7 @@ import { useNotifications } from "../hooks/useNotifications";
 import { useDarkMode } from "../hooks/useDarkMode";
 import NotificationDropdown from "./NotificationDropdown";
 import { categorias } from "../categorias";
+import { API_URL } from "../config";
 
 const Header = ({
   searchTerm,
@@ -91,11 +92,7 @@ const Header = ({
       setNombreUsuario(
         primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1)
       );
-      fetch(
-        `${
-          import.meta.env.VITE_API_URL || "http://localhost:3001/api"
-        }/messages/unread/${usuarioActual.id}`
-      )
+      fetch(`${API_URL}/messages/unread/${usuarioActual.id}`)
         .then((r) => r.json())
         .then((d) => setUnread(d.total || 0))
         .catch(() => {});
@@ -307,21 +304,13 @@ const Header = ({
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
     if (!usuario) return;
     const interval = setInterval(() => {
-      fetch(
-        `${
-          import.meta.env.VITE_API_URL || "http://localhost:3001/api"
-        }/messages/unread/${usuario.id}`
-      )
+      fetch(`${API_URL}/messages/unread/${usuario.id}`)
         .then((r) => r.json())
         .then((d) => setUnread(d.total || 0))
         .catch(() => {});
     }, 30000);
     window.refreshUnread = () => {
-      fetch(
-        `${
-          import.meta.env.VITE_API_URL || "http://localhost:3001/api"
-        }/messages/unread/${usuario.id}`
-      )
+      fetch(`${API_URL}/messages/unread/${usuario.id}`)
         .then((r) => r.json())
         .then((d) => setUnread(d.total || 0))
         .catch(() => {});

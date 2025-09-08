@@ -8,8 +8,7 @@ import "../styles/DonationForm.css";
 import "../styles/DonationFormThemes.css";
 import { initDarkModeDetector } from '../utils/darkModeDetector';
 import ThanksModal from '../components/ThanksModal';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 const DonationCreateNew = () => {
   const navigate = useNavigate();

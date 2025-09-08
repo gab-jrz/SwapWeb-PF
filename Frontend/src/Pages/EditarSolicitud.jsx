@@ -3,8 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../styles/EditarProducto.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from "../config";
 
 const EditarSolicitud = () => {
   const { id } = useParams();

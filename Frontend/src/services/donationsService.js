@@ -1,10 +1,10 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 class DonationsService {
   // Donaciones
   static async getAllDonations() {
     try {
-      const response = await fetch(`${API_BASE_URL}/donations`);
+      const response = await fetch(`${API_URL}/donations`);
       if (!response.ok) throw new Error('Error al obtener donaciones');
       return await response.json();
     } catch (error) {
@@ -15,7 +15,7 @@ class DonationsService {
 
   static async getDonationById(id) {
     try {
-      const response = await fetch(`${API_BASE_URL}/donations/${id}`);
+      const response = await fetch(`${API_URL}/donations/${id}`);
       if (!response.ok) throw new Error('Error al obtener donación');
       return await response.json();
     } catch (error) {
@@ -26,7 +26,7 @@ class DonationsService {
 
   static async createDonation(donationData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/donations`, {
+      const response = await fetch(`${API_URL}/donations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -43,7 +43,7 @@ class DonationsService {
 
   static async updateDonationStatus(id, status) {
     try {
-      const response = await fetch(`${API_BASE_URL}/donations/${id}/status`, {
+      const response = await fetch(`${API_URL}/donations/${id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -61,7 +61,7 @@ class DonationsService {
   // Solicitudes de donación
   static async getAllRequests() {
     try {
-      const response = await fetch(`${API_BASE_URL}/donation-requests`);
+      const response = await fetch(`${API_URL}/donation-requests`);
       if (!response.ok) throw new Error('Error al obtener solicitudes');
       return await response.json();
     } catch (error) {
@@ -72,7 +72,7 @@ class DonationsService {
 
   static async getRequestById(id) {
     try {
-      const response = await fetch(`${API_BASE_URL}/donation-requests/${id}`);
+      const response = await fetch(`${API_URL}/donation-requests/${id}`);
       if (!response.ok) throw new Error('Error al obtener solicitud');
       return await response.json();
     } catch (error) {
@@ -83,7 +83,7 @@ class DonationsService {
 
   static async createRequest(requestData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/donation-requests`, {
+      const response = await fetch(`${API_URL}/donation-requests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -100,7 +100,7 @@ class DonationsService {
 
   static async updateRequestStatus(id, status) {
     try {
-      const response = await fetch(`${API_BASE_URL}/donation-requests/${id}/status`, {
+      const response = await fetch(`${API_URL}/donation-requests/${id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -118,7 +118,7 @@ class DonationsService {
   // Matches
   static async assignDonationToRequest(donationId, requestId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/donations/${donationId}/assign/${requestId}`, {
+      const response = await fetch(`${API_URL}/donations/${donationId}/assign/${requestId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -134,7 +134,7 @@ class DonationsService {
 
   static async completeMatch(matchId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/matches/${matchId}/complete`, {
+      const response = await fetch(`${API_URL}/matches/${matchId}/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -1,6 +1,19 @@
 // Devuelve la URL absoluta para mostrar una imagen de producto
 // Si la ruta comienza con /uploads, la arma con el backend; si es base64 o URL externa, la deja igual
-const BACKEND_URL = 'http://localhost:3001'; // Cambia esto si usas otro puerto/backend
+import { API_URL } from '../config';
+
+// Derivar el origin del backend quitando el sufijo /api y forzar https
+const BACKEND_ORIGIN = (() => {
+  const base = (API_URL || '').replace(/\/?api\/?$/, '');
+  if (!base) return '';
+  try {
+    const u = new URL(base);
+    u.protocol = 'https:'; // evitar mixed content
+    return u.origin;
+  } catch {
+    return base;
+  }
+})();
 
 // Normaliza distintas formas de imagen que pueden venir del backend/frontend
 // Acepta: string (relativa/absoluta/base64), array de strings/objetos, objeto con {url|path}
@@ -35,11 +48,11 @@ export function getProductImageUrl(img) {
 
   // Normalizar rutas de uploads que a veces vienen sin barra inicial
   if (trimmed.startsWith('uploads')) {
-    return `${BACKEND_URL}/${trimmed}`;
+    return `${BACKEND_ORIGIN}/${trimmed}`;
   }
 
   if (trimmed.startsWith('/uploads')) {
-    return `${BACKEND_URL}${trimmed}`;
+    return `${BACKEND_ORIGIN}${trimmed}`;
   }
 
   // Compatibilidad con rutas del frontend "public/images" o variantes relativas

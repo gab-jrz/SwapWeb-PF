@@ -7,8 +7,7 @@ import { categorias } from "../categorias";
 import Footer from "../components/Footer";
 import { getProductImageUrl } from "../utils/getProductImageUrl";
 import { emitProductUpdated, emitProductDeleted } from "../utils/productEvents";
-
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from "../config";
 
 // Utilidad: compresión de imágenes (igual que en PublicarProducto.jsx)
 const compressImage = (file) => {

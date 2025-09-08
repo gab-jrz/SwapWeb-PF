@@ -37,23 +37,23 @@ const buildUrl = (input) => {
   if (typeof input === 'string') {
     let urlStr = input;
 
-    // Reescribir localhost -> API_URL
+    // 1) Reescribir localhost -> API_URL (incluyendo /api)
     if (isLocalhostBackend(urlStr)) {
       const original = new URL(urlStr);
-      const api = new URL(API_BASE);
-      // mantener el path replaceando posible prefijo /api duplicado
+      // limpiar posible /api duplicado del path
       const cleanedPath = original.pathname.replace(/^\/api\/?/, '/');
-      urlStr = api.origin + '/'+ cleanedPath.replace(/^\//, '') + (original.search || '');
-      return urlStr;
+      urlStr = `${API_BASE.replace(/\/$/, '')}/${cleanedPath.replace(/^\//, '')}${original.search || ''}`;
     }
 
-    // Agregar /api si llama al origin del backend sin /api
+    // 2) Si llama al origin del backend sin /api, agregarlo
     if (needsApiPrefix(urlStr)) {
       const u = new URL(urlStr);
       u.pathname = '/api' + (u.pathname.startsWith('/') ? u.pathname : '/' + u.pathname);
-      return u.toString();
+      urlStr = u.toString();
     }
 
+    // Normalizar dobles barras accidentales (excepto después de https:)
+    urlStr = urlStr.replace(/([^:])\/\/+/, '$1/');
     return urlStr;
   }
 
@@ -61,7 +61,9 @@ const buildUrl = (input) => {
   if (input && typeof input === 'object' && typeof input.url === 'string') {
     const newUrl = buildUrl(input.url);
     if (newUrl !== input.url) {
-      return new Request(newUrl, input);
+      // Clonar init para preservar método/headers/body
+      const init = { ...arguments[1] };
+      return new Request(newUrl, init);
     }
   }
 

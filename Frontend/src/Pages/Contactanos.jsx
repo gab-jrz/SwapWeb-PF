@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { API_URL } from "../config";
 
 const categorias = [
   "Problema de registro",
@@ -57,7 +58,7 @@ export default function Contactanos() {
       setCargando(true);
       try {
         console.log('Enviando formulario...');
-        const res = await fetch("http://localhost:3001/api/contacto", {
+        const res = await fetch(`${API_URL}/contacto`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),

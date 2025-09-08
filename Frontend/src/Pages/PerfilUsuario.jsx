@@ -23,8 +23,9 @@ import ProductCard from '../components/ProductCard.jsx';
 import '../styles/Home.css';
 import PerfilDetallesBox from '../components/PerfilDetallesBox.jsx';
 import { useToast } from '../components/ToastProvider.jsx';
+import { API_URL } from '../config';
 
-const API_URL = 'http://localhost:3001/api'; // Backend URL
+// API_URL importado desde config.js
 
 // Función para obtener URL de imágenes de donaciones
 const getDonationImageUrl = (imageName) => {
@@ -804,7 +805,6 @@ const PerfilUsuario = () => {
         } else if (updatedUser.imagen.startsWith('http')) {
           imagenUrl = updatedUser.imagen;
         } else {
-          const API_URL = 'http://localhost:3001/api';
           imagenUrl = updatedUser.imagen.startsWith('/') 
             ? `${API_URL}${updatedUser.imagen}` 
             : `${API_URL}/${updatedUser.imagen}`;

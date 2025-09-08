@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/Register.css"; // Asegúrate de tener el archivo CSS
 import { useToast } from "../components/ToastProvider.jsx";
 import Logo from "../components/Logo.jsx";
+import { API_URL } from "../config";
  
 
 const Register = () => {
@@ -66,7 +67,7 @@ const Register = () => {
         imagen: "https://via.placeholder.com/150",
       };
 
-      const response = await fetch("http://localhost:3001/api/users/register", {
+      const response = await fetch(`${API_URL}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -6,8 +6,8 @@ import { getProduct } from "../services/api";
 import "../styles/DetalleProducto.css";
 import "../styles/DonationDetailPremium.css";
 import { getProductImageUrl } from "../utils/getProductImageUrl";
+import { API_URL } from "../config";
 
-const API_URL = 'http://localhost:3001/api';
 
 // Slider de imágenes premium para productos (máx 3 imágenes)
 function ImageSlider({ images, title }) {

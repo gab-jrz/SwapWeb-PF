@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import '../styles/ChatBubble.css';
 import Notification from './Notification';
+import { API_URL } from '../config';
 
-const API_URL = 'http://localhost:3001/api';
+// API_URL centralizado desde config.js
 
 const ChatBubble = ({
   mensaje,
@@ -247,7 +248,7 @@ const ChatBubble = ({
   const handleDelete = async () => {
     if (!window.confirm('¿Eliminar mensaje?')) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/messages/${mensaje._id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/messages/${mensaje._id}`, { method: 'DELETE' });
       if (res.ok) {
         showNotification('Mensaje eliminado', 'success');
         if (onRefresh) onRefresh();
@@ -263,7 +264,7 @@ const ChatBubble = ({
   const handleRate = async (value) => {
     setLocalRating(value);
     try {
-      const res = await fetch(`http://localhost:3001/api/messages/${mensaje._id}/rating`, {
+      const res = await fetch(`${API_URL}/messages/${mensaje._id}/rating`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating: value, raterId: currentUserId }),

@@ -7,8 +7,7 @@ import Footer from '../components/Footer';
 import "../styles/PublicarProducto.css";
 import { initDarkModeDetector } from '../utils/darkModeDetector';
 import ThanksModal from '../components/ThanksModal';
-
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 const MAX_IMAGES = 3;
 
 const compressImage = (file) => {

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { API_URL } from '../config';
 import { FiImage, FiSend, FiX } from 'react-icons/fi';
 import '../styles/ChatInput.css';
 import '../styles/ChatInputPremium.css';
@@ -20,7 +21,7 @@ const ChatInput = ({ onSendMessage, currentUserId, recipientId, socket }) => {
         const formData = new FormData();
         formData.append('image', image);
         
-        const response = await fetch('http://localhost:3001/api/upload', {
+        const response = await fetch(`${API_URL}/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -40,7 +41,7 @@ const ChatInput = ({ onSendMessage, currentUserId, recipientId, socket }) => {
       };
 
       // Persistir primero por REST para asegurar consistencia con el backend
-      const saveRes = await fetch('http://localhost:3001/api/messages', {
+      const saveRes = await fetch(`${API_URL}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -1,39 +1,42 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './Pages/Home';
-import DetalleProducto from './Pages/DetalleProducto';
-import Login from './Pages/Login';
-import Register from './Pages/Register';
-import Intercambiar from './Pages/Intercambiar';
-import PerfilUsuario from './Pages/PerfilUsuario';
-import Calificaciones from './Pages/Calificaciones';
-import PerfilPublico from './Pages/PerfilPublico';
-import Editar from './Pages/Editar';
-import Configuracion from './Pages/Configuracion';
-import PublicarProducto from './Pages/PublicarProducto';
-import EditarProducto from './Pages/EditarProducto';
-import Favoritos from './Pages/Favoritos';
 import ProtectedRoute from './components/ProtectedRoute';
-import ForgotPassword from './Pages/ForgotPassword';
-import ResetPassword from './Pages/ResetPassword';
-import ComoFunciona from './Pages/ComoFunciona';
-import SobreNosotros from './Pages/SobreNosotros';
-import Privacidad from './Pages/Privacidad';
-import DonationsList from './Pages/DonationsList';
-import DonationCreate from './Pages/DonationCreateNew';
-import DonationDetail from './Pages/DonationDetail';
-import ContactarDonador from './Pages/ContactarDonador';
-import EditarDonacion from './Pages/EditarDonacion';
-import RequestsList from './Pages/RequestsList';
-import RequestCreate from './Pages/RequestCreateNew';
-import RequestDetail from './Pages/RequestDetail';
-import EditarSolicitud from './Pages/EditarSolicitud';
-import Contactanos from './Pages/Contactanos';
+
+// Lazy-loaded pages
+const Home = lazy(() => import('./Pages/Home'));
+const DetalleProducto = lazy(() => import('./Pages/DetalleProducto'));
+const Login = lazy(() => import('./Pages/Login'));
+const Register = lazy(() => import('./Pages/Register'));
+const Intercambiar = lazy(() => import('./Pages/Intercambiar'));
+const PerfilUsuario = lazy(() => import('./Pages/PerfilUsuario'));
+const Calificaciones = lazy(() => import('./Pages/Calificaciones'));
+const PerfilPublico = lazy(() => import('./Pages/PerfilPublico'));
+const Editar = lazy(() => import('./Pages/Editar'));
+const Configuracion = lazy(() => import('./Pages/Configuracion'));
+const PublicarProducto = lazy(() => import('./Pages/PublicarProducto'));
+const EditarProducto = lazy(() => import('./Pages/EditarProducto'));
+const Favoritos = lazy(() => import('./Pages/Favoritos'));
+const ForgotPassword = lazy(() => import('./Pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./Pages/ResetPassword'));
+const ComoFunciona = lazy(() => import('./Pages/ComoFunciona'));
+const SobreNosotros = lazy(() => import('./Pages/SobreNosotros'));
+const Privacidad = lazy(() => import('./Pages/Privacidad'));
+const DonationsList = lazy(() => import('./Pages/DonationsList'));
+const DonationCreate = lazy(() => import('./Pages/DonationCreateNew'));
+const DonationDetail = lazy(() => import('./Pages/DonationDetail'));
+const ContactarDonador = lazy(() => import('./Pages/ContactarDonador'));
+const EditarDonacion = lazy(() => import('./Pages/EditarDonacion'));
+const RequestsList = lazy(() => import('./Pages/RequestsList'));
+const RequestCreate = lazy(() => import('./Pages/RequestCreateNew'));
+const RequestDetail = lazy(() => import('./Pages/RequestDetail'));
+const EditarSolicitud = lazy(() => import('./Pages/EditarSolicitud'));
+const Contactanos = lazy(() => import('./Pages/Contactanos'));
 
 function App() {
   return (
     <Router>
-      <Routes>
+      <Suspense fallback={<div style={{padding:'2rem', textAlign:'center'}}>Cargando...</div>}>
+        <Routes>
         <Route path="/" element={<Home />} />
         {/* Páginas informativas */}
         <Route path="/sobre-nosotros" element={<SobreNosotros />} />
@@ -82,7 +85,8 @@ function App() {
          </ProtectedRoute>
         } />
         <Route path="/contactanos" element={<Contactanos />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

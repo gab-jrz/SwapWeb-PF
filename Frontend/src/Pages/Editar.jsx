@@ -4,8 +4,7 @@ import { FiUser, FiMail, FiMapPin, FiCamera, FiTrash2, FiSave, FiX, FiUpload } f
 import Header from '../components/Header.jsx';
 import Footer from '../components/Footer.jsx';
 import '../styles/Editar.css';
-
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 // Lista de provincias argentinas
 const PROVINCIAS = [

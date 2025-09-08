@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import DonationCard from '../components/DonationCard';
 import '../styles/DonationsList.css';
+import { API_URL } from '../config';
 
 const DonationsList = () => {
   const [donations, setDonations] = useState([]);
@@ -42,7 +43,7 @@ const DonationsList = () => {
 
   const fetchDonations = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/donations`);
+      const response = await fetch(`${API_URL}/donations`);
       if (response.ok) {
         const data = await response.json();
         setDonations(data);

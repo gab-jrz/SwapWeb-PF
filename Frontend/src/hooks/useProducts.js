@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PRODUCT_EVENTS, useProductEvents } from '../utils/productEvents';
-
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 // Hook personalizado para manejar productos con sincronización automática
 export const useProducts = (initialProducts = []) => {

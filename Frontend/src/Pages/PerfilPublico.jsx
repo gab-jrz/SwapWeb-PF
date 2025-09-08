@@ -7,8 +7,7 @@ import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
 import '../styles/PerfilPublico.css';
 import PerfilDetallesBox from '../components/PerfilDetallesBox.jsx';
-
-const API_URL = 'http://localhost:3001/api';
+import { API_URL } from '../config';
 
 const PerfilPublico = () => {
   const { id } = useParams();

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
 import Logo from '../components/Logo.jsx';
 import { FaHome } from 'react-icons/fa';
+import { API_URL } from '../config';
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -19,7 +20,7 @@ const ResetPassword = () => {
     setLoading(true);
     setMessage('');
     try {
-      const res = await fetch(`http://localhost:3001/api/auth/reset-password/${token}`, {
+      const res = await fetch(`${API_URL}/auth/reset-password/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword: password })

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Login.css"; // Asegúrate de tener el archivo CSS
 import Logo from "../components/Logo.jsx";
+import { API_URL } from "../config";
  
 
 const Login = () => {
@@ -20,7 +21,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/users/login", {
+      const response = await fetch(`${API_URL}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
