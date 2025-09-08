@@ -148,6 +148,45 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Endpoint de diagnóstico CORS
+app.options('/api/cors-check', (req, res) => {
+  return res.sendStatus(204);
+});
+app.get('/api/cors-check', (req, res) => {
+  const origin = req.headers.origin || null;
+  let allowed = false;
+  let reason = '';
+  try {
+    if (!origin) {
+      allowed = false;
+      reason = 'sin origin';
+    } else if (allowedOrigins.includes(origin)) {
+      allowed = true;
+      reason = 'incluido en allowedOrigins';
+    } else {
+      const u = new URL(origin);
+      if (u.protocol === 'https:' && u.hostname.endsWith('.vercel.app')) {
+        allowed = true;
+        reason = 'wildcard .vercel.app';
+      } else {
+        allowed = false;
+        reason = 'no coincide con allowedOrigins ni wildcard';
+      }
+    }
+  } catch (e) {
+    allowed = false;
+    reason = `error parseando origin: ${e.message}`;
+  }
+  res.json({
+    ok: true,
+    origin,
+    allowed,
+    reason,
+    envAllowedOrigins: allowedOrigins,
+    time: new Date().toISOString()
+  });
+});
+
 // Health check endpoint (colocado antes del middleware 404)
 app.get('/health', (req, res) => {
   res.status(200).json({ 
