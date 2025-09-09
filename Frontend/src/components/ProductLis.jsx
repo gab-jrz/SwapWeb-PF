@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom"; // Asegúrate de tener esto
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { API_URL } from "../config";
 import "../styles/DetalleProducto.css";
 
 const DetalleProducto = () => {
@@ -10,7 +11,7 @@ const DetalleProducto = () => {
   const [producto, setProducto] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/products/${id}`)
+    fetch(`${API_URL}/products/${id}`)
       .then((response) => response.json())
       .then((data) => setProducto(data))
       .catch((error) => console.error("Error al obtener el producto:", error));
