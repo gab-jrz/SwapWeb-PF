@@ -7,6 +7,7 @@ import { API_URL as API_BASE } from '../config';
 
 // Derivar el origin del backend quitando el sufijo /api
 const BACKEND_ORIGIN = (API_BASE || '').replace(/\/?api\/?$/, '');
+const DEBUG = false; // cambia a true temporalmente si necesitás ver logs en consola
 
 const isLocalhostBackend = (u) => {
   try {
@@ -37,12 +38,19 @@ const buildUrl = (input) => {
   if (typeof input === 'string') {
     let urlStr = input;
 
+    // 0) Reemplazo tosco previo por si el parse falla o hay casos edge
+    if (/^http:\/\/(localhost|127\.0\.0\.1):3001\b/i.test(urlStr) && BACKEND_ORIGIN) {
+      urlStr = urlStr.replace(/^http:\/\/(localhost|127\.0\.0\.1):3001/i, BACKEND_ORIGIN);
+      if (DEBUG) console.log('[fetchProxy] Pre-rewrite localhost->origin:', urlStr);
+    }
+
     // 1) Reescribir localhost -> API_URL (incluyendo /api)
     if (isLocalhostBackend(urlStr)) {
       const original = new URL(urlStr);
       // limpiar posible /api duplicado del path
       const cleanedPath = original.pathname.replace(/^\/api\/?/, '/');
       urlStr = `${API_BASE.replace(/\/$/, '')}/${cleanedPath.replace(/^\//, '')}${original.search || ''}`;
+      if (DEBUG) console.log('[fetchProxy] Rewrote localhost to API_BASE:', urlStr);
     }
 
     // 2) Si llama al origin del backend sin /api, agregarlo
@@ -50,6 +58,7 @@ const buildUrl = (input) => {
       const u = new URL(urlStr);
       u.pathname = '/api' + (u.pathname.startsWith('/') ? u.pathname : '/' + u.pathname);
       urlStr = u.toString();
+      if (DEBUG) console.log('[fetchProxy] Added /api prefix:', urlStr);
     }
 
     // Normalizar dobles barras accidentales (excepto después de https:)
