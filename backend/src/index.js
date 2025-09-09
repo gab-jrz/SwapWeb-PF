@@ -36,7 +36,7 @@ const defaultOrigins = [
 ];
 const envOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
-  .map(o => o.trim())
+  .map(o => o.trim().replace(/\/$/, ''))
   .filter(Boolean);
 const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
 
