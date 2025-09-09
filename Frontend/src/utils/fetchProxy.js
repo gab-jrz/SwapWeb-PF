@@ -86,4 +86,35 @@ if (typeof window !== 'undefined' && !window.__SWAPWEB_FETCH_PROXY__) {
     return originalFetch(rewritten, init);
   };
   window.__SWAPWEB_FETCH_PROXY__ = true;
+
+  // Interceptar también XMLHttpRequest por si alguna librería no usa fetch
+  if (typeof window.XMLHttpRequest !== 'undefined' && !window.__SWAPWEB_XHR_PROXY__) {
+    const OriginalXHR = window.XMLHttpRequest;
+    const open = OriginalXHR.prototype.open;
+    OriginalXHR.prototype.open = function(method, url, ...rest) {
+      let newUrl = url;
+      try {
+        // Reescrituras similares a fetch
+        if (typeof url === 'string') {
+          // Reemplazo tosco previo
+          if (/^http:\/\/(localhost|127\.0\.0\.1):3001\b/i.test(newUrl) && BACKEND_ORIGIN) {
+            newUrl = newUrl.replace(/^http:\/\/(localhost|127\.0\.0\.1):3001/i, BACKEND_ORIGIN);
+            if (DEBUG) console.log('[xhrProxy] Pre-rewrite localhost->origin:', newUrl);
+          }
+          // Si quedó llamando al origin del backend sin /api, agregarlo
+          try {
+            const test = new URL(newUrl);
+            const backend = new URL(BACKEND_ORIGIN);
+            if (test.origin === backend.origin && !test.pathname.startsWith('/api')) {
+              test.pathname = '/api' + (test.pathname.startsWith('/') ? test.pathname : '/' + test.pathname);
+              newUrl = test.toString();
+              if (DEBUG) console.log('[xhrProxy] Added /api prefix:', newUrl);
+            }
+          } catch {}
+        }
+      } catch {}
+      return open.call(this, method, newUrl, ...rest);
+    };
+    window.__SWAPWEB_XHR_PROXY__ = true;
+  }
 }
