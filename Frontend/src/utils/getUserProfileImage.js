@@ -1,7 +1,8 @@
 // Utilidad para obtener la imagen de perfil de un usuario por su ID
 // Si no la encuentra, retorna un avatar por defecto
 
-import { API_URL, normalizeImageUrl } from './normalizeImageUrl';
+import { API_URL } from '../config';
+import { normalizeImageUrl } from './normalizeImageUrl';
 
 export async function getUserProfileImage(userId) {
   try {
