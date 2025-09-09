@@ -858,10 +858,10 @@ const PerfilUsuario = () => {
               } else if (updateData.userData.imagen.startsWith('http')) {
                 imagenUrl = updateData.userData.imagen;
               } else {
-                const API_URL = 'http://localhost:3001/api';
+                const base = API_URL; // usar constante importada desde '../config'
                 imagenUrl = updateData.userData.imagen.startsWith('/') 
-                  ? `${API_URL}${updateData.userData.imagen}` 
-                  : `${API_URL}/${updateData.userData.imagen}`;
+                  ? `${base}${updateData.userData.imagen}` 
+                  : `${base}/${updateData.userData.imagen}`;
               }
               setImagenPerfil(imagenUrl);
             }
@@ -1306,8 +1306,8 @@ const PerfilUsuario = () => {
 
       // 4. Refrescar el usuario desde el backend para obtener la transacción canónica y reconciliar estado local
       try {
-        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual')) || {};
-        const uid = usuarioActual?.id || usuarioActual?._id;
+        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+        const uid = usuarioActual?.id || userData?.id;
         if (uid) {
           const resUser = await fetch(`${API_URL}/users/${uid}`);
           if (resUser.ok) {
@@ -1420,15 +1420,8 @@ const PerfilUsuario = () => {
       const optimistic = addMyConfirm(transaccion);
       setUserData(prev => ({
         ...prev,
-        transacciones: (prev.transacciones || []).map(t => {
-          const tid = t._id || t.id; const oid = transaccion._id || transaccion.id;
-          if (tid && oid) return tid === oid ? optimistic : t;
-          // Fallback por fecha + producto si no hay id estable
-          if (!tid && !oid && t.fecha === transaccion.fecha && t.productoOfrecido === transaccion.productoOfrecido) return optimistic;
-          return t;
-        })
+        transacciones: [...(prev.transacciones || []), optimistic]
       }));
-
       // Persistir en backend dentro de /users/:id (hasta tener endpoint dedicado)
       const uid = usuarioActual?.id || usuarioActual?._id;
       if (uid) {
@@ -2779,23 +2772,42 @@ const loadDonaciones = async () => {
                       const ultimoMensaje = mensajesChat[mensajesChat.length - 1];
                       // Determinar el otro usuario
                       const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-                      let otroNombre = '';
+                      
+                      // Avatar del otro usuario
+                      let avatarUrl = '';
+                      let iniciales = '';
+                      
                       if (ultimoMensaje) {
                         if (ultimoMensaje.deId === usuarioActual.id) {
-                          otroNombre = ultimoMensaje.paraNombre || ultimoMensaje.para || ultimoMensaje.paraId || 'Desconocido';
+                          // El otro usuario es el destinatario
+                          if (ultimoMensaje.paraImagen) {
+                            avatarUrl = normalizeImageUrl(ultimoMensaje.paraImagen);
+                          }
+                          if (!otherUserName && ultimoMensaje.paraNombre) {
+                            otherUserName = ultimoMensaje.paraNombre;
+                          }
                         } else {
-                          otroNombre = ultimoMensaje.deNombre || ultimoMensaje.de || ultimoMensaje.deId || 'Desconocido';
+                          // El otro usuario es el remitente
+                          if (ultimoMensaje.deImagen) {
+                            avatarUrl = normalizeImageUrl(ultimoMensaje.deImagen);
+                          }
+                          if (!otherUserName && ultimoMensaje.deNombre) {
+                            otherUserName = ultimoMensaje.deNombre;
+                          }
                         }
+                        
+                        // Fallback para el nombre
+                        if (!otherUserName) {
+                          const ultimoMensaje = mensajesChat[mensajesChat.length - 1];
+                          if (ultimoMensaje.deId === usuarioActual.id) {
+                            otherUserName = ultimoMensaje.paraNombre || ultimoMensaje.para || 'Usuario';
+                          } else {
+                            otherUserName = ultimoMensaje.deNombre || ultimoMensaje.de || 'Usuario';
+                          }
+                        }
+                        
+                        iniciales = otherUserName.substring(0, 2).toUpperCase();
                       }
-                      // Texto del último mensaje
-                      // donde armás textoUltimo:
-let textoUltimo = '';
-if (ultimoMensaje) {
-  const t = ultimoMensaje.descripcion ?? ultimoMensaje.texto ?? '';
-  textoUltimo = t ? (t.length > 30 ? t.slice(0,30) + '…' : t)
-                  : (ultimoMensaje.imagen ? '[Imagen]' : '(Sin mensaje)');
-}
-
                       
                       const noLeidos = unreadByChat[key] > 0;
                       return (
@@ -3259,596 +3271,22 @@ if (ultimoMensaje) {
                         </div>
                         
           {/* Mensaje informativo obligatorio */}
-                        {/* Stepper de progreso de intercambio */}
-                        {(() => {
-                          const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-                          const mensajes = chats[chatSeleccionado] || [];
-                          const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
+          {/* Stepper de progreso de intercambio */}
+          {(() => {
+            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+            const mensajes = chats[chatSeleccionado] || [];
+            const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
 
-                          if (!mensajeIntercambio) return null;
+            if (!mensajeIntercambio) return null;
 
-                          const yoConfirmado = mensajeIntercambio.confirmaciones?.includes(usuarioActual.id);
-                          const otroId = mensajeIntercambio.deId === usuarioActual.id ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
-                          const otroNombre = mensajeIntercambio.deId === usuarioActual.id ? mensajeIntercambio.paraNombre : mensajeIntercambio.de;
-                          const otroConfirmado = mensajeIntercambio.confirmaciones?.includes(otroId);
-                          const intercambioCompletado = mensajeIntercambio.completed;
+            const yoConfirmado = mensajeIntercambio.confirmaciones?.includes(usuarioActual.id);
+            const otroId = mensajeIntercambio.deId === usuarioActual.id ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
+            const otroNombre = mensajeIntercambio.deId === usuarioActual.id ? 
+              (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario') : 
+              (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
+            const intercambioCompletado = mensajeIntercambio.completed;
 
-                          // Mostrar botón de calificación si el intercambio está completado y no se ha calificado aún
-                          const puedeCalificar = intercambioCompletado && !mensajeIntercambio.ratingGivenBy?.includes(usuarioActual.id);
-
-                          // Avatar y perfil de ambos usuarios
-                          const avatarActual = userData.imagen || '';
-                          
-                          // Buscar avatar del otro usuario en los mensajes
-                          let avatarOtro = '';
-                          for (const mensaje of mensajes) {
-                            if (mensaje.deId === usuarioActual.id) {
-                              if (mensaje.paraImagen) {
-                                avatarOtro = mensaje.paraImagen;
-                                break;
-                              }
-                            } else {
-                              if (mensaje.deImagen) {
-                                avatarOtro = mensaje.deImagen;
-                                break;
-                              }
-                            }
-                          }
-                          
-                          const perfilActual = `/perfil`; // Ruta al perfil privado del usuario
-                          const perfilOtro = `/perfil/${otroId}`; // Ruta al perfil público del otro usuario
-
-                          const steps = [
-                            { label: 'Propuesta enviada', icon: '⚡', completed: true },
-                            { label: 'Tu confirmación', icon: '◉', completed: yoConfirmado, active: !yoConfirmado, userName: 'Tú', avatarUrl: avatarActual, profileUrl: perfilActual },
-                            { label: `Confirmación de ${otroNombre || 'otro'}`, icon: '◉', completed: otroConfirmado, active: !otroConfirmado && yoConfirmado, userName: otroNombre, avatarUrl: avatarOtro, profileUrl: perfilOtro },
-                            { label: 'Intercambio completado', icon: '✦', completed: intercambioCompletado }
-                          ];
-
-                          return (
-                            <div style={{ marginBottom: '1.5rem', border: '1px solid #e0e0e0', borderRadius: '12px', padding: '1rem 1.5rem', background: '#fff' }}>
-                              <StepperIntercambio
-                                steps={steps}
-                                canConfirm={!yoConfirmado && !intercambioCompletado}
-                                completed={intercambioCompletado}
-                                onConfirm={async () => {
-                                  const idMsg = mensajeIntercambio._id || mensajeIntercambio.id;
-                                  const res = await fetch(`${API_URL}/messages/${idMsg}/confirm`, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ userId: usuarioActual.id })
-                                  });
-                                  if (res.ok) {
-                                    handleRefreshMensaje();
-                                  } else {
-                                    const errorData = await res.json();
-                                    alert(`Error: ${errorData.message || 'No se pudo confirmar el intercambio.'}`);
-                                  }
-                                }}
-                              />
-                              {/* Botón de calificación movido al final del chat */}
-
-                              <RatingModal
-                                open={showRatingModal}
-                                onClose={()=>setShowRatingModal(false)}
-                                userName={ratingTarget?.otroNombre || 'usuario'}
-                                onSubmit={async ({stars, comment}) => {
-                                  setRatingLoading(true);
-                                  try {
-                                    // Obtener datos del intercambio desde el mensaje
-                                    const productoOfrecido = mensajeIntercambio?.productoOfrecido || '';
-                                    const productoSolicitado = mensajeIntercambio?.productoTitle || '';
-                                    // Resolver IDs requeridos
-                                    const usuarioLS = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
-                                    const deId = usuarioLS?.id || userData?.id;
-                                    // Fallbacks desde el contexto del mensaje actual
-                                    const paraId = ratingTarget?.otroId || (
-                                      mensajeIntercambio?.deId && mensajeIntercambio?.paraId
-                                        ? (mensajeIntercambio.deId === deId ? mensajeIntercambio.paraId : mensajeIntercambio.deId)
-                                        : undefined
-                                    );
-                                    const transId = ratingTarget?.transId || mensajeIntercambio?.transId || mensajeIntercambio?._id;
-
-                                    // Validación previa
-                                    const starsNum = Number(stars);
-                                    if (!deId || !paraId || !transId || !starsNum) {
-                                      console.error('❌ Datos de calificación incompletos', { deId, paraId, transId, stars });
-                                      alert('Faltan datos para enviar la calificación. Intenta nuevamente.');
-                                      return;
-                                    }
-
-                                    const payload = {
-                                      deId,
-                                      paraId,
-                                      transId,
-                                      stars: starsNum,
-                                      comment,
-                                      productoOfrecido,
-                                      productoSolicitado
-                                    };
-                                    console.log('➡️ Enviando calificación', payload);
-
-                                    const resp = await fetch(`${API_URL}/ratings`, {
-                                      method: 'POST',
-                                      headers: {'Content-Type': 'application/json'},
-                                      body: JSON.stringify(payload)
-                                    });
-                                    if (!resp.ok) {
-                                      let errMsg = `Error ${resp.status}`;
-                                      try {
-                                        const errJson = await resp.json();
-                                        if (errJson?.error) errMsg = errJson.error;
-                                      } catch {
-                                        try { errMsg = await resp.text(); } catch {}
-                                      }
-                                      console.error('❌ Error al calificar:', errMsg);
-                                      // Si ya estaba calificada la transacción, actualizar UI igualmente
-                                      if (String(errMsg).toLowerCase().includes('ya calificaste')) {
-                                        window.dispatchEvent(new CustomEvent('calificacion:nueva', {
-                                          detail: { userId: ratingTarget?.otroId }
-                                        }));
-                                        setShowRatingModal(false);
-                                        handleRefreshMensaje();
-                                        try { toast.info('Esta transacción ya estaba calificada. Mostrando la calificación registrada.'); } catch {}
-                                        // Navegar a calificaciones del receptor
-                                        try {
-                                          const uidDestino = paraId || ratingTarget?.otroId;
-                                          if (uidDestino) navigate(`/calificaciones/${uidDestino}`);
-                                        } catch {}
-                                      } else {
-                                        try { toast.error(errMsg || 'Error al enviar la calificación'); } catch { alert(errMsg || 'Error al enviar la calificación'); }
-                                      }
-                                      return;
-                                    }
-                                    // Notificar a vistas que escuchan (p.ej. Calificaciones)
-                                    window.dispatchEvent(new CustomEvent('calificacion:nueva', {
-                                      detail: { userId: ratingTarget?.otroId }
-                                    }));
-                                    setShowRatingModal(false);
-                                    handleRefreshMensaje();
-                                    try { toast.success('¡Calificación enviada!'); } catch {}
-                                  } catch(e) {
-                                    console.error(e);
-                                    try { toast.error(e?.message || 'Error al enviar la calificación'); } catch { alert(e?.message || 'Error al enviar la calificación'); }
-                                  } finally {
-                                    setRatingLoading(false);
-                                  }
-                                }}
-                              />
-                            </div>
-                          );
-                        })()}
-
-                        <div className={darkMode ? 'dark-mode' : ''}>
-                          {(() => {
-                            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-                            // Agrupar mensajes por fecha (YYYY-MM-DD) y ordenar de más antiguo a más reciente
-                            let mensajes = chats[chatSeleccionado] || [];
-                            mensajes = mensajes.slice().sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-                            let lastDate = null;
-                            return mensajes.map((mensaje, idx) => {
-                              const fecha = new Date(mensaje.fecha);
-                              const fechaStr = fecha.toLocaleDateString();
-                              const showDateHeader = !lastDate || lastDate !== fechaStr;
-                              lastDate = fechaStr;
-                              return (
-                                <React.Fragment key={mensaje._id || mensaje.id}>
-                                  {showDateHeader && (
-                                    <div style={{textAlign:'center',margin:'18px 0 8px 0',color:'#888',fontSize:13,fontWeight:500}}>
-                                      {fechaStr}
-                                    </div>
-                                  )}
-                                  {(() => {
-                                    const isLast = idx === mensajes.length - 1;
-                                    const classes = ['reveal-hidden'];
-                                    if (isLast) classes.push('message-enter');
-                                    return (
-                                      <div className={classes.join(' ')} style={{ marginBottom:'1rem' }}>
-                                    {(() => {
-                                      const computedSenderProfileImage = (
-                                        mensaje.deId === usuarioActual.id
-                                          ? normalizeImageUrl(usuarioActual.imagen)
-                                          : (mensaje.deId !== usuarioActual.id && mensaje.deImagen)
-                                            ? normalizeImageUrl(mensaje.deImagen)
-                                            : (mensaje.paraId !== usuarioActual.id && mensaje.paraImagen)
-                                              ? normalizeImageUrl(mensaje.paraImagen)
-                                              : ''
-                                      );
-                                      const computedCurrentUserProfileImage = normalizeImageUrl(usuarioActual.imagen);
-                                      console.log('[ChatBubble IMG]', {
-                                        msgId: mensaje._id || mensaje.id,
-                                        deId: mensaje.deId,
-                                        paraId: mensaje.paraId,
-                                        deImagen: mensaje.deImagen,
-                                        paraImagen: mensaje.paraImagen,
-                                        senderProfileImage: computedSenderProfileImage,
-                                        currentUserProfileImage: computedCurrentUserProfileImage
-                                      });
-                                      return (
-                                    <ChatBubble
-                                      mensaje={mensaje}
-                                      fromMe={mensaje.deId === usuarioActual.id}
-                                      currentUserId={usuarioActual.id}
-                                      onRefresh={(action, id) => {
-                                        if (action === 'edit') {
-                                          setEditingMessageId(mensaje._id || mensaje.id);
-                                          setEditText(mensaje.descripcion || '');
-                                        } else {
-                                          handleRefreshMensaje();
-                                        }
-                                      }}
-                                      onDeleteMessage={(msg) => { setMessageToDelete(msg); setShowConfirmMessageDelete(true); }}
-                                      confirmExchange={()=>{setMensajeIntercambio(mensaje); setShowConfirmExchange(true);}}
-                                      productoTitle={mensaje.productoTitle}
-                                      productoOfrecido={mensaje.productoOfrecido}
-                                      isEditing={editingMessageId === (mensaje._id || mensaje.id)}
-                                      editText={editText}
-                                      onEditTextChange={setEditText}
-                                      onEditCancel={() => { setEditingMessageId(null); setEditText(''); }}
-                                      onEditSave={async () => {
-                                        const idMsg = mensaje._id || mensaje.id;
-                                        await fetch(`${API_URL}/messages/${idMsg}`, {
-                                          method: 'PUT',
-                                          headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({ descripcion: editText })
-                                        });
-                                        setMensajes(prev => prev.map(m => (m._id || m.id) === idMsg ? { ...m, descripcion: editText } : m));
-                                        setEditingMessageId(null);
-                                        setEditText('');
-                                      }}
-                                      senderProfileImage={computedSenderProfileImage}
-                                      currentUserProfileImage={computedCurrentUserProfileImage}
-                                      isFirstMessageInChat={idx === 0}
-                                    />);
-                                    })()}
-                                      </div>
-                                    );
-                                  })()}
-                                </React.Fragment>
-                              );
-                            });
-                          })()}
-                        </div>
-                        <div ref={chatMessagesEndRef} />
-                        {nuevoTexto && nuevoTexto.trim().length > 0 && (
-                          <div style={{ display:'flex', alignItems:'center', gap:8, margin:'6px 6px 0 6px' }}>
-                            <div className="typing-indicator" aria-live="polite" aria-label="Escribiendo">
-                              <span className="dot" />
-                              <span className="dot" />
-                              <span className="dot" />
-                            </div>
-                          </div>
-                        )}
-{/* Banner permanente de intercambio */}
-                        {intercambioCompletado && (
-                          <div style={{background:'#e8f5e9',color:'#256029',padding:'12px 18px',borderRadius:10,marginTop:12,marginBottom:8,fontSize:14,fontWeight:600,boxShadow:'0 1px 2px #0001',textAlign:'center'}}>
-                            <div style={{marginBottom:4}}>Intercambio completado con éxito el {intercambioCompletado}</div>
-                            <div style={{fontSize:24}}>🔄</div>
-                          </div>
-                        )}
-                        {/* enviar nuevo mensaje estilo WhatsApp */}
-                         <div className={`send-message whatsapp-send-bar ${darkMode ? 'dark-mode' : ''}`} style={{
-                           display:'flex',
-                           alignItems:'center',
-                           gap:'0.8rem',
-                           marginTop:'1.5rem',
-                           background:'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 50%, rgba(241,245,249,0.95) 100%)',
-                           borderRadius:'28px',
-                           padding:'1.2rem 1.8rem',
-                           boxShadow:'0 8px 32px rgba(102, 126, 234, 0.15), 0 4px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)',
-                           backdropFilter:'blur(15px)',
-                           border:'2px solid rgba(102, 126, 234, 0.2)',
-                           borderTop:'3px solid rgba(102, 126, 234, 0.4)',
-                           position:'relative',
-                           overflow:'hidden'
-                         }}>
-                           {/* Botón de adjuntar imagen al extremo izquierdo, pequeño y redondeado */}
-                            <button
-                              type="button"
-                              className="btn-clip"
-                              style={{ 
-                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)', 
-                                border: '2px solid rgba(102, 126, 234, 0.3)', 
-                                cursor: 'pointer', 
-                                fontSize: 18, 
-                                color: '#667eea', 
-                                marginRight: 12, 
-                                marginLeft: 0, 
-                                order: 0, 
-                                borderRadius: '50%', 
-                                width: 48, 
-                                height: 48, 
-                                display:'flex', 
-                                alignItems:'center', 
-                                justifyContent:'center', 
-                                boxShadow:'0 4px 16px rgba(102, 126, 234, 0.2), 0 2px 8px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.6)',
-                                backdropFilter: 'blur(8px)',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                transform: 'translateZ(0)'
-                              }}
-                              onClick={() => document.getElementById('fileInput').click()}
-                              title="Adjuntar imagen"
-                            >
-                             📷
-                           </button>
-                           <input
-                             type="file"
-                             id="fileInput"
-                             accept="image/*"
-                             style={{ display: 'none' }}
-                             onChange={e => {
-                               if (e.target.files && e.target.files[0]) {
-                                 setImagenAdjunta(e.target.files[0]);
-                               }
-                             }}
-                           />
-                           {/* Vista previa imagen adjunta */}
-                           {imagenAdjunta && (
-                             <div style={{ position: 'relative', display: 'inline-block', marginRight: 8 }}>
-                               <img
-                                 src={URL.createObjectURL(imagenAdjunta)}
-                                 alt="preview"
-                                 style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, border: '1px solid #ccc' }}
-                               />
-                               <button
-                                 onClick={() => setImagenAdjunta(null)}
-                                 style={{ position: 'absolute', top: -8, right: -8, background: '#ff4444', borderRadius: '50%', width: 18, height: 18, color: 'white', border: 'none', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                 title="Quitar imagen"
-                               >
-                                 ×
-                               </button>
-                             </div>
-                           )}
-                           {/* Input de mensaje */}
-                            <textarea
-                              style={{ 
-                                flex: 1, 
-                                border: '2px solid rgba(102, 126, 234, 0.2)', 
-                                resize: 'none', 
-                                background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%)', 
-                                outline: 'none', 
-                                fontSize: 16, 
-                                minHeight: 48, 
-                                maxHeight: 120, 
-                                padding: '14px 20px', 
-                                color: '#2d3748',
-                                borderRadius: '24px',
-                                boxShadow: '0 4px 16px rgba(102, 126, 234, 0.1), inset 0 2px 4px rgba(0,0,0,0.05)',
-                                backdropFilter: 'blur(10px)',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                fontFamily: 'inherit',
-                                lineHeight: '1.5'
-                              }}
-                             rows={1}
-                             value={nuevoTexto}
-                             onChange={e => setNuevoTexto(e.target.value)}
-                             placeholder="Escribe un mensaje..."
-                             onKeyDown={e => {
-                               if (e.key === 'Enter' && !e.shiftKey) {
-                                 e.preventDefault();
-                                 handleEnviarMensaje();
-                               }
-                             }}
-
-                           />
-                           {/* Botón enviar */}
-                           <button
-                             className="btn-send"
-                             style={{ 
-                              background: 'linear-gradient(135deg, #7dd3fc 0%, #38bdf8 50%, #0ea5e9 100%)', 
-                              color: '#ffffff', 
-                              border: '3px solid rgba(255,255,255,0.5)', 
-                              borderRadius: '50%', 
-                              width: 56, 
-                              height: 56, 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              fontSize: 22, 
-                              marginLeft: 12, 
-                              cursor: 'pointer',
-                              boxShadow: '0 8px 24px rgba(56, 189, 248, 0.45), 0 4px 12px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.35)',
-                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                              transform: 'translateZ(0)',
-                              backdropFilter: 'blur(8px)'
-                            }}
-                             onClick={handleEnviarMensaje}
-                             title="Enviar"
-                           >
-                            ➤
-                            </button>
-                         </div>
-                          
-                          {/* Botón de calificación al final del chat */}
-                          {(() => {
-                            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-                            const mensajes = chats[chatSeleccionado] || [];
-                            const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
-                            
-                            if (!mensajeIntercambio) return null;
-                            
-                            const intercambioCompletado = mensajeIntercambio.confirmaciones?.length >= 2;
-                            const otroId = mensajeIntercambio.deId === usuarioActual.id ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
-                            const otroNombre = mensajeIntercambio.deId === usuarioActual.id ? 
-                              (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario') : 
-                              (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
-                            const puedeCalificar = intercambioCompletado && !mensajeIntercambio.calificado;
-                            
-                            return puedeCalificar ? (
-                              <div style={{ 
-                                marginTop: 16, 
-                                padding: '16px 20px', 
-                                background: '#ffffff', 
-                                borderRadius: 12, 
-                                border: '2px solid #e8f5e8',
-                                boxShadow: '0 4px 12px rgba(76, 175, 80, 0.15)',
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between'
-                              }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                  <div style={{
-                                    width: 44,
-                                    height: 44,
-                                    borderRadius: '50%',
-                                    background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: 20,
-                                    boxShadow: '0 3px 10px rgba(76, 175, 80, 0.3)'
-                                  }}>✓</div>
-                                  <div>
-                                    <div style={{ fontWeight: 700, fontSize: 17, color: '#1a237e', marginBottom: 4 }}>
-                                      ¡Intercambio completado con éxito!
-                                    </div>
-                                    <div style={{ fontSize: 15, color: '#283593', fontWeight: 600 }}>
-                                      Califica tu experiencia con <span style={{ 
-                                        color: '#1565c0', 
-                                        fontWeight: 800,
-                                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-                                      }}>{otroNombre || 'el usuario'}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <button
-                                  style={{
-                                    background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: 25,
-                                    padding: '14px 28px',
-                                    fontWeight: 800,
-                                    fontSize: 15,
-                                    cursor: 'pointer',
-                                    boxShadow: '0 4px 20px rgba(76, 175, 80, 0.3), 0 0 0 0 rgba(76, 175, 80, 0.5)',
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
-                                    animation: 'pulseGlowGreen 2s ease-in-out infinite alternate'
-                                  }}
-                                  onClick={()=>{ setRatingTarget({otroId, otroNombre, transId: mensajeIntercambio.transId || mensajeIntercambio._id}); setShowRatingModal(true); }}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.transform = 'translateY(-1px)';
-                                    e.target.style.boxShadow = '0 6px 16px rgba(76, 175, 80, 0.4)';
-                                    e.target.style.animation = 'none';
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.transform = 'translateY(0)';
-                                    e.target.style.boxShadow = '0 4px 20px rgba(76, 175, 80, 0.3), 0 0 0 0 rgba(76, 175, 80, 0.5)';
-                                    e.target.style.animation = 'pulseGlowGreen 2s ease-in-out infinite alternate';
-                                  }}
-                                >
-                                  ⭐ Calificar Ahora
-                                </button>
-                              </div>
-                            ) : null;
-                          })()}
-                       </div>
-                     )}
-                   </div>
-
-                </div>
-               )}
-             </div>
-           )}
-         </div>
-       </div>
-
-      <Footer />
-      {/* Modal de felicitación para donación entregada */}
-      {showDonationCongrats && (
-        <div
-          role="dialog"
-          aria-live="polite"
-          aria-label="Donación entregada"
-          onClick={() => setShowDonationCongrats(false)}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 3000
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#ffffff', borderRadius: 16, padding: '22px 24px',
-              maxWidth: 420, width: '90%', textAlign: 'center',
-              boxShadow: '0 20px 48px rgba(0,0,0,0.25)',
-              border: '1px solid #e6f9f2',
-              transform: 'translateY(0)',
-              animation: 'fadeInScale .25s ease-out'
-            }}
-          >
-            <div style={{
-              width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px',
-              background: 'linear-gradient(135deg, #34d399, #10b981)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 8px 20px rgba(16,185,129,0.35)'
-            }}>
-              <span style={{ fontSize: 34, color: '#fff' }}>✓</span>
-            </div>
-            <div style={{ fontWeight: 800, fontSize: 20, color: '#065f46', marginBottom: 6 }}>
-              ¡Felicitaciones!
-            </div>
-            <div style={{ color: '#064e3b', fontSize: 15, fontWeight: 600 }}>
-              La donación fue marcada como entregada.
-            </div>
-          </div>
-        </div>
-      )}
-      <DeleteModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, productId: null, productTitle: '' })}
-        onConfirm={confirmDelete}
-        productTitle={deleteModal.productTitle}
-      />
-
-      {/* ConfirmModal para eliminar chat completo */}
-      <ConfirmModal
-        isOpen={showConfirmChatDelete}
-        onCancel={() => { setShowConfirmChatDelete(false); setChatToDelete(null); }}
-        onConfirm={async () => {
-          
-          // Eliminar todos los mensajes de ese chat del backend y la UI
-          const mensajesChat = chats[chatToDelete] || [];
-          for (const msg of mensajesChat) {
-            await fetch(`${API_URL}/messages/${msg._id || msg.id}`, { method: 'DELETE' });
-          }
-         // Dentro de onConfirm del ConfirmModal de chat:
-setMensajes(prev => prev.filter(m => {
-  const uid = userData?.id || JSON.parse(localStorage.getItem('usuarioActual'))?.id;
-  const otroId = m.deId === uid ? m.paraId : m.deId;
-  const key = m.donacionId
-    ? [m.donacionId, otroId].sort().join('_donacion_')
-    : [m.productoId,  otroId].sort().join('_');
-  return key !== chatToDelete;
-}));
-
-          setShowConfirmChatDelete(false);
-          if (chatSeleccionado === chatToDelete) setChatSeleccionado(null);
-          setChatToDelete(null);
-        }}
-        title="Eliminar chat"
-        message="¿Estás seguro que deseas eliminar este chat completo? Esta acción no se puede deshacer."
-        confirmText="Eliminar chat"
-      />
-
-      {/* ConfirmModal para eliminar mensaje individual */}
-      <ConfirmModal
-        isOpen={showConfirmMessageDelete}
-        onCancel={() => setShowConfirmMessageDelete(false)}
-        onConfirm={handleDeleteMessage}
-        title="Eliminar mensaje"
-        message="¿Estás seguro que deseas eliminar este mensaje? Esta acción no se puede deshacer."
-        confirmText="Eliminar mensaje"
-      />
-    </div>
-  );
-}
-
-export default PerfilUsuario;
+            // Mostrar botón de calificación si el intercambio está completado y no se ha calificado aún
+            const puedeCalificar = intercambioCompletado && !mensajeIntercambio.calificado;
+// ...
+```

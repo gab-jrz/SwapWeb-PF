@@ -4,7 +4,6 @@
 // - No afecta a llamadas externas de terceros
 
 import { API_URL as API_BASE } from '../config';
-
 // Derivar el origin del backend quitando el sufijo /api
 const BACKEND_ORIGIN = (API_BASE || '').replace(/\/?api\/?$/, '');
 const DEBUG = true; // TEMP: habilitar logs para diagnosticar reescrituras en producción
