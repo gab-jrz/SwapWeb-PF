@@ -3288,5 +3288,22 @@ const loadDonaciones = async () => {
 
             // Mostrar botón de calificación si el intercambio está completado y no se ha calificado aún
             const puedeCalificar = intercambioCompletado && !mensajeIntercambio.calificado;
-// ...
-```
+            return null;
+          })()}
+
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+}
+
+export default PerfilUsuario;
