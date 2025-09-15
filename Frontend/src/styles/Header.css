@@ -8,6 +8,14 @@
   height: 100vh !important;
 }
 
+/* Extra small phones */
+@media (max-width: 576px) {
+  .brand-logo-custom .logo-swap,
+  .brand-logo-custom .logo-web {
+    font-size: 1.8rem !important;
+  }
+}
+
 /* Dark Mode Toggle Button Styles */
 .darkmode-toggle-btn {
   display: flex;
@@ -953,6 +961,73 @@ body.dark-mode .donate-cta-btn {
     height: 42px !important;
     padding: 0 !important;
     justify-content: center !important;
+  }
+}
+
+/* ====== Responsive enhancements for header layout ====== */
+/* Avoid horizontal overflow in the grid containers */
+header .container-fluid,
+header .row,
+header .col-md-3,
+header .col-md-6 {
+  min-width: 0 !important;
+}
+
+/* Reduce brand size on tablets */
+@media (max-width: 992px) {
+  .brand-logo-custom .logo-swap,
+  .brand-logo-custom .logo-web {
+    font-size: 2.6rem !important;
+  }
+}
+
+/* Stack columns and compact actions on mobile */
+@media (max-width: 768px) {
+  header .row.align-items-center {
+    row-gap: 8px !important;
+  }
+  /* Stack columns full width */
+  header .col-md-3,
+  header .col-md-6 {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    justify-content: center !important;
+  }
+  /* Smaller brand */
+  .brand-logo-custom .logo-swap,
+  .brand-logo-custom .logo-web {
+    font-size: 2.2rem !important;
+  }
+  /* Compact actions */
+  .header-user-section {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .notification-icon-container {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 22px !important;
+    --icon-size: 44px !important;
+  }
+  /* Ocultar texto del usuario para ahorrar espacio */
+  .user-info-text {
+    display: none !important;
+  }
+  /* Ya existe regla para donar icon-only a 576px; la extendemos a 768px */
+  .donate-cta-text {
+    display: none !important;
+  }
+  .donate-cta-btn {
+    width: 42px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+  /* Prevenir desbordes del nav central */
+  .main-nav {
+    min-width: 0 !important;
+    overflow: visible !important;
   }
 }
 

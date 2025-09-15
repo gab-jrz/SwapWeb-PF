@@ -1191,6 +1191,12 @@ body:not(.dark-mode) .donation-form select.form-select,
 
 /* Light mode styles */
 .publicar-producto-container {
+  /* Asegura el mismo ancho y centrado que en PublicarProducto */
+  max-width: 1400px !important;
+  margin: 2rem auto !important;
+}
+
+.publicar-producto-container {
   background-color: #ffffff;
   color: #1a202c;
 }
@@ -1198,6 +1204,35 @@ body:not(.dark-mode) .donation-form select.form-select,
 .publicar-form-card {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
+}
+
+/* Recuadro más angosto y centrado SOLO para Donación */
+.donation-light .publicar-producto-container .publicar-form-card,
+.publicar-producto-container.donation .publicar-form-card,
+.publicar-producto-container[data-theme] .publicar-form-card {
+  max-width: 1000px; /* más delgado que ocupar todo el ancho */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 1140px) {
+  .donation-light .publicar-producto-container .publicar-form-card,
+  .publicar-producto-container.donation .publicar-form-card,
+  .publicar-producto-container[data-theme] .publicar-form-card {
+    max-width: 92%;
+  }
+}
+
+/* Limitar ancho del formulario dentro de la card para que no se vea extendido */
+.publicar-form-card .publicar-producto-form {
+  max-width: 800px;       /* igualar ancho efectivo del formulario de producto */
+  margin: 0 auto;         /* centrar */
+}
+
+/* También limitar el ancho del párrafo descriptivo bajo el título */
+.publicar-form-card > p {
+  max-width: 800px;
+  margin: 0 auto 1.5rem auto;
 }
 
 .publicar-form-card h5,

@@ -132,31 +132,45 @@ const PerfilUsuario = () => {
   const [donaciones, setDonaciones] = useState([]);
   const [loadingDonaciones, setLoadingDonaciones] = useState(false);
 
-  // Cargar favoritos desde localStorage
+  // Cargar favoritos desde localStorage (namespaced por usuario)
   useEffect(() => {
-    const loadFavorites = () => {
-      const favoritesFromStorage = JSON.parse(localStorage.getItem('favorites') || '[]');
-      setFavoritos(favoritesFromStorage);
+    const getUid = () => {
+      try { return JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id || null; } catch { return null; }
     };
-    
+    const keyFor = (uid) => (uid ? `favorites:${uid}` : 'favorites');
+    const migrateIfNeeded = (uid) => {
+      try {
+        const namespaced = localStorage.getItem(keyFor(uid));
+        const global = localStorage.getItem('favorites');
+        if (!namespaced && global && uid) {
+          localStorage.setItem(keyFor(uid), global);
+        }
+      } catch {}
+    };
+    const loadFavorites = () => {
+      try {
+        const uid = getUid();
+        migrateIfNeeded(uid);
+        const data = JSON.parse(localStorage.getItem(keyFor(uid)) || '[]');
+        setFavoritos(Array.isArray(data) ? data : []);
+      } catch { setFavoritos([]); }
+    };
+
     loadFavorites();
-    
-    // Escuchar cambios en localStorage (cuando se agregan/quitan favoritos)
+
+    // Escuchar cambios en otras pestañas (solo dispara en otras)
     const handleStorageChange = (e) => {
-      if (e.key === 'favorites') {
+      if (!e.key) return;
+      if (e.key === 'favorites' || e.key.startsWith('favorites:')) {
         loadFavorites();
       }
     };
-    
     window.addEventListener('storage', handleStorageChange);
-    
-    // También escuchar eventos personalizados para cambios en la misma pestaña
-    const handleFavoritesChange = () => {
-      loadFavorites();
-    };
-    
+
+    // Eventos internos para esta pestaña
+    const handleFavoritesChange = () => loadFavorites();
     window.addEventListener('favoritesChanged', handleFavoritesChange);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('favoritesChanged', handleFavoritesChange);
@@ -165,11 +179,12 @@ const PerfilUsuario = () => {
 
   // Función para eliminar producto de favoritos
   const handleRemoveFromFavorites = (productId) => {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const uid = (() => { try { return JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id || null; } catch { return null; } })();
+    const key = uid ? `favorites:${uid}` : 'favorites';
+    const favorites = JSON.parse(localStorage.getItem(key) || '[]');
     const updatedFavorites = favorites.filter(fav => fav.id !== productId);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+    localStorage.setItem(key, JSON.stringify(updatedFavorites));
     setFavoritos(updatedFavorites);
-    
     // Disparar evento para sincronizar con otros componentes
     window.dispatchEvent(new CustomEvent('favoritesChanged'));
   };
@@ -193,9 +208,7 @@ const PerfilUsuario = () => {
   const [chatDonation, setChatDonation] = useState(null);
   const [chatDonationLoading, setChatDonationLoading] = useState(false);
   const [chatDonationError, setChatDonationError] = useState(null);
-
   // Refs para scroll inteligente
-  
   
   // Para saber si el usuario envió el último mensaje
   const lastMessageFromMeRef = useRef(false);
@@ -1981,7 +1994,6 @@ const loadDonaciones = async () => {
   return (
     <div className="perfil-usuario-container">
       <Header search={false} />
-      
       {/* Contenedor del botón de regresar */}
       <div style={{
         position: 'relative',
@@ -2022,9 +2034,9 @@ const loadDonaciones = async () => {
                   e.target.src = '/images/fotoperfil.jpg';
                 }}
               />
+              </div>
               <div className="avatar-ring-premium"></div>
             </div>
-          </div>
 
           {/* Información Principal */}
           <div className="perfil-main-info-premium">
@@ -2106,7 +2118,7 @@ const loadDonaciones = async () => {
     </div>
   </div>
 
-  <div className="perfil-usuario-content">
+      <div className="perfil-usuario-content">
         {/* Tabs Premium */}
         <div className="perfil-tabs-premium">
           <button className={`tab-btn-premium ${activeTab === 'articulos' ? 'active' : ''}`} onClick={() => handleTabChange('articulos')}>
@@ -2770,46 +2782,28 @@ const loadDonaciones = async () => {
                     {Object.keys(chats).map(key => {
                       const mensajesChat = chats[key];
                       const ultimoMensaje = mensajesChat[mensajesChat.length - 1];
-                      // Determinar el otro usuario
                       const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-                      
-                      // Avatar del otro usuario
-                      let avatarUrl = '';
-                      let iniciales = '';
-                      
+
+                      // Nombre del otro usuario
+                      let otherUserName = '';
                       if (ultimoMensaje) {
                         if (ultimoMensaje.deId === usuarioActual.id) {
-                          // El otro usuario es el destinatario
-                          if (ultimoMensaje.paraImagen) {
-                            avatarUrl = normalizeImageUrl(ultimoMensaje.paraImagen);
-                          }
-                          if (!otherUserName && ultimoMensaje.paraNombre) {
-                            otherUserName = ultimoMensaje.paraNombre;
-                          }
+                          otherUserName = ultimoMensaje.paraNombre || otherUserName;
                         } else {
-                          // El otro usuario es el remitente
-                          if (ultimoMensaje.deImagen) {
-                            avatarUrl = normalizeImageUrl(ultimoMensaje.deImagen);
-                          }
-                          if (!otherUserName && ultimoMensaje.deNombre) {
-                            otherUserName = ultimoMensaje.deNombre;
-                          }
+                          otherUserName = ultimoMensaje.deNombre || otherUserName;
                         }
-                        
-                        // Fallback para el nombre
                         if (!otherUserName) {
-                          const ultimoMensaje = mensajesChat[mensajesChat.length - 1];
-                          if (ultimoMensaje.deId === usuarioActual.id) {
-                            otherUserName = ultimoMensaje.paraNombre || ultimoMensaje.para || 'Usuario';
-                          } else {
-                            otherUserName = ultimoMensaje.deNombre || ultimoMensaje.de || 'Usuario';
-                          }
+                          otherUserName = ultimoMensaje.deId === usuarioActual.id
+                            ? (ultimoMensaje.paraNombre || ultimoMensaje.para || 'Usuario')
+                            : (ultimoMensaje.deNombre || ultimoMensaje.de || 'Usuario');
                         }
-                        
-                        iniciales = otherUserName.substring(0, 2).toUpperCase();
                       }
-                      
+
+                      // Preview de texto
+                      const textoUltimo = ultimoMensaje ? (ultimoMensaje.descripcion || ultimoMensaje.texto || '') : '';
+                      const preview = typeof textoUltimo === 'string' ? (textoUltimo.length > 60 ? textoUltimo.slice(0,60) + '…' : textoUltimo) : '';
                       const noLeidos = unreadByChat[key] > 0;
+
                       return (
                         <div
                           key={key}
@@ -2817,16 +2811,16 @@ const loadDonaciones = async () => {
                             setChatSeleccionado(key);
                             const usuario = JSON.parse(localStorage.getItem('usuarioActual'));
                             if (usuario) {
-                              fetch(`${API_URL}/messages/mark-read/${usuario.id}`, { method: 'PUT' }).then(() => { if (window.refreshUnread) window.refreshUnread(); }).catch(() => { });
+                              fetch(`${API_URL}/messages/mark-read/${usuario.id}`, { method: 'PUT' })
+                                .then(() => { if (window.refreshUnread) window.refreshUnread(); })
+                                .catch(() => {});
                             }
                           }}
                           onContextMenu={e => {
                             e.preventDefault();
                             setChatToDelete(key);
-                            const menuW = 200; // aprox
-                            const menuH = 160; // aprox
-                            let x = e.clientX;
-                            let y = e.clientY;
+                            const menuW = 200; const menuH = 160;
+                            let x = e.clientX; let y = e.clientY;
                             if (x + menuW > window.innerWidth) x = Math.max(8, window.innerWidth - menuW - 8);
                             if (y + menuH > window.innerHeight) y = Math.max(8, window.innerHeight - menuH - 8);
                             setChatListMenu({ visible: true, x, y, key });
@@ -2843,76 +2837,48 @@ const loadDonaciones = async () => {
                           }}
                           className={chatSeleccionado === key ? 'chat-list-item selected' : 'chat-list-item'}
                         >
-                          {/* Menú contextual se muestra como portal global fuera del contenedor */}
-
                           <div className="chat-row">
                             {(() => {
                               let avatarUrl = '';
                               let iniciales = '';
-                              
                               if (ultimoMensaje) {
                                 if (ultimoMensaje.deId === usuarioActual.id) {
-                                  // Mostrar avatar del destinatario (el otro usuario)
                                   avatarUrl = ultimoMensaje.paraImagen ? normalizeImageUrl(ultimoMensaje.paraImagen) : '';
-                                  iniciales = (ultimoMensaje.paraNombre || ultimoMensaje.para || 'U').substring(0, 2).toUpperCase();
+                                  iniciales = (ultimoMensaje.paraNombre || ultimoMensaje.para || 'U').substring(0,2).toUpperCase();
                                 } else {
-                                  // Mostrar avatar del remitente (el otro usuario)
                                   avatarUrl = ultimoMensaje.deImagen ? normalizeImageUrl(ultimoMensaje.deImagen) : '';
-                                  iniciales = (ultimoMensaje.deNombre || ultimoMensaje.de || 'U').substring(0, 2).toUpperCase();
+                                  iniciales = (ultimoMensaje.deNombre || ultimoMensaje.de || 'U').substring(0,2).toUpperCase();
                                 }
                               }
-                              
-                              // Priorizar siempre la imagen real del backend
                               return avatarUrl ? (
                                 <img
                                   className="chat-avatar"
                                   src={avatarUrl}
                                   alt="avatar"
                                   onError={(e) => {
-                                    // Si falla la imagen, reemplazar por un fallback de iniciales
                                     const fallbackDiv = document.createElement('div');
                                     fallbackDiv.className = 'chat-avatar';
                                     fallbackDiv.style.cssText = `
-                                      display: flex;
-                                      align-items: center;
-                                      justify-content: center;
+                                      display: flex; align-items: center; justify-content: center;
                                       background: linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%);
-                                      color: #2d9cdb;
-                                      font-size: 14px;
-                                      font-weight: bold;
-                                      width: ${e.target.width || 40}px;
-                                      height: ${e.target.height || 40}px;
-                                      border-radius: 50%;
-                                    `;
+                                      color: #2d9cdb; font-size: 14px; font-weight: bold;
+                                      width: ${e.target.width || 40}px; height: ${e.target.height || 40}px; border-radius: 50%;`;
                                     fallbackDiv.textContent = iniciales;
                                     e.target.parentNode.replaceChild(fallbackDiv, e.target);
                                   }}
                                 />
                               ) : (
-                                <div
-                                  className="chat-avatar"
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: 'linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%)',
-                                    color: '#2d9cdb',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold'
-                                  }}
-                                >
-                                  {iniciales}
-                                </div>
+                                <div className="chat-avatar" style={{
+                                  display:'flex', alignItems:'center', justifyContent:'center',
+                                  background:'linear-gradient(135deg, #b0e0ff 0%, #92d1fa 100%)',
+                                  color:'#2d9cdb', fontSize:'14px', fontWeight:'bold'
+                                }}>{iniciales}</div>
                               );
                             })()}
-                            <div className="chat-name">{otroNombre}</div>
-                            {noLeidos && (
-                              <span className="chat-badge">{unreadByChat[key]}</span>
-                            )}
+                            <div className="chat-name">{otherUserName}</div>
+                            {noLeidos && <span className="chat-badge">{unreadByChat[key]}</span>}
                           </div>
-                          <div className="chat-preview">
-                            {textoUltimo}
-                          </div>
+                          <div className="chat-preview">{preview}</div>
                         </div>
                       );
                     })}
@@ -2998,7 +2964,7 @@ const loadDonaciones = async () => {
                   )}
 
                   {/* mensajes del chat seleccionado */}
-                  <div className="chat-messages" style={{flex:1, overflowY:'auto', maxHeight:'78vh'}} ref={chatContainerRef}>
+                  <div className="chat-messages" style={{flex:1, display:'flex', flexDirection:'column', maxHeight:'78vh'}}>
                     {(!chatSeleccionado || !chats[chatSeleccionado] || chats[chatSeleccionado].length === 0) ? (
                       <p>Selecciona un chat</p>
                     ) : (
@@ -3139,7 +3105,19 @@ const loadDonaciones = async () => {
                               }
                             }
                             
-                            iniciales = otherUserName.substring(0, 2).toUpperCase();
+                            // Generar iniciales de forma segura
+                            const safeName = otherUserName && typeof otherUserName === 'string' ? otherUserName : 'Usuario';
+                            iniciales = safeName.substring(0, 2).toUpperCase();
+                            // Texto del último mensaje para el preview (con fallback y truncado)
+                            let textoUltimo = '';
+                            try {
+                              textoUltimo = ultimoMensaje ? (ultimoMensaje.descripcion || ultimoMensaje.texto || '') : '';
+                            } catch (_) {
+                              textoUltimo = '';
+                            }
+                            const preview = typeof textoUltimo === 'string'
+                              ? (textoUltimo.length > 60 ? textoUltimo.slice(0, 60) + '…' : textoUltimo)
+                              : '';
                             
                             return otherUserImage ? (
                               <img
@@ -3269,41 +3247,307 @@ const loadDonaciones = async () => {
                             );
                           })()} 
                         </div>
-                        
-          {/* Mensaje informativo obligatorio */}
-          {/* Stepper de progreso de intercambio */}
-          {(() => {
-            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-            const mensajes = chats[chatSeleccionado] || [];
-            const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
 
-            if (!mensajeIntercambio) return null;
+                        {/* Stepper clásico de intercambio (arriba del hilo) */}
+                        {(() => {
+                          const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+                          const mensajes = chats[chatSeleccionado] || [];
+                          const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
 
-            const yoConfirmado = mensajeIntercambio.confirmaciones?.includes(usuarioActual.id);
-            const otroId = mensajeIntercambio.deId === usuarioActual.id ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
-            const otroNombre = mensajeIntercambio.deId === usuarioActual.id ? 
-              (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario') : 
-              (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
-            const intercambioCompletado = mensajeIntercambio.completed;
+                          if (!mensajeIntercambio) return null;
 
-            // Mostrar botón de calificación si el intercambio está completado y no se ha calificado aún
-            const puedeCalificar = intercambioCompletado && !mensajeIntercambio.calificado;
-            return null;
-          })()}
+                          const myId = usuarioActual?.id;
+                          const otherId = mensajeIntercambio.deId === myId ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
+                          const otherName = mensajeIntercambio.deId === myId
+                            ? (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario')
+                            : (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
+                          const confirmaciones = Array.isArray(mensajeIntercambio.confirmaciones) ? mensajeIntercambio.confirmaciones : [];
+                          const yoConfirmado = myId ? confirmaciones.includes(myId) : false;
+                          const otroConfirmado = otherId ? confirmaciones.includes(otherId) : false;
+                          const completado = mensajeIntercambio.completed === true || (mensajeIntercambio.estado === 'completado');
 
+                          return (
+                            <div style={{ marginTop: 12, marginBottom: 12 }}>
+                              <div style={{
+                                borderRadius: 16,
+                                background: '#ffffff',
+                                border: '1px solid #e5e7eb',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                                padding: '14px 16px'
+                              }}>
+                                <div style={{ display:'flex', alignItems:'center', gap: 12, justifyContent:'space-between' }}>
+                                  <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
+                                    <div title="Propuesta enviada" style={{
+                                      width: 42, height: 42, borderRadius: '50%',
+                                      display:'flex', alignItems:'center', justifyContent:'center',
+                                      background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)', color:'#fff',
+                                      boxShadow:'0 4px 12px rgba(16,185,129,.35)', fontSize: 20, fontWeight: 800
+                                    }}>⚡</div>
+                                    <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
+                                      <div style={{ width: yoConfirmado || otroConfirmado || completado ? '100%' : '35%', height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
+                                    </div>
+                                  </div>
+                                  <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
+                                    <div title="Tu confirmación" style={{ position:'relative' }}>
+                                      <div style={{
+                                        width: 44, height: 44, borderRadius: '50%', border: yoConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1',
+                                        boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc'
+                                      }}>
+                                        {userData?.imagen ? (
+                                          <img src={normalizeImageUrl(userData.imagen)} alt="Tú" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                    <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
+                                      <div style={{ width: otroConfirmado || completado ? '100%' : (yoConfirmado ? '55%' : '20%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
+                                    </div>
+                                  </div>
+                                  <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
+                                    <div title={`Confirmación de ${otherName}`} style={{ position:'relative' }}>
+                                      <div style={{
+                                        width: 44, height: 44, borderRadius: '50%', border: otroConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1',
+                                        boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc'
+                                      }}>
+                                        {(() => {
+                                          const mensajesSel = chats[chatSeleccionado] || [];
+                                          let img = '';
+                                          for (const m of mensajesSel) {
+                                            if (m.deId === myId) { if (m.paraImagen) { img = normalizeImageUrl(m.paraImagen); break; } }
+                                            else { if (m.deImagen) { img = normalizeImageUrl(m.deImagen); break; } }
+                                          }
+                                          return img ? <img src={img} alt={otherName} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : null;
+                                        })()}
+                                      </div>
+                                    </div>
+                                    <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
+                                      <div style={{ width: completado ? '100%' : (otroConfirmado ? '65%' : '25%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
+                                    </div>
+                                  </div>
+                                  <div style={{ display:'flex', alignItems:'center', gap: 12 }}>
+                                    <div title="Intercambio completado" style={{
+                                      width: 42, height: 42, borderRadius: '50%',
+                                      display:'flex', alignItems:'center', justifyContent:'center',
+                                      background: completado ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : '#e2e8f0',
+                                      color: completado ? '#fff' : '#64748b',
+                                      boxShadow: completado ? '0 4px 12px rgba(34,197,94,.35)' : 'none', fontSize: 20, fontWeight: 800
+                                    }}>★</div>
+                                  </div>
+                                </div>
+                                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap: 12, marginTop: 12 }}>
+                                  <div style={{ textAlign:'center' }}>
+                                    <div style={{ fontWeight: 700, color:'#0f172a' }}>Propuesta enviada</div>
+                                    <div style={{ fontSize: 12, color:'#64748b' }}>Tu</div>
+                                  </div>
+                                  <div style={{ textAlign:'center' }}>
+                                    <div style={{ fontWeight: 700, color: yoConfirmado ? '#0f172a' : '#64748b' }}>Tu confirmación</div>
+                                    <div style={{ fontSize: 12, color:'#94a3b8' }}>{yoConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                  </div>
+                                  <div style={{ textAlign:'center' }}>
+                                    <div style={{ fontWeight: 700, color: otroConfirmado ? '#0f172a' : '#64748b' }}>{`Confirmación de ${otherName}`}</div>
+                                    <div style={{ fontSize: 12, color:'#94a3b8' }}>{otroConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                  </div>
+                                  <div style={{ textAlign:'center' }}>
+                                    <div style={{ fontWeight: 700, color: completado ? '#0f172a' : '#64748b' }}>Intercambio completado</div>
+                                    <div style={{ fontSize: 12, color:'#94a3b8' }}>{completado ? 'Listo' : 'En progreso'}</div>
+                                  </div>
+                                </div>
+                              </div>
+                              {!completado && !yoConfirmado && (
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+                                  <button
+                                    onClick={() => realizarConfirmacionIntercambio()}
+                                    style={{
+                                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: 'white',
+                                      border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700,
+                                      boxShadow: '0 4px 12px rgba(34,197,94,.35)', cursor: 'pointer'
+                                    }}
+                                  >
+                                    Confirmar intercambio
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+
+                        {/* Lista de mensajes del chat */}
+                        <div
+                          className="chat-thread"
+                          ref={chatContainerRef}
+                          onScroll={handleScroll}
+                          style={{ flex: 1, overflowY: 'auto', paddingRight: 6, paddingBottom: 8 }}
+                        >
+                          {(() => {
+                            const mensajesChat = chats[chatSeleccionado] || [];
+                            const myId = userData?.id || JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id;
+                            const currentUserImage = (userData?.imagen ? normalizeImageUrl(userData.imagen) : imagenPerfil) || '/images/fotoperfil.jpg';
+                            return mensajesChat.map((m, idx) => {
+                              const fromMe = m.deId === myId;
+                              const senderProfileImage = fromMe ? (m.paraImagen ? normalizeImageUrl(m.paraImagen) : '') : (m.deImagen ? normalizeImageUrl(m.deImagen) : '');
+                              return (
+                                <ChatBubble
+                                  key={m._id || m.id || idx}
+                                  mensaje={m}
+                                  fromMe={fromMe}
+                                  currentUserId={myId}
+                                  onRefresh={() => fetchMensajes(myId)}
+                                  onDeleteMessage={(msg) => setMessageToDelete(msg)}
+                                  confirmExchange={handleConfirmExchange}
+                                  productoTitle={m.productoTitle}
+                                  productoOfrecido={m.productoOfrecido}
+                                  isEditing={editingMessageId === (m._id || m.id)}
+                                  editText={editText}
+                                  onEditTextChange={setEditText}
+                                  onEditCancel={() => setEditingMessageId(null)}
+                                  onEditSave={() => setEditingMessageId(null)}
+                                  scrollToBottom={() => chatContainerRef.current && chatContainerRef.current.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' })}
+                                  senderProfileImage={senderProfileImage}
+                                  currentUserProfileImage={currentUserImage}
+                                  isFirstMessageInChat={idx === 0}
+                                />
+                              );
+                            });
+                          })()}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
-          </div>
+                        {/* Composer al final del chat */}
+                        <div style={{ marginTop: 8 }}>
+                          <div style={{
+                            display:'flex', alignItems:'center', gap:12,
+                            width:'100%',
+                            padding: '10px 12px',
+                            borderRadius: 9999,
+                            background: 'linear-gradient(135deg, #eef6ff 0%, #f7fafe 100%)',
+                            border: '1.5px solid #e4ecf7',
+                            boxShadow: '0 10px 30px rgba(76, 97, 235, 0.15)'
+                          }}>
+                            <button
+                              type="button"
+                              title="Adjuntar imagen"
+                              style={{
+                                width: 44, height: 44, borderRadius: '50%',
+                                border: '1px solid #dbeafe', background: '#ffffff',
+                                display:'flex', alignItems:'center', justifyContent:'center',
+                                color:'#64748b', boxShadow:'0 6px 18px rgba(79, 70, 229, 0.15)', cursor:'pointer'
+                              }}
+                              onClick={() => alert('Adjuntar imagen: pendiente de implementar')}
+                            >
+                              📷
+                            </button>
+                            <input
+                              type="text"
+                              value={nuevoTexto}
+                              onChange={(e) => setNuevoTexto(e.target.value)}
+                              placeholder="Escribe un mensaje..."
+                              style={{
+                                flex:1, height: 44,
+                                border:'1px solid #dbeafe', borderRadius: 14,
+                                padding:'0 12px', outline:'none', background:'#fff', fontSize: 15
+                              }}
+                              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEnviarMensaje(); }}}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleEnviarMensaje}
+                              title="Enviar"
+                              style={{
+                                width: 48, height: 48, borderRadius: '50%',
+                                border:'none',
+                                background: 'linear-gradient(135deg, #2d9cdb 0%, #38a3e2 100%)', color:'#fff',
+                                fontSize: 18, fontWeight: 800, cursor:'pointer',
+                                boxShadow:'0 10px 30px rgba(45,156,219,.35)'
+                              }}
+                            >
+                              ➤
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Banner de calificación debajo del composer + RatingModal */}
+                        {(() => {
+                          const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+                          const mensajes = chats[chatSeleccionado] || [];
+                          const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
+                          if (!mensajeIntercambio) return null;
+
+                          const myId = usuarioActual?.id;
+                          const completado = mensajeIntercambio.completed === true || (mensajeIntercambio.estado === 'completado');
+                          const yaCalificado = !!mensajeIntercambio.calificado || typeof mensajeIntercambio.rating === 'number';
+                          if (!(completado && !yaCalificado)) return null;
+
+                          const otherName = mensajeIntercambio.deId === myId
+                            ? (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario')
+                            : (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
+                          const msgId = mensajeIntercambio._id || mensajeIntercambio.id;
+
+                          const submitRating = async ({ stars, comment }) => {
+                            try {
+                              const res = await fetch(`${API_URL}/messages/${msgId}/rating`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ rating: stars, raterId: myId, comment })
+                              });
+                              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                              setMensajes(prev => prev.map(m => (
+                                (m._id === msgId || m.id === msgId)
+                                  ? { ...m, rating: stars, calificado: true }
+                                  : m
+                              )));
+                              setShowRatingModal(false);
+                            } catch {
+                              alert('No se pudo enviar la calificación.');
+                            }
+                          };
+
+                          return (
+                            <>
+                              <div style={{ marginTop: 12 }}>
+                                <div style={{
+                                  display:'flex', alignItems:'center', justifyContent:'space-between',
+                                  gap: 12,
+                                  background:'#f0fdf4',
+                                  border:'1px solid #bbf7d0',
+                                  color:'#14532d',
+                                  padding:'12px 16px',
+                                  borderRadius: 12,
+                                  boxShadow:'0 4px 12px rgba(0,0,0,.06)'
+                                }}>
+                                  <div style={{ fontWeight: 800 }}>
+                                    ¡Intercambio completado con éxito!<br/>
+                                    <span style={{ fontWeight: 600 }}>Calificá tu experiencia con {otherName}</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowRatingModal(true)}
+                                  >
+                                    Calificar
+                                  </button>
+                                </div>
+                              </div>
+
+                              {showRatingModal && (
+                                <RatingModal
+                                  open={showRatingModal}
+                                  onClose={() => setShowRatingModal(false)}
+                                  onSubmit={submitRating}
+                                  userName={otherName}
+                                />
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <Footer />
-      </div>
-    );
+      </div> 
+      <Footer />
+    </div> 
+  );
 }
 
 export default PerfilUsuario;

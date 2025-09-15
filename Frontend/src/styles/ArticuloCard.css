@@ -556,6 +556,67 @@
   box-sizing: border-box !important;
 }
 
+/* ===== Responsive adjustments ===== */
+@media (max-width: 768px) {
+  /* Contenedores a 100% y paddings reducidos */
+  .articulos-container,
+  .perfil-tab-content,
+  .articulos-grid,
+  .mis-articulos {
+    padding: 0.75rem 0.75rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    gap: 0.75rem !important;
+  }
+  /* Cards fluidas */
+  .articulo-card-premium {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    min-height: unset !important;
+    margin: 0.5rem 0 !important;
+  }
+  .articulo-img-wrap {
+    height: 180px !important;
+  }
+  .articulo-content {
+    padding: 0.6rem !important;
+    gap: 0.5rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .articulo-img-wrap {
+    height: 160px !important;
+  }
+  .articulo-title {
+    font-size: 1rem !important;
+  }
+  .articulo-meta-box {
+    padding: 0.5rem !important;
+  }
+}
+
+/* ===== Chat layout responsive ===== */
+@media (max-width: 768px) {
+  .mis-mensajes .chat-layout {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+  }
+  .mis-mensajes .chat-list {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+    border-right: none !important;
+  }
+  .mis-mensajes .chat-content {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 1rem !important;
+  }
+}
+
 /* ===== TÍTULOS DE SECCIÓN PREMIUM ===== */
 /* ESTILOS UNIFICADOS PARA TODOS LOS TÍTULOS DE SECCIÓN */
 .mis-articulos h2,

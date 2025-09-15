@@ -10,9 +10,26 @@ const Favoritos = () => {
 
   // Cargar favoritos desde localStorage al montar y al cambiar por eventos externos
   useEffect(() => {
+    const getUid = () => {
+      try { return JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id || null; } catch { return null; }
+    };
+    const keyFor = (uid) => (uid ? `favorites:${uid}` : 'favorites');
+    const migrateIfNeeded = (uid) => {
+      try {
+        const namespaced = localStorage.getItem(keyFor(uid));
+        const global = localStorage.getItem('favorites');
+        if (!namespaced && global && uid) {
+          // migrar global -> namespaced, mantener global para compatibilidad temporal
+          localStorage.setItem(keyFor(uid), global);
+        }
+      } catch {}
+    };
     const load = () => {
       try {
-        const data = JSON.parse(localStorage.getItem('favorites') || '[]');
+        const uid = getUid();
+        migrateIfNeeded(uid);
+        const raw = localStorage.getItem(keyFor(uid));
+        const data = JSON.parse(raw || '[]');
         setFavoritos(Array.isArray(data) ? data : []);
       } catch {
         setFavoritos([]);
@@ -26,9 +43,11 @@ const Favoritos = () => {
 
   // Eliminar un producto de favoritos
   const handleRemoveFavorite = (productId) => {
-    const current = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const uid = (() => { try { return JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id || null; } catch { return null; } })();
+    const key = uid ? `favorites:${uid}` : 'favorites';
+    const current = JSON.parse(localStorage.getItem(key) || '[]');
     const updated = current.filter((p) => p.id !== productId);
-    localStorage.setItem('favorites', JSON.stringify(updated));
+    localStorage.setItem(key, JSON.stringify(updated));
     setFavoritos(updated);
     window.dispatchEvent(new CustomEvent('favoritesChanged'));
   };

@@ -135,7 +135,15 @@ const DetalleProducto = () => {
   // Inicializar estado de favorito cuando el producto ya está cargado
   useEffect(() => {
     if (!producto?.id) return;
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const uid = (() => { try { return JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id || null; } catch { return null; } })();
+    const key = uid ? `favorites:${uid}` : 'favorites';
+    // migración suave si no existe la clave namespaced
+    try {
+      if (uid && !localStorage.getItem(key) && localStorage.getItem('favorites')) {
+        localStorage.setItem(key, localStorage.getItem('favorites'));
+      }
+    } catch {}
+    const favorites = JSON.parse(localStorage.getItem(key) || '[]');
     setIsFavorite(favorites.some(fav => fav.id === producto.id));
   }, [producto?.id]);
 
@@ -173,7 +181,8 @@ const DetalleProducto = () => {
       return;
     }
 
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const key = usuarioActual?.id ? `favorites:${usuarioActual.id}` : 'favorites';
+    const favorites = JSON.parse(localStorage.getItem(key) || '[]');
     const productData = {
       id: producto.id,
       title: producto.title,
@@ -192,11 +201,11 @@ const DetalleProducto = () => {
 
     if (isFavorite) {
       const updatedFavorites = favorites.filter(fav => fav.id !== producto.id);
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(key, JSON.stringify(updatedFavorites));
       setIsFavorite(false);
     } else {
       const updatedFavorites = [...favorites, productData];
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(key, JSON.stringify(updatedFavorites));
       setIsFavorite(true);
     }
 

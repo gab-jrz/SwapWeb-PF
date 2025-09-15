@@ -27,7 +27,15 @@ const ProductCard = ({
 
   // Cargar estado de favorito desde localStorage al montar el componente
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const uid = (() => { try { return JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id || null; } catch { return null; } })();
+    const key = uid ? `favorites:${uid}` : 'favorites';
+    // migración suave global -> namespaced
+    try {
+      if (uid && !localStorage.getItem(key) && localStorage.getItem('favorites')) {
+        localStorage.setItem(key, localStorage.getItem('favorites'));
+      }
+    } catch {}
+    const favorites = JSON.parse(localStorage.getItem(key) || '[]');
     setIsFavorite(favorites.some(fav => fav.id === id));
   }, [id]);
 
@@ -42,8 +50,10 @@ const ProductCard = ({
   const handleFavoriteToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    // Usar clave por usuario: favorites:<userId>
+    const uid = (() => { try { return JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id || null; } catch { return null; } })();
+    const key = uid ? `favorites:${uid}` : 'favorites';
+    const favorites = JSON.parse(localStorage.getItem(key) || '[]');
     const productData = {
       id,
       title,
@@ -63,12 +73,12 @@ const ProductCard = ({
     if (isFavorite) {
       // Remover de favoritos
       const updatedFavorites = favorites.filter(fav => fav.id !== id);
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(key, JSON.stringify(updatedFavorites));
       setIsFavorite(false);
     } else {
       // Agregar a favoritos
       const updatedFavorites = [...favorites, productData];
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(key, JSON.stringify(updatedFavorites));
       setIsFavorite(true);
     }
     

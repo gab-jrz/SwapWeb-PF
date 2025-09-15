@@ -985,6 +985,77 @@
     }
   }
 
+  /* ===== Mobile hardening: remove min-widths and negative margins to avoid horizontal scroll ===== */
+  @media (max-width: 768px) {
+    /* Evitar scroll horizontal global en perfil */
+    .perfil-usuario,
+    .perfil-usuario-container,
+    .perfil-usuario-content,
+    .perfil-content {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    .perfil-content {
+      padding-top: 1rem !important;
+      padding-bottom: 1rem !important;
+    }
+    /* Padding uniforme en contenidos de pestañas */
+    .perfil-tab-content {
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0.75rem !important;
+      box-sizing: border-box !important;
+    }
+    /* Card wrapper should never exceed viewport */
+    .perfil-card-premium {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 1rem !important;
+    }
+    /* Detail box must not force width */
+    .perfil-detalles-premium {
+      min-width: 0 !important;
+      width: 100% !important;
+      padding: 1rem !important;
+    }
+    /* Align internal rows nicely and allow wrapping values */
+    .perfil-card-premium .detalle-item-premium {
+      display: flex !important;
+      align-items: center !important;
+      gap: .75rem !important;
+      padding: .75rem 1rem !important;
+    }
+    .perfil-card-premium .detalle-value-premium {
+      text-align: left !important;
+      margin-left: 0 !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+    }
+    /* Favorites section grid: single column and safe padding */
+    .mis-favoritos {
+      padding: 1rem .5rem !important;
+      border-radius: 16px !important;
+    }
+    .mis-favoritos .product-list {
+      grid-template-columns: 1fr !important;
+      gap: 1rem !important;
+      padding: 0 !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .perfil-nombre-premium {
+      font-size: 1.6rem !important;
+    }
+    .perfil-stats-premium {
+      gap: .75rem !important;
+    }
+  }
+
   /* ===== Variante específica para PERFIL USUARIO: COPIAR tamaño de la caja pública ===== */
   .perfil-usuario-container .perfil-card-premium,
   .perfil-usuario-container .perfil-card-premium .perfil-box-inferior,

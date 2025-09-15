@@ -20,7 +20,7 @@ const LoadingSpinner = ({ message = "Cargando..." }) => {
         marginBottom: '1rem'
       }}></div>
       <p style={{ color: '#667eea', fontWeight: '500' }}>{message}</p>
-      <style jsx>{`
+      <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }

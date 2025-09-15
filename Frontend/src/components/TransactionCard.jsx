@@ -192,7 +192,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
             color: '#1a1a1a',
             marginBottom: 8,
             lineHeight: 1.4,
-            textAlign: isDonation ? 'center' : 'left'
+            textAlign: 'center'
           }}>
             {miProducto || 'Producto no especificado'}
           </div>
@@ -347,48 +347,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
           </div>
         )}
         
-        {/* Estado y acción de confirmación (doble confirmación) */}
-        {!isDonation && isPending && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            width: '100%'
-          }}>
-            <div style={{
-              padding: '6px 10px',
-              borderRadius: 8,
-              background: 'linear-gradient(135deg, rgba(255,193,7,0.12) 0%, rgba(255,152,0,0.12) 100%)',
-              border: '1px solid rgba(255,152,0,0.25)',
-              color: '#ff8f00',
-              fontWeight: 700,
-              fontSize: 12
-            }}>
-              {`Confirmaciones: ${confirmedCount}/2`}
-            </div>
-            {typeof onConfirm === 'function' && !hasConfirmedMe && (
-              <button
-                onClick={() => onConfirm(transaccion)}
-                style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  color: 'white',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: 10,
-                  padding: '8px 12px',
-                  fontWeight: 800,
-                  fontSize: 12,
-                  cursor: 'pointer',
-                  boxShadow: '0 8px 25px rgba(16, 185, 129, 0.25)',
-                  transition: 'all 0.2s ease'
-                }}
-                title="Confirmar intercambio"
-              >
-                Confirmar intercambio
-              </button>
-            )}
-          </div>
-        )}
+        {/* Eliminado: confirmaciones y botón de confirmar. El flujo de intercambio ahora se gestiona únicamente por el stepper del chat. */}
 
         {/* Fecha y hora mejorada */}
         <div style={{
