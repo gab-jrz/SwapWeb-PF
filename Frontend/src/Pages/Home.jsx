@@ -62,6 +62,9 @@ const Home = () => {
 
   // Filtrado avanzado por búsqueda, categoría, fecha, usuario y provincia
   const productosFiltrados = productos.filter((producto) => {
+    // Ocultar productos intercambiados o no disponibles
+    if (producto?.intercambiado === true) return false;
+    if (producto?.disponible === false) return false;
     // Utilidad: normalizar para comparar sin acentos y en minúsculas
     const normalize = (s) =>
       (s || "")

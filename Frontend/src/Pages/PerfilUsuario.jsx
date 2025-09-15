@@ -286,6 +286,9 @@ const PerfilUsuario = () => {
   // Confirmación para eliminar donación (en pestaña Mis Intercambios)
   const [showConfirmDeleteDonation, setShowConfirmDeleteDonation] = useState(false);
   const [donationToDelete, setDonationToDelete] = useState(null);
+  // Confirmación para eliminar chat desde el menú contextual
+  const [showConfirmChatDelete, setShowConfirmChatDelete] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState(null);
 
   // Deduplicar mensajes usando firma compuesta (
   // combina remitente, receptor, texto, producto y timestamp 
@@ -401,8 +404,6 @@ const PerfilUsuario = () => {
   const [mensajes, setMensajes] = useState([]);
   const [unreadByChat, setUnreadByChat] = useState({});
   const [showChatMenu, setShowChatMenu] = useState(null);
-  const [chatToDelete, setChatToDelete] = useState(null);
-  const [showConfirmChatDelete, setShowConfirmChatDelete] = useState(false);
   const [showConfirmMessageDelete, setShowConfirmMessageDelete] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [imagenAdjunta, setImagenAdjunta] = useState(null);
@@ -1265,6 +1266,8 @@ const PerfilUsuario = () => {
     }
   };
 
+  
+
   // Hacer las funciones accesibles globalmente para la consola
   useEffect(() => {
     window.limpiarProductosHuerfanos = limpiarProductosHuerfanos;
@@ -1530,14 +1533,69 @@ const PerfilUsuario = () => {
 
         // 5. Si quedó completado, marcar producto como intercambiado
         const finalT = (finalTrans.find?.(t => (t._id || t.id) === transId)) || optimistic;
-        if (finalT.estado === 'completado' && finalT.productoOfrecidoId) {
+        if (finalT.estado === 'completado' && (finalT.productoOfrecidoId || finalT.productoId)) {
           try {
-            console.log('[CONFIRMAR INTERCAMBIO] PUT /products', { intercambiado: true });
-            await fetch(`${API_URL}/products/${finalT.productoOfrecidoId}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
-              body: JSON.stringify({ intercambiado: true })
-            });
+            console.log('[CONFIRMAR INTERCAMBIO] Marcando productos como intercambiados');
+            const token = localStorage.getItem('token') || '';
+            const markExchanged = async (pid) => {
+              if (!pid) return;
+              try {
+                await fetch(`${API_URL}/products/${pid}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                  body: JSON.stringify({ intercambiado: true, disponible: false })
+                });
+              } catch (e) { console.warn('No se pudo actualizar producto', pid, e); }
+            };
+            await Promise.all([
+              markExchanged(finalT.productoOfrecidoId),
+              markExchanged(finalT.productoId)
+            ]);
+            // Remover optimistamente el producto de mis publicaciones
+            try {
+              setUserListings?.(prev => Array.isArray(prev) ? prev.filter(p => String(p.id || p._id) !== String(finalT.productoOfrecidoId)) : prev);
+            } catch {}
+            // Enriquecer nombres de productos en la transacción si faltan
+            try {
+              const fetchTitle = async (pid) => {
+                if (!pid) return null;
+                const r = await fetch(`${API_URL}/products/${pid}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!r.ok) return null;
+                const p = await r.json();
+                return p?.title || p?.nombre || null;
+              };
+              const tProd = finalT.productoTitle || await fetchTitle(finalT.productoId);
+              const oProd = finalT.productoOfrecido || await fetchTitle(finalT.productoOfrecidoId);
+              const patched = { ...finalT };
+              if (tProd && !patched.productoTitle) patched.productoTitle = tProd;
+              if (oProd && !patched.productoOfrecido) patched.productoOfrecido = oProd;
+              // Persistir en userData si hubo cambios
+              const needsPersist = (tProd && !finalT.productoTitle) || (oProd && !finalT.productoOfrecido);
+              if (needsPersist) {
+                setUserData(prev => {
+                  const list = Array.isArray(prev?.transacciones) ? [...prev.transacciones] : [];
+                  const idx = list.findIndex(t => String(t._id||t.id) === String(finalT._id||finalT.id));
+                  if (idx >= 0) list[idx] = { ...list[idx], productoTitle: patched.productoTitle, productoOfrecido: patched.productoOfrecido };
+                  const next = { ...prev, transacciones: list };
+                  try { localStorage.setItem('usuarioActual', JSON.stringify(next)); } catch {}
+                  return next;
+                });
+                try {
+                  await fetch(`${API_URL}/users/${uid}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ transacciones: (Array.isArray(userData?.transacciones)? userData.transacciones.map(t => String(t._id||t.id)===String(finalT._id||finalT.id)? { ...t, productoTitle: tProd || t.productoTitle, productoOfrecido: oProd || t.productoOfrecido }: t): []) })
+                  });
+                } catch (e) { console.warn('No se pudo persistir transacción enriquecida', e); }
+              }
+            } catch {}
+
+            // Notificar a Home y demás vistas para refrescar listados
+            try {
+              window.dispatchEvent(new CustomEvent('productsUpdated'));
+              window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: { id: uid } }));
+              window.dispatchEvent(new CustomEvent('transactionsUpdated', { detail: { id: uid } }));
+            } catch {}
           } catch (e) { console.warn('No se pudo marcar producto como intercambiado aún:', e); }
         }
 
@@ -1788,28 +1846,51 @@ const PerfilUsuario = () => {
       const uid = usuarioActual?.id || userData?.id;
       if (!uid) return;
       const mensajesSel = chats[chatSeleccionado] || [];
-      const mensajeIntercambio = mensajesSel.find(m => m.productoId && m.productoOfrecidoId);
+      // Tomar SIEMPRE el mensaje de intercambio más reciente del chat.
+      // Si aún no existe productoOfrecidoId (propuesta recién enviada), caer al más reciente con solo productoId.
+      const ordenados = [...mensajesSel].sort((a, b) => new Date(b.createdAt || b.fecha || b.timestamp || 0) - new Date(a.createdAt || a.fecha || a.timestamp || 0));
+      let mensajeIntercambio = ordenados.find(m => m.productoId && m.productoOfrecidoId);
+      if (!mensajeIntercambio) mensajeIntercambio = ordenados.find(m => m.productoId);
       if (!mensajeIntercambio) return;
 
-      // Buscar transacción fresca local
+      // Buscar transacción fresca local (priorizar por _id/id del mensaje).
       let transFresca = null;
       if (Array.isArray(userData?.transacciones)) {
-        const candidatas = userData.transacciones.filter(t => (
+        const porIdMsg = userData.transacciones.filter(t => String(t._id || t.id || '') === String(mensajeIntercambio._id || mensajeIntercambio.id || ''));
+        const porPair = porIdMsg.length ? [] : userData.transacciones.filter(t => (
           (t.productoId && t.productoId === mensajeIntercambio.productoId) &&
           (t.productoOfrecidoId && t.productoOfrecidoId === mensajeIntercambio.productoOfrecidoId)
         ));
-        const candidatasPorTitulo = candidatas.length ? [] : userData.transacciones.filter(t => (
+        // Fallback: si aún no hay productoOfrecidoId, comparar solo por productoId PERO
+        // solo considerar transacciones NO completadas y recientes para evitar heredar estados viejos.
+        const nowMsgTs = new Date(mensajeIntercambio.createdAt || mensajeIntercambio.fecha || mensajeIntercambio.timestamp || Date.now()).getTime();
+        const porSoloProducto = (porIdMsg.length || porPair.length) ? [] : userData.transacciones.filter(t => {
+          if (!(t.productoId && t.productoId === mensajeIntercambio.productoId)) return false;
+          const tTime = new Date(t.updatedAt || t.createdAt || 0).getTime();
+          const isRecent = Math.abs(nowMsgTs - tTime) <= 1000 * 60 * 30; // 30 minutos
+          const notCompleted = t.estado !== 'completado';
+          return notCompleted && isRecent;
+        });
+        const porTitulo = (porIdMsg.length || porPair.length || porSoloProducto.length) ? [] : userData.transacciones.filter(t => (
           (t.productoTitle && t.productoTitle === mensajeIntercambio.productoTitle) &&
           (t.productoOfrecido && t.productoOfrecido === mensajeIntercambio.productoOfrecido)
         ));
-        const pool = candidatas.length ? candidatas : (candidatasPorTitulo.length ? candidatasPorTitulo : []);
+        const pool = porIdMsg.length ? porIdMsg : (porPair.length ? porPair : (porSoloProducto.length ? porSoloProducto : porTitulo));
         if (pool.length) {
           transFresca = pool.reduce((a, b) => {
             const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
             const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
             return db > da ? b : a;
           });
+          // Si la transacción seleccionada está completada pero es claramente más vieja que este mensaje nuevo, ignorarla
+          const tSelTime = new Date(transFresca.updatedAt || transFresca.createdAt || 0).getTime();
+          const tooOldCompleted = transFresca.estado === 'completado' && nowMsgTs - tSelTime > 1000 * 60 * 2; // 2 minutos
+          if (tooOldCompleted) transFresca = null;
         }
+      }
+      // Si no logramos matchear una transacción (p.ej., propuesta nueva), fijar estado base pendiente para que el Stepper no muestre "Listo"
+      if (!transFresca) {
+        transFresca = { confirmedBy: [], confirmaciones: [], estado: 'pendiente_confirmacion', productoId: mensajeIntercambio.productoId, productoOfrecidoId: mensajeIntercambio.productoOfrecidoId };
       }
 
       const conf = (
@@ -2747,6 +2828,15 @@ const loadDonaciones = async () => {
                                 setShowConfirmDeleteDonation(true);
                               }}
                             />
+
+                  {/* Modal de confirmación para eliminar un mensaje */}
+                  <ConfirmModal
+                    isOpen={showConfirmMessageDelete}
+                    onCancel={() => { setShowConfirmMessageDelete(false); setMessageToDelete(null); }}
+                    onConfirm={async () => { try { await handleDeleteMessage(); } finally { setShowConfirmMessageDelete(false); setMessageToDelete(null); } }}
+                    title="Eliminar mensaje"
+                    message="¿Seguro que deseas eliminar este mensaje?"
+                  />
                           </div>
                         );
                       }
@@ -3069,6 +3159,39 @@ const loadDonaciones = async () => {
                 title="Eliminar donación"
                 message={`¿Estás seguro que deseas eliminar la donación "${donationToDelete?.title || ''}"? Esta acción no se puede deshacer.`}
               />
+              {/* Modal de confirmación para eliminar chat */}
+              <ConfirmModal
+                isOpen={showConfirmChatDelete}
+                onCancel={() => { setShowConfirmChatDelete(false); setChatToDelete(null); }}
+                onConfirm={async () => {
+                  try {
+                    const chatKey = chatToDelete;
+                    if (!chatKey) return;
+                    const mensajesChat = chats[chatKey] || [];
+                    const ids = mensajesChat.map(m => m._id || m.id).filter(Boolean);
+                    await Promise.all(ids.map(async (id) => {
+                      try { await fetch(`${API_URL}/messages/${id}`, { method: 'DELETE' }); } catch {}
+                    }));
+                    setChats(prev => {
+                      const next = { ...prev };
+                      delete next[chatKey];
+                      // Si era el seleccionado, elegir otro
+                      if (chatSeleccionado === chatKey) {
+                        const remaining = Object.keys(next);
+                        setChatSeleccionado(remaining[0] || null);
+                      }
+                      return next;
+                    });
+                    setUnreadByChat(prev => { const n = { ...prev }; delete n[chatKey]; return n; });
+                  } finally {
+                    setShowConfirmChatDelete(false);
+                    setChatToDelete(null);
+                  }
+                }}
+                title="Eliminar chat"
+                message="¿Seguro que deseas eliminar este chat y todos sus mensajes?"
+              />
+
             </div>
           )}
 
@@ -3266,6 +3389,38 @@ const loadDonaciones = async () => {
                     ),
                     document.body
                   )}
+
+                  {/* Modal de confirmación para eliminar chat (visible en pestaña Mensajes) */}
+                  <ConfirmModal
+                    isOpen={showConfirmChatDelete}
+                    onCancel={() => { setShowConfirmChatDelete(false); setChatToDelete(null); }}
+                    onConfirm={async () => {
+                      try {
+                        const chatKey = chatToDelete;
+                        if (!chatKey) return;
+                        const mensajesChat = chats[chatKey] || [];
+                        const ids = mensajesChat.map(m => m._id || m.id).filter(Boolean);
+                        await Promise.all(ids.map(async (id) => {
+                          try { await fetch(`${API_URL}/messages/${id}`, { method: 'DELETE' }); } catch {}
+                        }));
+                        setChats(prev => {
+                          const next = { ...prev };
+                          delete next[chatKey];
+                          if (chatSeleccionado === chatKey) {
+                            const remaining = Object.keys(next);
+                            setChatSeleccionado(remaining[0] || null);
+                          }
+                          return next;
+                        });
+                        setUnreadByChat(prev => { const n = { ...prev }; delete n[chatKey]; return n; });
+                      } finally {
+                        setShowConfirmChatDelete(false);
+                        setChatToDelete(null);
+                      }
+                    }}
+                    title="Eliminar chat"
+                    message="¿Seguro que deseas eliminar este chat y todos sus mensajes?"
+                  />
 
                   {/* mensajes del chat seleccionado */}
                   <div className="chat-messages" style={{flex:1, display:'flex', flexDirection:'column', maxHeight:'78vh'}}>
@@ -3725,6 +3880,32 @@ const loadDonaciones = async () => {
                             const mensajesChat = chats[chatSeleccionado] || [];
                             const myId = userData?.id || JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id;
                             const currentUserImage = (userData?.imagen ? normalizeImageUrl(userData.imagen) : imagenPerfil) || '/images/fotoperfil.jpg';
+                            const handleStartEdit = (id) => {
+                              try {
+                                const msg = mensajesChat.find(x => (x._id || x.id) === id);
+                                const text = msg?.descripcion || msg?.texto || '';
+                                setEditingMessageId(id);
+                                setEditText(text);
+                              } catch {}
+                            };
+                            const handleSaveEdit = async (msg) => {
+                              const mid = msg._id || msg.id;
+                              if (!mid) return setEditingMessageId(null);
+                              try {
+                                const res = await fetch(`${API_URL}/messages/${mid}`, {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ descripcion: editText })
+                                });
+                                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                                // Actualizar en estado local
+                                setMensajes(prev => prev.map(m => ((m._id||m.id)===mid? { ...m, descripcion: editText, updatedAt: new Date().toISOString() }: m)));
+                              } catch (e) {
+                                alert('No se pudo guardar la edición del mensaje');
+                              } finally {
+                                setEditingMessageId(null);
+                              }
+                            };
                             return mensajesChat.map((m, idx) => {
                               const fromMe = m.deId === myId;
                               const senderProfileImage = fromMe ? (m.paraImagen ? normalizeImageUrl(m.paraImagen) : '') : (m.deImagen ? normalizeImageUrl(m.deImagen) : '');
@@ -3734,8 +3915,8 @@ const loadDonaciones = async () => {
                                   mensaje={m}
                                   fromMe={fromMe}
                                   currentUserId={myId}
-                                  onRefresh={() => fetchMensajes(myId)}
-                                  onDeleteMessage={(msg) => setMessageToDelete(msg)}
+                                  onRefresh={(action, id) => { if (action === 'edit' && id) { handleStartEdit(id); } else { fetchMensajes(myId); } }}
+                                  onDeleteMessage={(msg) => { setMessageToDelete(msg); setShowConfirmMessageDelete(true); }}
                                   confirmExchange={handleConfirmExchange}
                                   productoTitle={m.productoTitle}
                                   productoOfrecido={m.productoOfrecido}
@@ -3743,7 +3924,7 @@ const loadDonaciones = async () => {
                                   editText={editText}
                                   onEditTextChange={setEditText}
                                   onEditCancel={() => setEditingMessageId(null)}
-                                  onEditSave={() => setEditingMessageId(null)}
+                                  onEditSave={() => handleSaveEdit(m)}
                                   scrollToBottom={() => chatContainerRef.current && chatContainerRef.current.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' })}
                                   senderProfileImage={senderProfileImage}
                                   currentUserProfileImage={currentUserImage}
