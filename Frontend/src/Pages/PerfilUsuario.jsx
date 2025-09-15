@@ -1415,48 +1415,124 @@ const PerfilUsuario = () => {
 
   // Confirmar intercambio (segunda confirmación completa el intercambio y marca producto)
   const handleConfirmExchange = async (transaccion) => {
+    console.log('[CONFIRMAR INTERCAMBIO] Click detectado', transaccion);
     try {
       const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
       const myId = userData?.id || usuarioActual?.id || usuarioActual?._id;
       if (!myId) return;
 
-      // Optimista: agregar mi confirmación si no está
-      const addMyConfirm = (t) => {
-        const confirmed = Array.isArray(t.confirmedBy) ? t.confirmedBy : [];
-        const nextConfirmed = confirmed.includes(myId) ? confirmed : [...confirmed, myId];
-        // Heurística: si hay al menos 2 distintos, considerar completado
-        const uniqueCount = new Set(nextConfirmed.filter(Boolean)).size;
-        const completed = uniqueCount >= 2;
-        return { ...t, confirmedBy: nextConfirmed, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
+      // 1. Limpiar campos innecesarios y dejar solo los válidos
+      const cleanTrans = (t) => {
+        return {
+          _id: t._id,
+          id: t.id,
+          de: t.de,
+          deId: t.deId,
+          paraId: t.paraId,
+          paraNombre: t.paraNombre,
+          productoId: t.productoId,
+          productoTitle: t.productoTitle,
+          productoOfrecidoId: t.productoOfrecidoId,
+          productoOfrecido: t.productoOfrecido,
+          tipoPeticion: t.tipoPeticion || 'intercambio',
+          descripcion: t.descripcion,
+          condiciones: t.condiciones,
+          leidoPor: t.leidoPor || [],
+          confirmaciones: Array.isArray(t.confirmaciones) ? t.confirmaciones : [],
+          estado: t.estado || (t.completed ? 'completado' : 'pendiente_confirmacion'),
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt
+        };
       };
+      let transId = transaccion._id || transaccion.id;
+      let transaccionFinal = cleanTrans(transaccion);
+      console.log('[CONFIRMAR INTERCAMBIO] Transacción limpia:', transaccionFinal);
+      if (!transId || String(transId).startsWith('temp')) {
+        console.log('[CONFIRMAR INTERCAMBIO] POST /transactions', transaccionFinal);
+        const res = await fetch(`${API_URL}/transactions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
+          body: JSON.stringify(transaccionFinal)
+        });
+        console.log('[CONFIRMAR INTERCAMBIO] Respuesta POST /transactions', res.status);
+        if (!res.ok) throw new Error('No se pudo crear la transacción en el backend');
+        const nueva = await res.json();
+        transaccionFinal = cleanTrans(nueva);
+        transId = nueva._id || nueva.id;
+      }
 
-      const optimistic = addMyConfirm(transaccion);
+      // 2. Optimista: agregar mi confirmación si no está
+      const addMyConfirm = (t) => {
+        const confirmedRaw = Array.isArray(t.confirmaciones) ? t.confirmaciones : (Array.isArray(t.confirmedBy) ? t.confirmedBy : []);
+        const confirmed = confirmedRaw.map(x => String(x)).filter(Boolean);
+        const myS = String(myId);
+        const nextConfirmed = confirmed.includes(myS) ? confirmed : [...confirmed, myS];
+        const uniqueCount = new Set(nextConfirmed).size;
+        const completed = uniqueCount >= 2;
+        return { ...t, confirmedBy: nextConfirmed, confirmaciones: nextConfirmed, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
+      };
+      const optimistic = addMyConfirm(transaccionFinal);
+      console.log('[CONFIRMAR INTERCAMBIO] Actualizando estado local con:', optimistic);
       setUserData(prev => ({
         ...prev,
-        transacciones: [...(prev.transacciones || []), optimistic]
+        transacciones: [...(prev.transacciones || []).filter(t => t._id !== transId && t.id !== transId), optimistic]
       }));
-      // Persistir en backend dentro de /users/:id (hasta tener endpoint dedicado)
-      const uid = usuarioActual?.id || usuarioActual?._id;
-      if (uid) {
-        const current = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
-        const nextTrans = (current.transacciones || []).map(t => {
-          const tid = t._id || t.id; const oid = transaccion._id || transaccion.id;
-          if (tid && oid ? tid === oid : (!tid && !oid && t.fecha === transaccion.fecha && t.productoOfrecido === transaccion.productoOfrecido)) {
-            const after = addMyConfirm(t);
-            return after;
+
+      // Actualizar inmediatamente los mensajes del chat para que el Stepper no vuelva a datos viejos del mensaje
+      try {
+        setChats(prev => {
+          if (!prev || !chatSeleccionado || !prev[chatSeleccionado]) return prev;
+          const mensajesPrev = prev[chatSeleccionado];
+          const myS = String(myId || '');
+          const confirmed = (Array.isArray(optimistic.confirmedBy) ? optimistic.confirmedBy : (Array.isArray(optimistic.confirmaciones) ? optimistic.confirmaciones : [])).map(String);
+          const unique = Array.from(new Set(confirmed.filter(Boolean)));
+          const completed = unique.length >= 2 || optimistic.estado === 'completado';
+          const actualizados = mensajesPrev.map(m => {
+            const samePair = (m.productoId === optimistic.productoId) && (m.productoOfrecidoId === optimistic.productoOfrecidoId);
+            if (!samePair) return m;
+            const baseConf = (Array.isArray(m.confirmedBy) ? m.confirmedBy : (Array.isArray(m.confirmaciones) ? m.confirmaciones : [])).map(x => String(x));
+            const union = Array.from(new Set([...(baseConf || []), ...unique]));
+            return { ...m, confirmedBy: union, confirmaciones: union, estado: completed ? 'completado' : (m.estado || 'pendiente_confirmacion') };
+          });
+          return { ...prev, [chatSeleccionado]: actualizados };
+        });
+      } catch {}
+
+      // 3. Construir lista a persistir tomando el estado más reciente y agregando si no existe aún
+      const current = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+      const stateTrans = Array.isArray(userData?.transacciones) ? userData.transacciones : (current.transacciones || []);
+      let foundTx = false;
+      const nextTrans = (stateTrans || [])
+        .filter(t => t && (t._id || t.id) && !String(t._id || t.id).startsWith('temp'))
+        .map(t => {
+          const tid = String(t._id || t.id || '');
+          if (tid && tid === String(transId)) {
+            foundTx = true;
+            return optimistic;
           }
+          // También reemplazar por pareja de producto en caso de IDs inconsistentes
+          const samePair = t.productoId === optimistic.productoId && t.productoOfrecidoId === optimistic.productoOfrecidoId;
+          if (!foundTx && samePair) { foundTx = true; return optimistic; }
           return t;
         });
-        await fetch(`${API_URL}/users/${uid}`, {
+      const finalTrans = foundTx ? nextTrans : [...nextTrans, optimistic];
+
+      // 4. Persistir en backend solo transacciones válidas
+      const uid = userData?.id || usuarioActual?.id || usuarioActual?._id;
+      if (uid) {
+        console.log('[CONFIRMAR INTERCAMBIO] PUT /users (self)', { transacciones: finalTrans });
+        const putRes = await fetch(`${API_URL}/users/${uid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
-          body: JSON.stringify({ transacciones: nextTrans })
+          body: JSON.stringify({ transacciones: finalTrans })
         });
+        console.log('[CONFIRMAR INTERCAMBIO] Respuesta PUT /users', putRes.status);
 
-        // Si quedó completado, recién ahí marcar producto como intercambiado
-        const finalT = nextTrans.find(t => (t._id || t.id) === (transaccion._id || transaccion.id)) || optimistic;
+        // 5. Si quedó completado, marcar producto como intercambiado
+        const finalT = (finalTrans.find?.(t => (t._id || t.id) === transId)) || optimistic;
         if (finalT.estado === 'completado' && finalT.productoOfrecidoId) {
           try {
+            console.log('[CONFIRMAR INTERCAMBIO] PUT /products', { intercambiado: true });
             await fetch(`${API_URL}/products/${finalT.productoOfrecidoId}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
@@ -1465,13 +1541,86 @@ const PerfilUsuario = () => {
           } catch (e) { console.warn('No se pudo marcar producto como intercambiado aún:', e); }
         }
 
-        // Reconciliar desde servidor como fuente autoritativa
+        // 6. Reconciliar desde servidor
         const resUser = await fetch(`${API_URL}/users/${uid}`);
         if (resUser.ok) {
           const userBD = await resUser.json();
-          setUserData(userBD);
-          try { localStorage.setItem('usuarioActual', JSON.stringify(userBD)); } catch {}
-          window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: { id: userBD.id || userBD._id } }));
+          // Unir confirmaciones optimistas con las del backend para evitar regresión visual
+          const merged = Array.isArray(userBD?.transacciones)
+            ? userBD.transacciones.map(t => {
+                const tid = t._id || t.id;
+                if (tid === transId) {
+                  const serverConf = (Array.isArray(t.confirmedBy) ? t.confirmedBy : (Array.isArray(t.confirmaciones) ? t.confirmaciones : [])).map(x => String(x));
+                  const localConf = (Array.isArray(optimistic?.confirmedBy) ? optimistic.confirmedBy : (Array.isArray(optimistic?.confirmaciones) ? optimistic.confirmaciones : [])).map(x => String(x));
+                  const union = Array.from(new Set([...(serverConf || []), ...(localConf || [])].filter(Boolean)));
+                  const completed = new Set(union).size >= 2 || t.estado === 'completado';
+                  return { ...t, confirmedBy: union, confirmaciones: union, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
+                }
+                return t;
+              })
+            : userBD?.transacciones;
+          const userMerged = merged ? { ...userBD, transacciones: merged } : userBD;
+          setUserData(userMerged);
+          try { localStorage.setItem('usuarioActual', JSON.stringify(userMerged)); } catch {}
+          window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: { id: userMerged.id || userMerged._id } }));
+          // Si la transacción reconciliada difiere de la devuelta por el servidor, persistirla para evitar regresión
+          try {
+            const originalT = (Array.isArray(userBD?.transacciones) ? userBD.transacciones : []).find(t => (t._id || t.id) === transId) || {};
+            const mergedT = (Array.isArray(userMerged?.transacciones) ? userMerged.transacciones : []).find(t => (t._id || t.id) === transId) || {};
+            const origSet = new Set(((Array.isArray(originalT.confirmedBy) ? originalT.confirmedBy : (Array.isArray(originalT.confirmaciones) ? originalT.confirmaciones : []))||[]).map(String));
+            const mergeSet = new Set(((Array.isArray(mergedT.confirmedBy) ? mergedT.confirmedBy : (Array.isArray(mergedT.confirmaciones) ? mergedT.confirmaciones : []))||[]).map(String));
+            const sameSize = origSet.size === mergeSet.size;
+            const sameMembers = sameSize && [...origSet].every(x => mergeSet.has(x));
+            const estadoChanged = (originalT.estado !== mergedT.estado);
+            if (!sameMembers || estadoChanged) {
+              await fetch(`${API_URL}/users/${uid}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
+                body: JSON.stringify({ transacciones: userMerged.transacciones })
+              });
+            }
+          } catch {}
+        }
+
+        // 7. Sincronizar confirmación con la contraparte para evitar estados divergentes
+        try {
+          const counterpartId = (transaccionFinal.deId === myId) ? transaccionFinal.paraId : transaccionFinal.deId;
+          if (counterpartId) {
+            const resOther = await fetch(`${API_URL}/users/${counterpartId}`);
+            if (resOther.ok) {
+              const otherUser = await resOther.json();
+              const baseTrans = Array.isArray(otherUser?.transacciones) ? otherUser.transacciones : [];
+              // Unificar confirmaciones con la versión más reciente conocida (optimista)
+              const mapTrans = (t) => {
+                const tid = t._id || t.id;
+                if (!tid || tid !== transId) return t;
+                const serverConf = (Array.isArray(t.confirmedBy) ? t.confirmedBy : (Array.isArray(t.confirmaciones) ? t.confirmaciones : [])).map(x => String(x));
+                const localConf = (Array.isArray(optimistic?.confirmedBy) ? optimistic.confirmedBy : (Array.isArray(optimistic?.confirmaciones) ? optimistic.confirmaciones : [])).map(x => String(x));
+                const union = Array.from(new Set([...(serverConf || []), ...(localConf || [])].filter(Boolean)));
+                const completed = new Set(union).size >= 2 || t.estado === 'completado';
+                return { ...t, confirmedBy: union, confirmaciones: union, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
+              };
+
+              // Intentar reemplazar por id; si no existe, intentar por pair de productoId/productoOfrecidoId; si tampoco, agregar
+              let found = false;
+              const nextOtherTrans = baseTrans.map(t => {
+                if ((t._id || t.id) === transId) { found = true; return mapTrans(t); }
+                if (!found && t.productoId === transaccionFinal.productoId && t.productoOfrecidoId === transaccionFinal.productoOfrecidoId) { found = true; return mapTrans(t); }
+                return t;
+              });
+              const finalOtherTrans = found ? nextOtherTrans : [...nextOtherTrans, { ...optimistic }];
+
+              console.log('[CONFIRMAR INTERCAMBIO] PUT /users (counterpart)', { userId: counterpartId, transacciones: finalOtherTrans });
+              const putOther = await fetch(`${API_URL}/users/${counterpartId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
+                body: JSON.stringify({ transacciones: finalOtherTrans })
+              });
+              console.log('[CONFIRMAR INTERCAMBIO] Respuesta PUT /users (counterpart)', putOther.status);
+            }
+          }
+        } catch (e) {
+          console.warn('No se pudo sincronizar confirmación con la contraparte:', e);
         }
       }
     } catch (e) {
@@ -1629,6 +1778,161 @@ const PerfilUsuario = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [activeTab]);
+
+  // Refrescar perfil cuando se vuelve a la pestaña de mensajes y la transacción del stepper aún no está completada
+  useEffect(() => {
+    try {
+      if (activeTab !== 'mensajes') return;
+      if (!isMessagesTabActive) return; // solo cuando la pestaña está visible
+      const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+      const uid = usuarioActual?.id || userData?.id;
+      if (!uid) return;
+      const mensajesSel = chats[chatSeleccionado] || [];
+      const mensajeIntercambio = mensajesSel.find(m => m.productoId && m.productoOfrecidoId);
+      if (!mensajeIntercambio) return;
+
+      // Buscar transacción fresca local
+      let transFresca = null;
+      if (Array.isArray(userData?.transacciones)) {
+        const candidatas = userData.transacciones.filter(t => (
+          (t.productoId && t.productoId === mensajeIntercambio.productoId) &&
+          (t.productoOfrecidoId && t.productoOfrecidoId === mensajeIntercambio.productoOfrecidoId)
+        ));
+        const candidatasPorTitulo = candidatas.length ? [] : userData.transacciones.filter(t => (
+          (t.productoTitle && t.productoTitle === mensajeIntercambio.productoTitle) &&
+          (t.productoOfrecido && t.productoOfrecido === mensajeIntercambio.productoOfrecido)
+        ));
+        const pool = candidatas.length ? candidatas : (candidatasPorTitulo.length ? candidatasPorTitulo : []);
+        if (pool.length) {
+          transFresca = pool.reduce((a, b) => {
+            const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
+            const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
+            return db > da ? b : a;
+          });
+        }
+      }
+
+      const conf = (
+        (Array.isArray(transFresca?.confirmedBy) && transFresca.confirmedBy) ||
+        (Array.isArray(transFresca?.confirmaciones) && transFresca.confirmaciones) ||
+        []
+      );
+      const uniqueCount = new Set(conf.filter(Boolean)).size;
+      const completed = (transFresca?.estado === 'completado') || (mensajeIntercambio.estado === 'completado') || (uniqueCount >= 2);
+      if (!completed) {
+        // Obtener estado autoritativo del servidor
+        fetch(`${API_URL}/users/${uid}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (!data) return;
+            setUserData(data);
+            try { localStorage.setItem('usuarioActual', JSON.stringify(data)); } catch {}
+            window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: { id: data.id || data._id } }));
+          })
+          .catch(() => {});
+      }
+    } catch (_) {}
+  }, [activeTab, isMessagesTabActive, chatSeleccionado, chats, userData?.id]);
+
+  // Heurística de conciliación cruzada: si yo ya confirmé pero el stepper no está completo, consultar a la contraparte y unir confirmaciones
+  const crossMergeGuardRef = React.useRef({});
+  useEffect(() => {
+    try {
+      if (activeTab !== 'mensajes') return;
+      const mensajesSel = chats[chatSeleccionado] || [];
+      const mensajeIntercambio = mensajesSel.find(m => m.productoId && m.productoOfrecidoId);
+      if (!mensajeIntercambio) return;
+      const me = userData?.id || JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id;
+      const other = mensajeIntercambio.deId === me ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
+      if (!me || !other) return;
+
+      // Buscar transacción local más fresca
+      let transLocal = null;
+      if (Array.isArray(userData?.transacciones)) {
+        const byId = userData.transacciones.filter(t => String(t._id || t.id || '') === String(mensajeIntercambio._id || mensajeIntercambio.id || ''));
+        const byPair = byId.length ? [] : userData.transacciones.filter(t => t.productoId === mensajeIntercambio.productoId && t.productoOfrecidoId === mensajeIntercambio.productoOfrecidoId);
+        const byTitle = (byId.length || byPair.length) ? [] : userData.transacciones.filter(t => t.productoTitle === mensajeIntercambio.productoTitle && t.productoOfrecido === mensajeIntercambio.productoOfrecido);
+        const pool = byId.length ? byId : (byPair.length ? byPair : byTitle);
+        if (pool.length) {
+          transLocal = pool.reduce((a, b) => {
+            const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
+            const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
+            return db > da ? b : a;
+          });
+        }
+      }
+      if (!transLocal) return;
+      const confLocal = (Array.isArray(transLocal.confirmedBy) ? transLocal.confirmedBy : (Array.isArray(transLocal.confirmaciones) ? transLocal.confirmaciones : [])).map(String);
+      const myS = String(me);
+      const otherS = String(other);
+      const iConfirmed = confLocal.includes(myS);
+      const otherConfirmed = confLocal.includes(otherS);
+      const alreadyCompleted = transLocal.estado === 'completado' || (new Set(confLocal).size >= 2);
+      const txKey = String(transLocal._id || transLocal.id || `${transLocal.productoId}-${transLocal.productoOfrecidoId}`);
+      if (!iConfirmed || alreadyCompleted) return;
+      // Evitar loops: procesar cada transacción solo una vez por sesión
+      if (crossMergeGuardRef.current[txKey]) return;
+      crossMergeGuardRef.current[txKey] = true;
+
+      // Si falta la confirmación del otro, consultar a la contraparte
+      fetch(`${API_URL}/users/${other}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data) return;
+          const list = Array.isArray(data.transacciones) ? data.transacciones : [];
+          const pool = list.filter(t => (
+            String(t._id || t.id || '') === String(transLocal._id || transLocal.id || '') ||
+            (t.productoId === transLocal.productoId && t.productoOfrecidoId === transLocal.productoOfrecidoId)
+          ));
+          const tOther = pool.reduce((a, b) => {
+            const da = new Date(a?.updatedAt || a?.createdAt || 0).getTime();
+            const db = new Date(b?.updatedAt || b?.createdAt || 0).getTime();
+            return db > da ? b : a;
+          }, null);
+          const confOther = (Array.isArray(tOther?.confirmedBy) ? tOther.confirmedBy : (Array.isArray(tOther?.confirmaciones) ? tOther.confirmaciones : [])).map(String);
+          if (!confOther.includes(otherS)) return; // la contraparte aún no confirmó
+          const union = Array.from(new Set([...(confLocal || []), ...(confOther || [])]));
+          const completed = union.length >= 2;
+
+          // Actualizar estado local (userData)
+          setUserData(prev => {
+            const base = Array.isArray(prev?.transacciones) ? prev.transacciones : [];
+            const next = base.map(t => {
+              const same = String(t._id || t.id || '') === String(transLocal._id || transLocal.id || '') || (t.productoId === transLocal.productoId && t.productoOfrecidoId === transLocal.productoOfrecidoId);
+              if (!same) return t;
+              return { ...t, confirmedBy: union, confirmaciones: union, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
+            });
+            const merged = { ...prev, transacciones: next };
+            try { localStorage.setItem('usuarioActual', JSON.stringify(merged)); } catch {}
+            return merged;
+          });
+
+          // Actualizar mensajes del chat para que el Stepper no lea datos viejos
+          setChats(prev => {
+            const msgs = prev[chatSeleccionado] || [];
+            const patched = msgs.map(m => {
+              const same = (m.productoId === transLocal.productoId) && (m.productoOfrecidoId === transLocal.productoOfrecidoId);
+              if (!same) return m;
+              return { ...m, confirmedBy: union, confirmaciones: union, estado: completed ? 'completado' : (m.estado || 'pendiente_confirmacion') };
+            });
+            return { ...prev, [chatSeleccionado]: patched };
+          });
+
+          // Persistir en backend en mi usuario
+          const meId = userData?.id || JSON.parse(localStorage.getItem('usuarioActual') || '{}')?.id;
+          if (meId) {
+            const after = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+            const trans = Array.isArray(after?.transacciones) ? after.transacciones : [];
+            fetch(`${API_URL}/users/${meId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` },
+              body: JSON.stringify({ transacciones: trans })
+            }).catch(() => {});
+          }
+        })
+        .catch(() => {});
+    } catch (_) {}
+  }, [activeTab, chatSeleccionado, chats, userData?.transacciones]);
 
   // Eliminado useEffect con polling inteligente
   // useEffect(() => {
@@ -3256,15 +3560,55 @@ const loadDonaciones = async () => {
 
                           if (!mensajeIntercambio) return null;
 
-                          const myId = usuarioActual?.id;
+                          const myId = userData?.id || usuarioActual?.id || usuarioActual?._id;
                           const otherId = mensajeIntercambio.deId === myId ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
                           const otherName = mensajeIntercambio.deId === myId
                             ? (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario')
                             : (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
-                          const confirmaciones = Array.isArray(mensajeIntercambio.confirmaciones) ? mensajeIntercambio.confirmaciones : [];
-                          const yoConfirmado = myId ? confirmaciones.includes(myId) : false;
-                          const otroConfirmado = otherId ? confirmaciones.includes(otherId) : false;
-                          const completado = mensajeIntercambio.completed === true || (mensajeIntercambio.estado === 'completado');
+                          // Preferir el estado más fresco de la transacción desde userData.transacciones
+                          let transFresca = null;
+                          if (Array.isArray(userData?.transacciones)) {
+                            const tIdMsg = String(mensajeIntercambio._id || mensajeIntercambio.id || '');
+                            // 1) Priorizar por _id/id (más confiable)
+                            const porId = userData.transacciones.filter(t => String(t._id || t.id || '') === tIdMsg);
+                            // 2) Luego por IDs de producto
+                            const porPair = porId.length ? [] : userData.transacciones.filter(t => (
+                              (t.productoId && t.productoId === mensajeIntercambio.productoId) &&
+                              (t.productoOfrecidoId && t.productoOfrecidoId === mensajeIntercambio.productoOfrecidoId)
+                            ));
+                            // 3) Finalmente por títulos
+                            const porTitulo = (porId.length || porPair.length) ? [] : userData.transacciones.filter(t => (
+                              (t.productoTitle && t.productoTitle === mensajeIntercambio.productoTitle) &&
+                              (t.productoOfrecido && t.productoOfrecido === mensajeIntercambio.productoOfrecido)
+                            ));
+                            const pool = porId.length ? porId : (porPair.length ? porPair : porTitulo);
+                            if (pool.length) {
+                              // Elegir la más fresca por updatedAt/createdAt
+                              transFresca = pool.reduce((a, b) => {
+                                const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                                const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                                return db > da ? b : a;
+                              });
+                            }
+                          }
+
+                          // Unificar confirmaciones: confirmedBy o confirmaciones (con fallback al mensaje si no hay transacción fresca)
+                          const listaConfirm = (
+                            (Array.isArray(transFresca?.confirmedBy) && transFresca.confirmedBy) ||
+                            (Array.isArray(transFresca?.confirmaciones) && transFresca.confirmaciones) ||
+                            (Array.isArray(mensajeIntercambio.confirmedBy) && mensajeIntercambio.confirmedBy) ||
+                            (Array.isArray(mensajeIntercambio.confirmaciones) && mensajeIntercambio.confirmaciones) ||
+                            []
+                          );
+                          // Normalizar y deduplicar
+                          const myS = String(myId || '');
+                          const otherS = String(otherId || '');
+                          const confirmaciones = Array.from(new Set(listaConfirm.filter(Boolean).map(x => String(x))));
+                          const yoConfirmado = myS ? confirmaciones.includes(myS) : false;
+                          const otroConfirmado = otherS ? confirmaciones.includes(otherS) : false;
+                          const completadoPorEstado = (transFresca?.estado === 'completado') || (mensajeIntercambio.estado === 'completado') || (mensajeIntercambio.completed === true);
+                          const completadoPorConfirm = new Set(confirmaciones).size >= 2;
+                          const completado = completadoPorEstado || completadoPorConfirm;
 
                           return (
                             <div style={{ marginTop: 12, marginBottom: 12 }}>
@@ -3355,7 +3699,7 @@ const loadDonaciones = async () => {
                               {!completado && !yoConfirmado && (
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
                                   <button
-                                    onClick={() => realizarConfirmacionIntercambio()}
+                                    onClick={() => handleConfirmExchange(mensajeIntercambio)}
                                     style={{
                                       background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: 'white',
                                       border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700,
@@ -3551,3 +3895,4 @@ const loadDonaciones = async () => {
 }
 
 export default PerfilUsuario;
+ 
