@@ -3815,6 +3815,11 @@ const loadDonaciones = async () => {
                           const completadoPorEstado = (anchor.estado === 'completado') || (anchor.completed === true);
                           const completadoPorConfirm = new Set(confirmaciones).size >= 2;
                           const completado = completadoPorEstado || completadoPorConfirm;
+                          // Extra: si el chat ya tiene un mensaje de sistema o cualquier mensaje marcado como completed, considerarlo terminado
+                          const anyCompletedInChat = (mensajes || []).some(m => m && (m.completed === true || m.estado === 'completado' || m.system === true || m.tipo === 'system'));
+                          const completadoFinal = completado || anyCompletedInChat;
+                          const yoConfirmadoFinal = yoConfirmado || completadoFinal;
+                          const otroConfirmadoFinal = otroConfirmado || completadoFinal;
 
                           return (
                             <div className="stepper-card" style={{ marginBottom: 28 }}>
@@ -3824,34 +3829,77 @@ const loadDonaciones = async () => {
                                 <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
                                   <div title="Propuesta enviada" style={{ width: 42, height: 42, borderRadius: '50%', display:'flex', alignItems:'center', justifyContent:'center', background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)', color:'#fff', boxShadow:'0 4px 12px rgba(16,185,129,.35)', fontSize: 20, fontWeight: 800 }}>⚡</div>
                                   <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
-                                    <div style={{ width: yoConfirmado || otroConfirmado || completado ? '100%' : '35%', height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
+                                    <div style={{ width: yoConfirmadoFinal || otroConfirmadoFinal || completadoFinal ? '100%' : '35%', height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
                                   </div>
                                 </div>
                                 {/* Paso 2: Tu confirmación */}
                                 <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
                                   <div title="Tu confirmación" style={{ position:'relative' }}>
-                                    <div style={{ width: 44, height: 44, borderRadius: '50%', border: yoConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1', boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc' }}>
-                                      {userData?.imagen ? (<img src={normalizeImageUrl(userData.imagen)} alt="Tú" style={{ width:'100%', height:'100%', objectFit:'cover' }} />) : null}
+                                    <div style={{ width: 44, height: 44, borderRadius: '50%', border: yoConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1', boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                                      {/* Iniciales por defecto */}
+                                      <span className="avatar-initials" style={{ fontWeight: 800, fontSize: 12, color: '#2d9cdb' }}>
+                                        {(() => {
+                                          const parts = [userData?.nombre, userData?.apellido].filter(Boolean);
+                                          return parts.length ? parts.map(p => p.trim()[0]).slice(0,2).join('').toUpperCase() : 'TU';
+                                        })()}
+                                      </span>
+                                      {/* Imagen: si carga bien, oculta las iniciales; si falla, oculta la imagen */}
+                                      {userData?.imagen ? (
+                                        <img
+                                          src={normalizeImageUrl(userData.imagen)}
+                                          alt="Tú"
+                                          style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                                          onLoad={(e) => { try { const initials = e.target.parentNode.querySelector('.avatar-initials'); if (initials) initials.style.display = 'none'; } catch {} }}
+                                          onError={(e) => { e.target.style.display='none'; try { const initials = e.target.parentNode.querySelector('.avatar-initials'); if (initials) initials.style.display = 'inline'; } catch {} }}
+                                        />
+                                      ) : null}
                                     </div>
                                   </div>
                                   <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
-                                    <div style={{ width: otroConfirmado || completado ? '100%' : (yoConfirmado ? '55%' : '20%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
+                                    <div style={{ width: otroConfirmadoFinal || completadoFinal ? '100%' : (yoConfirmadoFinal ? '55%' : '20%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
                                   </div>
                                 </div>
                                 {/* Paso 3: Confirmación del otro usuario */}
                                 <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
                                   <div title={`Confirmación de ${otherName}`} style={{ position:'relative' }}>
-                                    <div style={{ width: 44, height: 44, borderRadius: '50%', border: otroConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1', boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc' }}>
-                                      {(() => { const mensajesSel = chats[chatSeleccionado] || []; let img = ''; for (const m of mensajesSel) { if (m.deId === myId) { if (m.paraImagen) { img = normalizeImageUrl(m.paraImagen); break; } } else { if (m.deImagen) { img = normalizeImageUrl(m.deImagen); break; } } } return img ? <img src={img} alt={otherName} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : null; })()}
+                                    <div style={{ width: 44, height: 44, borderRadius: '50%', border: otroConfirmadoFinal ? '2px solid #22c55e' : '2px solid #cbd5e1', boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                                      {(() => {
+                                        const mensajesSel = chats[chatSeleccionado] || [];
+                                        let img = '';
+                                        for (const m of mensajesSel) {
+                                          if (m.deId === myId) {
+                                            if (m.paraImagen) { img = normalizeImageUrl(m.paraImagen); break; }
+                                          } else {
+                                            if (m.deImagen) { img = normalizeImageUrl(m.deImagen); break; }
+                                          }
+                                        }
+                                        const initials = (otherName || 'U').trim().split(/\s+/).map(p => p[0]).slice(0,2).join('').toUpperCase();
+                                        return (
+                                          <>
+                                            {/* Iniciales por defecto */}
+                                            <span className="avatar-initials" style={{ fontWeight: 800, fontSize: 12, color: '#2d9cdb' }}>{initials}</span>
+                                            {/* Imagen: oculta iniciales si carga bien */}
+                                            {img ? (
+                                              <img
+                                                src={img}
+                                                alt={otherName}
+                                                style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                                                onLoad={(e) => { try { const initialsEl = e.target.parentNode.querySelector('.avatar-initials'); if (initialsEl) initialsEl.style.display = 'none'; } catch {} }}
+                                                onError={(e) => { e.target.style.display='none'; try { const initialsEl = e.target.parentNode.querySelector('.avatar-initials'); if (initialsEl) initialsEl.style.display = 'inline'; } catch {} }}
+                                              />
+                                            ) : null}
+                                          </>
+                                        );
+                                      })()}
                                     </div>
                                   </div>
                                   <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
-                                    <div style={{ width: completado ? '100%' : (otroConfirmado ? '65%' : '25%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
+                                    <div style={{ width: completadoFinal ? '100%' : (otroConfirmadoFinal ? '65%' : '25%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
                                   </div>
                                 </div>
                                 {/* Paso 4: Completado */}
                                 <div style={{ display:'flex', alignItems:'center', gap: 12 }}>
-                                  <div title="Intercambio completado" style={{ width: 42, height: 42, borderRadius: '50%', display:'flex', alignItems:'center', justifyContent:'center', background: completado ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : '#e2e8f0', color: completado ? '#fff' : '#64748b', boxShadow: completado ? '0 4px 12px rgba(34,197,94,.35)' : 'none', fontSize: 20, fontWeight: 800 }}>★</div>
+                                  <div title="Intercambio completado" style={{ width: 42, height: 42, borderRadius: '50%', display:'flex', alignItems:'center', justifyContent:'center', background: completadoFinal ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : '#e2e8f0', color: completadoFinal ? '#fff' : '#64748b', boxShadow: completadoFinal ? '0 4px 12px rgba(34,197,94,.35)' : 'none', fontSize: 20, fontWeight: 800 }}>★</div>
                                 </div>
                               </div>
 
@@ -3862,28 +3910,28 @@ const loadDonaciones = async () => {
                                   <div style={{ fontSize: 12, color:'#64748b' }}>Tu</div>
                                 </div>
                                 <div style={{ textAlign:'center' }}>
-                                  <div style={{ fontWeight: 700, color: yoConfirmado ? '#0f172a' : '#64748b' }}>Tu confirmación</div>
-                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{yoConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                  <div style={{ fontWeight: 700, color: yoConfirmadoFinal ? '#0f172a' : '#64748b' }}>Tu confirmación</div>
+                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{yoConfirmadoFinal ? 'Confirmado' : 'Pendiente'}</div>
                                 </div>
                                 <div style={{ textAlign:'center' }}>
-                                  <div style={{ fontWeight: 700, color: otroConfirmado ? '#0f172a' : '#64748b' }}>{`Confirmación de ${otherName}`}</div>
-                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{otroConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                  <div style={{ fontWeight: 700, color: otroConfirmadoFinal ? '#0f172a' : '#64748b' }}>{`Confirmación de ${otherName}`}</div>
+                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{otroConfirmadoFinal ? 'Confirmado' : 'Pendiente'}</div>
                                 </div>
                                 <div style={{ textAlign:'center' }}>
-                                  <div style={{ fontWeight: 700, color: completado ? '#0f172a' : '#64748b' }}>Intercambio completado</div>
-                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{completado ? 'Listo' : 'En progreso'}</div>
+                                  <div style={{ fontWeight: 700, color: completadoFinal ? '#0f172a' : '#64748b' }}>Intercambio completado</div>
+                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{completadoFinal ? 'Listo' : 'En progreso'}</div>
                                 </div>
                               </div>
 
                               {/* Banda de estado: solo cuando esté completado */}
-                              {completado && (
+                              {completadoFinal && (
                                 <div className="stepper-status" style={{ marginTop: 12 }}>
                                   <span className="stepper-status-pill">Intercambio completado</span>
                                 </div>
                               )}
 
                               {/* CTA confirmar */}
-                              {!completado && !yoConfirmado && (
+                              {!completadoFinal && !yoConfirmadoFinal && (
                                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40, marginBottom: 14 }}>
                                   <button
                                     onClick={() => handleConfirmExchange(anchor)}
