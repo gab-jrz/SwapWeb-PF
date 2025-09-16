@@ -1013,6 +1013,9 @@
 
 .configuracion-container .config-action-buttons .btn-eliminar {
   background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #bd2130 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Eliminar cualquier ícono del botón de eliminar */
@@ -1075,9 +1078,9 @@
 }
 
 .configuracion-container .btn-eliminar {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #bd2130 100%);
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #bd2130 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
   padding: 1rem 2.5rem;
   border-radius: 20px;
   font-size: 1rem;
@@ -1085,19 +1088,20 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 
-    0 8px 25px rgba(220, 53, 69, 0.25),
-    0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: none !important;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   position: relative;
   overflow: hidden;
 }
 
-.configuracion-container .btn-eliminar:hover {
-  background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
-  color: #ffffff !important; /* asegurar texto blanco en hover */
+.configuracion-container .btn-eliminar:hover,
+.configuracion-container .btn-eliminar:focus,
+.configuracion-container .btn-eliminar:active {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #bd2130 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  transform: none !important;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* ===== MODO OSCURO ELEGANTE - ESTILO PERFIL ===== */

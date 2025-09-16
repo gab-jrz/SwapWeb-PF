@@ -380,10 +380,15 @@ router.put('/:id/rating', async (req, res) => {
     const receptor = await User.findOne({ id: receptorId });
     if(receptor){
       receptor.calificaciones = receptor.calificaciones || [];
+      // aceptar tanto "comentario" como "comment" desde el cliente
+      const comentario = (typeof req.body.comentario === 'string' && req.body.comentario.trim() !== '')
+        ? req.body.comentario.trim()
+        : (typeof req.body.comment === 'string' ? req.body.comment.trim() : '');
       receptor.calificaciones.push({
         deId: raterId,
         deNombre: `${raterUser?.nombre || ''} ${raterUser?.apellido || ''}`.trim(),
         rating,
+        comentario,
         productoSolicitado: message.productoTitle,
         productoOfrecido: message.productoOfrecido
       });

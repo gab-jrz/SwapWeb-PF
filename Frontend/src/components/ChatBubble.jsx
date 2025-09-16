@@ -816,10 +816,10 @@ const ChatBubble = ({
               <div style={{height:1,background:'#eee',margin:'0 12px'}}/>
               <div
                 style={{ padding:'13px 22px', cursor:'pointer', color:'#dc3545', fontWeight:600, fontSize:15 }}
-                onClick={() => {
-                  onDeleteMessage && onDeleteMessage(mensaje);
+                onClick={async () => {
                   setShowMenu(false);
                   setMenuPos(p => ({ ...p, visible: false }));
+                  await handleDelete();
                 }}
               >
                 Eliminar mensaje

@@ -53,6 +53,10 @@ const PerfilUsuario = () => {
   const [usuario, setUsuario] = useState(() => JSON.parse(localStorage.getItem('usuarioActual')));
   // Modal de felicitación al marcar donación como entregada
   const [showDonationCongrats, setShowDonationCongrats] = useState(false);
+  // Adjuntar imagen en composer
+  const [imagenAdjunta, setImagenAdjunta] = useState(null);
+  const fileInputRef = useRef(null);
+
   useEffect(() => {
     if (!usuario || !usuario.id) {
       window.location.href = '/login';
@@ -406,7 +410,6 @@ const PerfilUsuario = () => {
   const [showChatMenu, setShowChatMenu] = useState(null);
   const [showConfirmMessageDelete, setShowConfirmMessageDelete] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
-  const [imagenAdjunta, setImagenAdjunta] = useState(null);
   const [nuevoTexto, setNuevoTexto] = useState('');
   // Confirmar intercambio
   const [showConfirmExchange, setShowConfirmExchange] = useState(false);
@@ -678,47 +681,40 @@ const PerfilUsuario = () => {
         imagenBase64 = await fileToDataUrl(imagenAdjunta); // o tu lector actual
       }
   
+      // Payload limpio para crear el mensaje
       const payload = {
         deId: userData.id,
         paraId: otherId,
         de: `${userData.nombre} ${userData.apellido}`,
         paraNombre,
-        // 🔴 enviar como descripcion (si tu backend espera "texto", mandá ambos):
+        // enviar como 'descripcion' y redundar en 'texto' por compatibilidad
         descripcion: descripcionFinal,
         texto: descripcionFinal,
         imagenNombre: imagenBase64,
-        // contexto del intercambio:
+        // contexto del intercambio
         productoId: base.productoId,
-        productoOfrecidoId: base.productoOfrecidoId,
         productoTitle: base.productoTitle,
+        productoOfrecidoId: base.productoOfrecidoId,
         productoOfrecido: base.productoOfrecido,
         donacionId: base.donacionId,
         donacionTitle: base.donacionTitle,
-        leido: false
+        tipoPeticion: base.tipoPeticion || (base.donacionId ? 'donacion' : (base.productoOfrecidoId ? 'intercambio' : 'mensaje'))
       };
-  
+
+      // Crear en backend y normalizar respuesta
       const res = await fetch(`${API_URL}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-  
-      if (!res.ok) {
-        let serverMsg = '';
-        try {
-          serverMsg = await res.text();
-        } catch (_) {}
-        throw new Error(serverMsg || `Error al enviar (HTTP ${res.status})`);
-      }
-  
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const saved = await res.json();
-      // normalizá el mensaje que vuelve del backend
       const normalizado = {
         ...saved,
-        descripcion: saved.descripcion ?? saved.texto ?? '',
+        descripcion: saved.descripcion ?? saved.texto ?? descripcionFinal,
         fecha: saved.createdAt ?? saved.fecha ?? new Date().toISOString()
       };
-  
+
       setMensajes(prev => prev.map(m => (m._id === tempId ? normalizado : m)));
     } catch (err) {
       // revertir optimista
@@ -3978,15 +3974,94 @@ const loadDonaciones = async () => {
 
                         {/* Composer al final del chat */}
                         <div style={{ marginTop: 8 }}>
+                          {imagenAdjunta ? (
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              marginBottom: 8,
+                              position: 'relative',
+                              padding: 6,
+                              borderRadius: 12,
+                              border: '1px solid #e2e8f0',
+                              background: '#ffffff',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                            }}>
+                              <div style={{ position: 'relative' }}>
+                                <img
+                                  alt="previsualización"
+                                  src={URL.createObjectURL(imagenAdjunta)}
+                                  style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10 }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    try {
+                                      setImagenAdjunta(null);
+                                      if (fileInputRef.current) fileInputRef.current.value = '';
+                                    } catch {}
+                                  }}
+                                  title="Quitar imagen"
+                                  style={{
+                                    position: 'absolute',
+                                    top: -8,
+                                    right: -8,
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: '50%',
+                                    border: '1px solid #cbd5e1',
+                                    background: '#fff',
+                                    color: '#0f172a',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 1px 4px rgba(0,0,0,0.12)'
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+                          ) : null}
                           <div className="chat-composer">
                             <button
                               type="button"
                               title="Adjuntar imagen"
                               className="composer-attach-btn"
-                              onClick={() => alert('Adjuntar imagen: pendiente de implementar')}
+                              onClick={() => {
+                                try { fileInputRef.current && fileInputRef.current.click(); } catch {}
+                              }}
                             >
                               📷
                             </button>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={(e) => {
+                                try {
+                                  const file = e.target.files && e.target.files[0];
+                                  if (!file) return;
+                                  // Validaciones básicas
+                                  const maxMB = 5;
+                                  const isImage = file.type.startsWith('image/');
+                                  const okSize = file.size <= maxMB * 1024 * 1024;
+                                  if (!isImage) {
+                                    alert('El archivo seleccionado no es una imagen.');
+                                    e.target.value = '';
+                                    return;
+                                  }
+                                  if (!okSize) {
+                                    alert(`La imagen supera el límite de ${maxMB}MB.`);
+                                    e.target.value = '';
+                                    return;
+                                  }
+                                  setImagenAdjunta(file);
+                                } catch {}
+                              }}
+                            />
                             <input
                               type="text"
                               className="composer-input"
@@ -4028,14 +4103,31 @@ const loadDonaciones = async () => {
                               const res = await fetch(`${API_URL}/messages/${msgId}/rating`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ rating: stars, raterId: myId, comment })
+                                body: JSON.stringify({ rating: stars, raterId: myId, comentario: comment, comment })
                               });
                               if (!res.ok) throw new Error(`HTTP ${res.status}`);
                               setMensajes(prev => prev.map(m => (
                                 (m._id === msgId || m.id === msgId)
-                                  ? { ...m, rating: stars, calificado: true }
+                                  ? { ...m, rating: stars, calificado: true, comentario: comment, comment }
                                   : m
                               )));
+
+                              try {
+                                const anchor = (typeof mensajes !== 'undefined' ? mensajes : []).find(m => (m._id === msgId || m.id === msgId));
+                                const deId = myId;
+                                const paraId = anchor ? (anchor.deId === myId ? anchor.paraId : anchor.deId) : null;
+                                const transId = anchor ? (anchor._id || anchor.id) : msgId;
+                                const productoOfrecido = anchor?.productoOfrecido || '';
+                                const productoSolicitado = anchor?.productoTitle || '';
+                                if (paraId) {
+                                  await fetch(`${API_URL}/ratings`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ deId, paraId, stars, comment, transId, productoOfrecido, productoSolicitado })
+                                  }).catch(() => {});
+                                  window.dispatchEvent(new CustomEvent('calificacion:nueva', { detail: { userId: paraId } }));
+                                }
+                              } catch {}
                               setShowRatingModal(false);
                             } catch {
                               alert('No se pudo enviar la calificación.');

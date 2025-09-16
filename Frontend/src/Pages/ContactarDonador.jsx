@@ -124,12 +124,14 @@ Enviado por ${usuarioActual.nombre} ${usuarioActual.apellido}
       // Mostrar mensaje de éxito
       setShowToast(true);
       
-      // Redirigir después de 2 segundos
+      // Redirigir después de 2 segundos a Perfil con pestaña de mensajes activa
       setTimeout(() => {
-        navigate("/perfil", { 
-          state: { 
-            mensaje: "Tu solicitud de donación ha sido enviada. Revisa tus mensajes para las respuestas del donador." 
-          } 
+        navigate("/perfil", {
+          state: {
+            activeTab: 'mensajes',
+            mensaje: "Tu solicitud de donación ha sido enviada. Revisa tus mensajes para las respuestas del donador.",
+            focusDonationId: donacionId
+          }
         });
       }, 2000);
 

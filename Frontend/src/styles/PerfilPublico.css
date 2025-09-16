@@ -174,7 +174,7 @@
 }
 
 .perfil-publico .perfil-nombre-premium {
-  font-size: 2.2rem !important; /* reducir solo texto, imagen queda igual */
+  font-size: 3rem !important; /* más grande */
   font-weight: 800;
   margin: 0 0 0.5rem;
   color: #0f172a;
@@ -1196,8 +1196,8 @@
 
 /* Avatar igual al privado: sin anillos/gradientes y tamaño consistente */
 .perfil-publico .avatar-ring-premium { display: none !important; }
-.perfil-publico .avatar-wrapper-premium { width: 168px !important; height: 168px !important; }
-.perfil-publico .avatar-image-premium { width: 160px !important; height: 160px !important; border: 4px solid #fff !important; box-shadow: 0 12px 30px rgba(2,6,23,0.12) !important; }
+.perfil-publico .avatar-wrapper-premium { width: 240px !important; height: 240px !important; }
+.perfil-publico .avatar-image-premium { width: 232px !important; height: 232px !important; border: 4px solid #fff !important; box-shadow: 0 18px 46px rgba(2,6,23,0.16) !important; }
 /* Anillo visible como en el privado */
 .perfil-publico .avatar-ring-premium { 
   display: block !important; 
@@ -1231,10 +1231,10 @@
   content: '' !important; 
   position: absolute !important; 
   left: 16px !important; right: 16px !important; top: 10px !important; height: 3px !important; 
-  background: linear-gradient(90deg, #7b2ff2, #38a3e2) !important; 
+  background: linear-gradient(90deg, #7b2ff2, #a78bfa) !important; 
   border-radius: 9999px !important; 
 }
-.perfil-publico .detalle-item-premium { 
+.perfil-publico--replica .detalle-item-premium { 
   background: #ffffff !important; 
   border: 1px solid #e5e7eb !important; 
   border-radius: 14px !important; 
@@ -1242,17 +1242,44 @@
   padding: 10px 14px !important; 
   display: grid !important;
   grid-template-columns: auto 1fr auto !important; /* icono | label | valor */
+  grid-template-rows: 1fr !important; /* una sola fila para centrar mejor */
   align-items: center !important;
+  align-content: center !important;
   gap: 12px !important;
   font-family: inherit !important;
+  position: relative !important;
 }
-.perfil-publico .detalle-item-premium::before, 
-.perfil-publico .detalle-item-premium::after { display: none !important; }
-.perfil-publico .detalle-icon-premium { 
+
+/* Asegurar centrado vertical de textos en label y valor */
+.perfil-publico--replica .detalle-label-premium,
+.perfil-publico--replica .detalle-value-premium {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+.perfil-publico--replica .detalle-item-premium::before { 
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important; top: 0 !important; bottom: 0 !important; width: 5px !important;
+  background: linear-gradient(180deg, #7b2ff2, #a78bfa) !important; 
+  border-top-left-radius: 14px !important; 
+  border-bottom-left-radius: 14px !important;
+}
+.perfil-publico--replica .detalle-item-premium::after { display: none !important; }
+.perfil-publico--replica .detalle-icon-premium { 
   width: 34px !important; height: 34px !important; min-width: 34px !important;
   border-radius: 9999px !important; 
-  background: linear-gradient(135deg, #7b2ff2, #38a3e2) !important; 
+  background: linear-gradient(135deg, #7b2ff2, #a78bfa) !important; 
   box-shadow: 0 4px 12px rgba(123,47,242,0.25) !important;
+  transition: none !important;
+}
+
+/* Mantener el mismo color/estilo al pasar el cursor por encima del icono o la fila */
+.perfil-publico--replica .detalle-icon-premium:hover,
+.perfil-publico--replica .detalle-item-premium:hover .detalle-icon-premium {
+  background: linear-gradient(135deg, #7b2ff2, #a78bfa) !important;
+  box-shadow: 0 4px 12px rgba(123,47,242,0.25) !important;
+  filter: none !important;
 }
 .perfil-publico--replica .detalle-label-premium { 
   color: #6b7280 !important; 
@@ -1267,6 +1294,11 @@
   font-weight: 700 !important; 
   font-size: 1rem !important;
   font-family: inherit !important;
+  text-align: right !important;
+  display: flex !important;
+  align-items: center !important; /* centra verticalmente */
+  justify-content: flex-end !important; /* mantiene alineación derecha */
+  height: 100% !important;
 }
 
 /* ===== Stats: colores y jerarquía como en el privado ===== */
