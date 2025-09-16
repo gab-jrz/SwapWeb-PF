@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import TransactionCard from '../components/TransactionCard';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
+import '../styles/PerfilUsuario-Remodelado.css';
 import '../styles/PerfilPublico.css';
 import PerfilDetallesBox from '../components/PerfilDetallesBox.jsx';
 import { API_URL } from '../config';
@@ -115,7 +116,7 @@ const PerfilPublico = () => {
 
 
   return (
-    <div className="perfil-publico">
+    <div className="perfil-publico perfil-publico--replica">
       <Header isHome={false} />
       
       {/* Botón de regreso si se accede desde el chat */}
@@ -230,6 +231,7 @@ const PerfilPublico = () => {
                   condicion={producto.condicion}
                   valorEstimado={producto.valorEstimado}
                   disponible={producto.disponible}
+                  hideFavoriteButton={true}
                   onConsultar={() => handleConsultarArticulo(producto)}
                 />
               ))}

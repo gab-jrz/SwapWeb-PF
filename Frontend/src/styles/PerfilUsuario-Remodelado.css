@@ -17,6 +17,16 @@
     justify-content: center;
   }
 
+/* Asegurar mismo alto para el título de cada columna, evitando que el wrap desplace las pills */
+.stepper-card > div + div > div > div:first-child {
+  min-height: 40px;        /* reserva vertical común */
+  display: flex;
+  align-items: center;     /* centra verticalmente una o dos líneas */
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
 /* ===== Chat: Stepper Card y Composer Moderno ===== */
 .stepper-card {
   background: #ffffff;
@@ -48,12 +58,90 @@
   padding: 8px 14px;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(16,185,129,0.2);
+  white-space: nowrap;
+  width: fit-content;
 }
 .stepper-status-pill.pending {
   background: #eff6ff; /* blue-50 */
   color: #1e40af; /* blue-800 */
   border-color: #bfdbfe; /* blue-200 */
   box-shadow: 0 2px 8px rgba(37,99,235,0.15);
+}
+/* Variante amarilla (warning/en progreso visual) */
+.stepper-status-pill.warning {
+  background: #fef3c7; /* amber-100 */
+  color: #9a3412; /* amber-900 */
+  border-color: #fcd34d; /* amber-300 */
+  box-shadow: 0 2px 8px rgba(251,191,36,0.25);
+}
+
+/* Mini burbujas bajo cada perfil del stepper */
+.status-mini-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.status-mini-pill.pending {
+  background: #fef3c7; /* amber-100 */
+  color: #9a3412;      /* amber-900 */
+  border-color: #fcd34d; /* amber-300 */
+}
+.status-mini-pill.confirmed {
+  background: #dcfce7; /* green-100 */
+  color: #065f46;      /* green-800 */
+  border-color: #86efac; /* green-300 */
+}
+.status-mini-pill.done {
+  background: #e0f2fe; /* sky-100 */
+  color: #0c4a6e;      /* sky-900 */
+  border-color: #93c5fd; /* sky-300 */
+}
+
+/* Alineación visual consistente del bloque de etiquetas bajo el stepper */
+.stepper-card .stepper-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+  align-items: start;
+}
+
+/* Sin tocar JSX: asumir que el segundo bloque dentro de .stepper-card son las etiquetas de pasos */
+.stepper-card > div + div {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+  justify-items: center;
+}
+.stepper-card > div + div > div {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+/* Embellecer la línea de estado (la segunda línea dentro de cada columna) como pill ámbar */
+.stepper-card > div + div > div > div:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid #fcd34d; /* amber-300 */
+  background: #fef3c7;       /* amber-100 */
+  color: #9a3412;            /* amber-900 */
+  box-shadow: 0 2px 6px rgba(251,191,36,0.18);
 }
 
 /* Composer moderno */
@@ -576,11 +664,10 @@
     background: var(--brand, #7c3aed);
   }
   
-  /* Fondo general mejorado - aplicado globalmente */
+  /* Fondo global de la aplicación: blanco (antes gradiente). Aplicado de forma global. */
   body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%) !important;
-    /* Sin animación de fondo para una experiencia más tranquila */
-    background-size: 100% 100% !important;
+    background: #ffffff !important;
+    background-size: auto !important;
     animation: none !important;
     min-height: 100vh !important;
     margin: 0 !important;

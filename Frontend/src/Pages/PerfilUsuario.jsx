@@ -3821,7 +3821,7 @@ const loadDonaciones = async () => {
                           const completado = completadoPorEstado || completadoPorConfirm;
 
                           return (
-                            <div className="stepper-card" style={{ marginBottom: 20 }}>
+                            <div className="stepper-card" style={{ marginBottom: 28 }}>
                               {/* Línea de pasos */}
                               <div style={{ display:'flex', alignItems:'center', gap: 12, justifyContent:'space-between' }}>
                                 {/* Paso 1: Propuesta */}
@@ -3881,14 +3881,14 @@ const loadDonaciones = async () => {
 
                               {/* Banda de estado: solo cuando esté completado */}
                               {completado && (
-                                <div className="stepper-status" style={{ marginTop: 8 }}>
+                                <div className="stepper-status" style={{ marginTop: 12 }}>
                                   <span className="stepper-status-pill">Intercambio completado</span>
                                 </div>
                               )}
 
                               {/* CTA confirmar */}
                               {!completado && !yoConfirmado && (
-                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 18 }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40, marginBottom: 14 }}>
                                   <button
                                     onClick={() => handleConfirmExchange(anchor)}
                                     style={{
@@ -3896,7 +3896,7 @@ const loadDonaciones = async () => {
                                       color: '#ffffff',
                                       border: 'none',
                                       borderRadius: 12,
-                                      padding: '12px 22px',
+                                      padding: '14px 26px',
                                       fontWeight: 800,
                                       boxShadow: '0 6px 16px rgba(34,197,94,.35)',
                                       cursor: 'pointer'

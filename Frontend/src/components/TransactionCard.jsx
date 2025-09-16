@@ -17,22 +17,100 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
     deNombre: transaccion.deNombre
   });
   
+  // Helpers de lectura robustos (solo presentación)
+  const pick = (...vals) => vals.find(v => typeof v === 'string' && v.trim().length > 0) || null;
+
   // Determinar si el usuario fue quien ofreció o quien recibió
-  const esPropietario = transaccion.userIdPropietario === currentUserId;
+  const esPropietario = String(transaccion.userIdPropietario || '') === String(currentUserId || '');
+
+  // Fallbacks de nombres de producto (contemplando distintos orígenes)
+  const offeredName = pick(
+    transaccion.productoOfrecido,
+    transaccion.productoOfrecidoNombre,
+    transaccion.productoOfrecidoTitle,
+    transaccion.productoOfrecidoTitulo,
+    transaccion.ofrecido,                // variantes antiguas
+    transaccion.producto?.nombre,
+    transaccion.producto?.title
+  );
+  const requestedName = pick(
+    transaccion.productoSolicitado,
+    transaccion.productoSolicitadoNombre,
+    transaccion.productoSolicitadoTitle,
+    transaccion.solicitado,
+    transaccion.productoTitle,           // del otro en mensajes/chat
+    transaccion.productoRecibido,
+    transaccion.recibido
+  );
+
   // Para donaciones, mostrar siempre el título de la donación (independiente de propietario)
-  const miProducto = isDonation
-    ? (transaccion.productoOfrecido || transaccion.title)
-    : (esPropietario ? transaccion.productoOfrecido : transaccion.productoSolicitado);
-  const productoOtro = esPropietario ? transaccion.productoSolicitado : transaccion.productoOfrecido;
-  let nombreOtro = transaccion.otroUserNombre || 'Usuario';
-  
-  // Si no hay otroUserNombre, intentar obtener el nombre del otroUserId
-  if (!nombreOtro || nombreOtro.trim() === '') {
-    nombreOtro = 'Usuario';
+  let miProducto;
+  let productoOtro;
+  if (isDonation) {
+    miProducto = pick(transaccion.productoOfrecido, transaccion.title);
+    productoOtro = null;
+  } else {
+    const myIdStr = String(currentUserId || '');
+    const ownerIdStr = String(transaccion.userIdPropietario || '');
+    const requesterIdStr = String(transaccion.userIdSolicitante || '');
+    const deIdStr = String(transaccion.deId || '');
+    const paraIdStr = String(transaccion.paraId || '');
+
+    // 1) Prioridad por relación semántica: propietario vs solicitante
+    if (ownerIdStr && ownerIdStr === myIdStr) {
+      // Soy propietario (dueño del producto solicitado por el otro)
+      // "Tu producto" debe ser el solicitado (el mío que el otro pidió)
+      miProducto = requestedName || offeredName;
+      productoOtro = offeredName || requestedName;
+    } else if (requesterIdStr && requesterIdStr === myIdStr) {
+      // Soy solicitante (yo ofrecí mi producto)
+      // "Tu producto" debe ser el ofrecido
+      miProducto = offeredName || requestedName;
+      productoOtro = requestedName || offeredName;
+    } else if (deIdStr && deIdStr === myIdStr) {
+      // Respaldo: aparezco como emisor de la propuesta => solicitante => ofrecí
+      miProducto = offeredName || requestedName;
+      productoOtro = requestedName || offeredName;
+    } else if (paraIdStr && paraIdStr === myIdStr) {
+      // Respaldo: aparezco como receptor de la propuesta => propietario => solicitado
+      miProducto = requestedName || offeredName;
+      productoOtro = offeredName || requestedName;
+    } else if (esPropietario) {
+      miProducto = offeredName || requestedName;
+      productoOtro = requestedName || offeredName;
+    } else {
+      // Fallback conservador sin IDs claros
+      miProducto = requestedName || offeredName;
+      productoOtro = offeredName || requestedName;
+    }
+
+    // Si por alguna razón quedan iguales, intenta invertir para diferenciar
+    if (miProducto && productoOtro && miProducto === productoOtro) {
+      // Si ambos quedan iguales, no forzar inversión; mantener el cálculo primario
+      // pero si existe un alias más específico en el lado esperado, prefierelo
+      if (ownerIdStr === myIdStr && transaccion.productoOfrecido) miProducto = transaccion.productoOfrecido;
+      if (requesterIdStr === myIdStr && transaccion.productoSolicitado) miProducto = transaccion.productoSolicitado;
+    }
   }
-  const fechaBase = deliveryDate || transaccion.fecha;
+
+  // Resolver nombre del otro participante con varios fallbacks
+  let nombreOtro = pick(
+    transaccion.otroUserNombre,
+    // De/Para relativos al current user
+    (transaccion.deId && String(transaccion.deId) !== String(currentUserId)) ? pick(transaccion.deNombre, transaccion.de) : null,
+    (transaccion.paraId && String(transaccion.paraId) !== String(currentUserId)) ? pick(transaccion.paraNombre, transaccion.para) : null,
+    // Campos genéricos
+    transaccion.nombreOtro,
+    transaccion.usuarioOtro
+  ) || 'Usuario';
+
+  // Fecha robusta
+  const fechaBase = pick(deliveryDate, transaccion.fecha, transaccion.updatedAt, transaccion.createdAt) || new Date().toISOString();
   const fecha = new Date(fechaBase);
-  const fechaStr = `${fecha.toLocaleDateString()} a las ${fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  const isValidDate = !isNaN(fecha.getTime());
+  const fechaStr = isValidDate
+    ? `${fecha.toLocaleDateString()} a las ${fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : '';
   
   // Estado y confirmaciones
   const estado = transaccion.estado || (isDonation ? 'completado' : 'pendiente_confirmacion');
@@ -194,7 +272,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
             lineHeight: 1.4,
             textAlign: 'center'
           }}>
-            {miProducto || 'Producto no especificado'}
+            {pick(miProducto, 'Producto sin nombre')}
           </div>
           
           {!isDonation && (
@@ -226,7 +304,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
                 color: '#1a1a1a',
                 lineHeight: 1.4
               }}>
-                {productoOtro || 'Producto no especificado'}
+                {pick(productoOtro, 'Producto sin nombre')}
               </div>
             </>
           )}
@@ -322,7 +400,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
                 color: '#667eea',
                 textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
               }}>
-                {nombreOtro || 'Usuario no identificado'}
+                {pick(nombreOtro, 'Usuario')}
               </div>
             </div>
           </div>
@@ -378,7 +456,7 @@ const TransactionCard = ({ transaccion, currentUserId, onDelete, onRate, onRepub
             color: '#666',
             fontWeight: 600
           }}>
-            {isDonation ? `Entregada el ${fechaStr}` : fechaStr}
+            {isValidDate ? (isDonation ? `Entregada el ${fechaStr}` : fechaStr) : ''}
           </span>
         </div>
       </div>
