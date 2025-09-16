@@ -16,7 +16,192 @@
     align-items: center;
     justify-content: center;
   }
-  
+
+/* ===== Chat: Stepper Card y Composer Moderno ===== */
+.stepper-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  border: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  position: relative;
+  margin: 12px 0;
+}
+.stepper-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  background: linear-gradient(90deg, #00b4d8, #48cae4, #90e0ef);
+}
+.stepper-status-pill {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ecfdf5; /* green-50 */
+  color: #065f46; /* green-800 */
+  border: 1px solid #a7f3d0; /* green-200 */
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(16,185,129,0.2);
+}
+.stepper-status-pill.pending {
+  background: #eff6ff; /* blue-50 */
+  color: #1e40af; /* blue-800 */
+  border-color: #bfdbfe; /* blue-200 */
+  box-shadow: 0 2px 8px rgba(37,99,235,0.15);
+}
+
+/* Composer moderno */
+.chat-composer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #f3f8ff 0%, #ffffff 100%);
+  border: 1.5px solid #e6eefc;
+  box-shadow:
+    0 10px 28px rgba(99, 102, 241, 0.12),
+    0 2px 8px rgba(99, 102, 241, 0.10),
+    0 0 0 1px rgba(230, 238, 252, 0.9) inset;
+  backdrop-filter: saturate(120%) blur(6px);
+}
+.composer-attach-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #64748b; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.15);
+}
+.composer-input {
+  flex: 1; height: 44px;
+  border: 1px solid #e7efff;
+  border-radius: 14px;
+  padding: 0 14px; outline: none; background: #ffffff; font-size: 15px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+}
+.composer-send-btn {
+  width: 52px; height: 52px; border-radius: 26px; border: none;
+  background: linear-gradient(135deg, #4facfe 0%, #00b4d8 100%);
+  color: #fff; font-size: 18px; font-weight: 800; cursor: pointer;
+  box-shadow:
+    0 14px 34px rgba(79, 172, 254, 0.42),
+    0 4px 12px rgba(0, 180, 216, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.composer-send-btn, .composer-send-btn * { color: #ffffff !important; fill: #ffffff !important; stroke: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+/* Reforzar aún más con mayor especificidad y pseudo-elementos */
+.perfil-usuario-container .chat-composer .composer-send-btn,
+.perfil-usuario-container .chat-composer .composer-send-btn * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.composer-send-btn::before,
+.composer-send-btn::after,
+.perfil-usuario-container .chat-composer .composer-send-btn::before,
+.perfil-usuario-container .chat-composer .composer-send-btn::after {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+/* Mayor especificidad dentro del contenedor del perfil */
+.perfil-usuario-container .composer-send-btn,
+.perfil-usuario-container .composer-send-btn * { color: #ffffff !important; fill: #ffffff !important; stroke: #ffffff !important; }
+.composer-send-btn:hover { transform: translateY(-1px); box-shadow: 0 18px 40px rgba(79,172,254,.46), 0 6px 16px rgba(0,180,216,.28); }
+.composer-send-btn:active { transform: translateY(0); }
+
+/* Forzar texto blanco en CTA de Stepper */
+.stepper-card button { color: #ffffff !important; }
+.perfil-usuario-container .stepper-card button { color: #ffffff !important; }
+
+/* Forzar texto blanco en botón "Calificar Ahora" del banner */
+.rate-banner .rate-cta,
+.rate-banner .rate-cta *,
+.perfil-usuario-container .rate-banner .rate-cta,
+.perfil-usuario-container .rate-banner .rate-cta * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Centrado del contenido (icono + texto) en el botón Calificar */
+.rate-banner .rate-cta,
+.perfil-usuario-container .rate-banner .rate-cta {
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+@media (max-width: 640px) {
+  .chat-composer { padding: 8px 10px; gap: 8px; }
+  .composer-attach-btn { width: 40px; height: 40px; }
+  .composer-input { height: 40px; font-size: 14px; }
+  .composer-send-btn { width: 46px; height: 46px; }
+}
+
+/* ===== Banner de calificación debajo del composer ===== */
+.rate-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f4fff8 100%);
+  border: 1px solid #bfead1; /* green-200ish */
+  color: #083b2b; /* deep green */
+  padding: 14px 18px;
+  border-radius: 16px;
+  box-shadow:
+    0 12px 28px rgba(99, 102, 241, 0.08), /* ambient azul suave */
+    0 3px 10px rgba(16, 185, 129, 0.10),
+    0 0 0 1px rgba(191, 234, 209, 0.9) inset; /* borde interior sutil */
+}
+.rate-banner .rate-text {
+  font-weight: 800;
+  font-size: 16px;
+}
+.rate-banner .rate-subtext {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+.rate-banner .rate-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 9999px;
+  padding: 12px 22px;
+  font-weight: 800;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #38d39f 0%, #22c55e 55%, #16a34a 100%);
+  box-shadow:
+    0 14px 34px rgba(34,197,94,0.28),
+    0 3px 10px rgba(34,197,94,0.18);
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.rate-cta:hover { transform: translateY(-1px); box-shadow: 0 18px 40px rgba(34,197,94,0.34), 0 6px 16px rgba(34,197,94,0.22); }
+.rate-cta:active { transform: translateY(0); }
+
+/* Resaltar nombre de usuario en el banner */
+.rate-username {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .rate-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .rate-cta { width: 100%; justify-content: center; }
+}
+
   .mis-favoritos h2 {
     color: #1a1a1a;
     font-size: 2rem;

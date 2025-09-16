@@ -1423,6 +1423,8 @@ const PerfilUsuario = () => {
       const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
       const myId = userData?.id || usuarioActual?.id || usuarioActual?._id;
       if (!myId) return;
+      // ID del mensaje ancla (para /messages/:id/confirm)
+      const anchorMsgId = transaccion?._id || transaccion?.id || null;
 
       // 1. Limpiar campos innecesarios y dejar solo los válidos
       const cleanTrans = (t) => {
@@ -1464,15 +1466,23 @@ const PerfilUsuario = () => {
         transId = nueva._id || nueva.id;
       }
 
-      // 2. Optimista: agregar mi confirmación si no está
+      // Helper: verificar si ambas partes (yo y la contraparte) están confirmadas
+      const bothSidesConfirmed = (t, confirmedList) => {
+        const myS = String(myId || '');
+        const other = (t.deId === myId) ? t.paraId : t.deId;
+        const otherS = String(other || '');
+        const set = new Set((confirmedList || []).map(x => String(x)).filter(Boolean));
+        return myS && otherS && set.has(myS) && set.has(otherS);
+      };
+
+      // 2. Optimista: agregar mi confirmación si no está. NO marcar como completado hasta tener ambas confirmaciones
       const addMyConfirm = (t) => {
         const confirmedRaw = Array.isArray(t.confirmaciones) ? t.confirmaciones : (Array.isArray(t.confirmedBy) ? t.confirmedBy : []);
         const confirmed = confirmedRaw.map(x => String(x)).filter(Boolean);
         const myS = String(myId);
         const nextConfirmed = confirmed.includes(myS) ? confirmed : [...confirmed, myS];
-        const uniqueCount = new Set(nextConfirmed).size;
-        const completed = uniqueCount >= 2;
-        return { ...t, confirmedBy: nextConfirmed, confirmaciones: nextConfirmed, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
+        const completed = bothSidesConfirmed(t, nextConfirmed);
+        return { ...t, confirmedBy: nextConfirmed, confirmaciones: nextConfirmed, estado: completed ? 'completado' : (t.estado && t.estado === 'completado' && completed ? 'completado' : 'pendiente_confirmacion') };
       };
       const optimistic = addMyConfirm(transaccionFinal);
       console.log('[CONFIRMAR INTERCAMBIO] Actualizando estado local con:', optimistic);
@@ -1489,7 +1499,7 @@ const PerfilUsuario = () => {
           const myS = String(myId || '');
           const confirmed = (Array.isArray(optimistic.confirmedBy) ? optimistic.confirmedBy : (Array.isArray(optimistic.confirmaciones) ? optimistic.confirmaciones : [])).map(String);
           const unique = Array.from(new Set(confirmed.filter(Boolean)));
-          const completed = unique.length >= 2 || optimistic.estado === 'completado';
+          const completed = bothSidesConfirmed(optimistic, unique) || optimistic.estado === 'completado';
           const actualizados = mensajesPrev.map(m => {
             const samePair = (m.productoId === optimistic.productoId) && (m.productoOfrecidoId === optimistic.productoOfrecidoId);
             if (!samePair) return m;
@@ -1500,6 +1510,19 @@ const PerfilUsuario = () => {
           return { ...prev, [chatSeleccionado]: actualizados };
         });
       } catch {}
+
+      // Importante: actualizar también el documento del mensaje en el backend para que la contraparte vea la confirmación
+      try {
+        if (anchorMsgId) {
+          await fetch(`${API_URL}/messages/${anchorMsgId}/confirm`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: myId })
+          });
+        }
+      } catch (e) {
+        console.warn('No se pudo actualizar confirmación en el mensaje (backend). Continuando...', e);
+      }
 
       // 3. Construir lista a persistir tomando el estado más reciente y agregando si no existe aún
       const current = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
@@ -1531,9 +1554,46 @@ const PerfilUsuario = () => {
         });
         console.log('[CONFIRMAR INTERCAMBIO] Respuesta PUT /users', putRes.status);
 
-        // 5. Si quedó completado, marcar producto como intercambiado
+        // 5. Si quedó completado (ambas partes), marcar producto como intercambiado
         const finalT = (finalTrans.find?.(t => (t._id || t.id) === transId)) || optimistic;
-        if (finalT.estado === 'completado' && (finalT.productoOfrecidoId || finalT.productoId)) {
+        const confirmedList = (Array.isArray(finalT.confirmedBy) ? finalT.confirmedBy : (Array.isArray(finalT.confirmaciones) ? finalT.confirmaciones : [])) || [];
+        const isTrulyCompleted = bothSidesConfirmed(finalT, confirmedList);
+        if (isTrulyCompleted && (finalT.productoOfrecidoId || finalT.productoId)) {
+          // 5.1 Crear mensaje de sistema persistente para ambos usuarios
+          try {
+            const sysPayload = {
+              descripcion: 'Intercambio completado',
+              system: true,
+              tipo: 'system',
+              de: 'system',
+              deId: myId, // mantener relación con el usuario para el feed de mensajes
+              paraId: (transaccionFinal.deId === myId) ? transaccionFinal.paraId : transaccionFinal.deId,
+              productoId: finalT.productoId,
+              productoOfrecidoId: finalT.productoOfrecidoId,
+            };
+            const sysRes = await fetch(`${API_URL}/messages`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(sysPayload)
+            });
+            if (sysRes.ok) {
+              const sysMsg = await sysRes.json();
+              const enriched = {
+                ...sysMsg,
+                system: true,
+                descripcion: sysMsg.descripcion || 'Intercambio completado',
+                fecha: sysMsg.createdAt || new Date().toISOString(),
+              };
+              // reflejar localmente de inmediato
+              setMensajes(prev => [...prev, enriched]);
+              setChats(prev => {
+                try {
+                  const current = prev?.[chatSeleccionado] || [];
+                  return { ...prev, [chatSeleccionado]: [...current, enriched] };
+                } catch { return prev; }
+              });
+            }
+          } catch (e) { console.warn('No se pudo crear mensaje de sistema de cierre', e); }
           try {
             console.log('[CONFIRMAR INTERCAMBIO] Marcando productos como intercambiados');
             const token = localStorage.getItem('token') || '';
@@ -1611,7 +1671,7 @@ const PerfilUsuario = () => {
                   const serverConf = (Array.isArray(t.confirmedBy) ? t.confirmedBy : (Array.isArray(t.confirmaciones) ? t.confirmaciones : [])).map(x => String(x));
                   const localConf = (Array.isArray(optimistic?.confirmedBy) ? optimistic.confirmedBy : (Array.isArray(optimistic?.confirmaciones) ? optimistic.confirmaciones : [])).map(x => String(x));
                   const union = Array.from(new Set([...(serverConf || []), ...(localConf || [])].filter(Boolean)));
-                  const completed = new Set(union).size >= 2 || t.estado === 'completado';
+                  const completed = bothSidesConfirmed(optimistic, union) || t.estado === 'completado';
                   return { ...t, confirmedBy: union, confirmaciones: union, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
                 }
                 return t;
@@ -1655,7 +1715,7 @@ const PerfilUsuario = () => {
                 const serverConf = (Array.isArray(t.confirmedBy) ? t.confirmedBy : (Array.isArray(t.confirmaciones) ? t.confirmaciones : [])).map(x => String(x));
                 const localConf = (Array.isArray(optimistic?.confirmedBy) ? optimistic.confirmedBy : (Array.isArray(optimistic?.confirmaciones) ? optimistic.confirmaciones : [])).map(x => String(x));
                 const union = Array.from(new Set([...(serverConf || []), ...(localConf || [])].filter(Boolean)));
-                const completed = new Set(union).size >= 2 || t.estado === 'completado';
+                const completed = union.length >= 2; // Para contraparte solo validar que sean dos IDs distintos
                 return { ...t, confirmedBy: union, confirmaciones: union, estado: completed ? 'completado' : (t.estado || 'pendiente_confirmacion') };
               };
 
@@ -3711,154 +3771,135 @@ const loadDonaciones = async () => {
                         {(() => {
                           const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
                           const mensajes = chats[chatSeleccionado] || [];
-                          const mensajeIntercambio = mensajes.find(m => m.productoId && m.productoOfrecidoId);
-
-                          if (!mensajeIntercambio) return null;
+                          // 1) Anclar al ÚLTIMO mensaje de propuesta de este chat
+                          //    Preferimos el que esté marcado explícitamente como propuesta ("[propuesta]", esSolicitudOferta, isOfferInit)
+                          let anchor = null;
+                          for (let i = mensajes.length - 1; i >= 0; i--) {
+                            const m = mensajes[i];
+                            if (m && m.productoId && m.productoOfrecidoId) {
+                              const raw = (m.descripcion || '').trim().toLowerCase();
+                              const isInit = raw === '[propuesta]' || m.esSolicitudOferta === true || m.isOfferInit === true;
+                              if (isInit) { anchor = m; break; }
+                            }
+                          }
+                          // Fallback: si no hay marcada, usar el último que tenga ambos IDs
+                          if (!anchor) {
+                            for (let i = mensajes.length - 1; i >= 0; i--) {
+                              const m = mensajes[i];
+                              if (m && m.productoId && m.productoOfrecidoId) { anchor = m; break; }
+                            }
+                          }
+                          if (!anchor) return null;
 
                           const myId = userData?.id || usuarioActual?.id || usuarioActual?._id;
-                          const otherId = mensajeIntercambio.deId === myId ? mensajeIntercambio.paraId : mensajeIntercambio.deId;
-                          const otherName = mensajeIntercambio.deId === myId
-                            ? (mensajeIntercambio.paraNombre || mensajeIntercambio.para || 'el usuario')
-                            : (mensajeIntercambio.deNombre || mensajeIntercambio.de || 'el usuario');
-                          // Preferir el estado más fresco de la transacción desde userData.transacciones
-                          let transFresca = null;
-                          if (Array.isArray(userData?.transacciones)) {
-                            const tIdMsg = String(mensajeIntercambio._id || mensajeIntercambio.id || '');
-                            // 1) Priorizar por _id/id (más confiable)
-                            const porId = userData.transacciones.filter(t => String(t._id || t.id || '') === tIdMsg);
-                            // 2) Luego por IDs de producto
-                            const porPair = porId.length ? [] : userData.transacciones.filter(t => (
-                              (t.productoId && t.productoId === mensajeIntercambio.productoId) &&
-                              (t.productoOfrecidoId && t.productoOfrecidoId === mensajeIntercambio.productoOfrecidoId)
-                            ));
-                            // 3) Finalmente por títulos
-                            const porTitulo = (porId.length || porPair.length) ? [] : userData.transacciones.filter(t => (
-                              (t.productoTitle && t.productoTitle === mensajeIntercambio.productoTitle) &&
-                              (t.productoOfrecido && t.productoOfrecido === mensajeIntercambio.productoOfrecido)
-                            ));
-                            const pool = porId.length ? porId : (porPair.length ? porPair : porTitulo);
-                            if (pool.length) {
-                              // Elegir la más fresca por updatedAt/createdAt
-                              transFresca = pool.reduce((a, b) => {
-                                const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
-                                const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
-                                return db > da ? b : a;
-                              });
+                          const otherId = anchor.deId === myId ? anchor.paraId : anchor.deId;
+                          const otherName = anchor.deId === myId
+                            ? (anchor.paraNombre || anchor.para || 'el usuario')
+                            : (anchor.deNombre || anchor.de || 'el usuario');
+
+                          // 2) Confirmaciones SOLO de este anchor; usar transacción solo si refiere al mismo mensaje
+                          let listaConfirm = [];
+                          if (Array.isArray(anchor.confirmedBy)) listaConfirm = anchor.confirmedBy;
+                          else if (Array.isArray(anchor.confirmaciones)) listaConfirm = anchor.confirmaciones;
+
+                          if (listaConfirm.length === 0 && Array.isArray(userData?.transacciones)) {
+                            const tIdMsg = String(anchor._id || anchor.id || '');
+                            const directa = userData.transacciones.find(t => String(t._id || t.id || '') === tIdMsg);
+                            if (directa) {
+                              if (Array.isArray(directa.confirmedBy)) listaConfirm = directa.confirmedBy;
+                              else if (Array.isArray(directa.confirmaciones)) listaConfirm = directa.confirmaciones;
                             }
                           }
 
-                          // Unificar confirmaciones: confirmedBy o confirmaciones (con fallback al mensaje si no hay transacción fresca)
-                          const listaConfirm = (
-                            (Array.isArray(transFresca?.confirmedBy) && transFresca.confirmedBy) ||
-                            (Array.isArray(transFresca?.confirmaciones) && transFresca.confirmaciones) ||
-                            (Array.isArray(mensajeIntercambio.confirmedBy) && mensajeIntercambio.confirmedBy) ||
-                            (Array.isArray(mensajeIntercambio.confirmaciones) && mensajeIntercambio.confirmaciones) ||
-                            []
-                          );
-                          // Normalizar y deduplicar
                           const myS = String(myId || '');
                           const otherS = String(otherId || '');
-                          const confirmaciones = Array.from(new Set(listaConfirm.filter(Boolean).map(x => String(x))));
+                          const confirmaciones = Array.from(new Set((listaConfirm || []).filter(Boolean).map(x => String(x))));
                           const yoConfirmado = myS ? confirmaciones.includes(myS) : false;
                           const otroConfirmado = otherS ? confirmaciones.includes(otherS) : false;
-                          const completadoPorEstado = (transFresca?.estado === 'completado') || (mensajeIntercambio.estado === 'completado') || (mensajeIntercambio.completed === true);
+                          const completadoPorEstado = (anchor.estado === 'completado') || (anchor.completed === true);
                           const completadoPorConfirm = new Set(confirmaciones).size >= 2;
                           const completado = completadoPorEstado || completadoPorConfirm;
 
                           return (
-                            <div style={{ marginTop: 12, marginBottom: 12 }}>
-                              <div style={{
-                                borderRadius: 16,
-                                background: '#ffffff',
-                                border: '1px solid #e5e7eb',
-                                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-                                padding: '14px 16px'
-                              }}>
-                                <div style={{ display:'flex', alignItems:'center', gap: 12, justifyContent:'space-between' }}>
-                                  <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
-                                    <div title="Propuesta enviada" style={{
-                                      width: 42, height: 42, borderRadius: '50%',
-                                      display:'flex', alignItems:'center', justifyContent:'center',
-                                      background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)', color:'#fff',
-                                      boxShadow:'0 4px 12px rgba(16,185,129,.35)', fontSize: 20, fontWeight: 800
-                                    }}>⚡</div>
-                                    <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
-                                      <div style={{ width: yoConfirmado || otroConfirmado || completado ? '100%' : '35%', height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
-                                    </div>
-                                  </div>
-                                  <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
-                                    <div title="Tu confirmación" style={{ position:'relative' }}>
-                                      <div style={{
-                                        width: 44, height: 44, borderRadius: '50%', border: yoConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1',
-                                        boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc'
-                                      }}>
-                                        {userData?.imagen ? (
-                                          <img src={normalizeImageUrl(userData.imagen)} alt="Tú" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                                        ) : null}
-                                      </div>
-                                    </div>
-                                    <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
-                                      <div style={{ width: otroConfirmado || completado ? '100%' : (yoConfirmado ? '55%' : '20%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
-                                    </div>
-                                  </div>
-                                  <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
-                                    <div title={`Confirmación de ${otherName}`} style={{ position:'relative' }}>
-                                      <div style={{
-                                        width: 44, height: 44, borderRadius: '50%', border: otroConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1',
-                                        boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc'
-                                      }}>
-                                        {(() => {
-                                          const mensajesSel = chats[chatSeleccionado] || [];
-                                          let img = '';
-                                          for (const m of mensajesSel) {
-                                            if (m.deId === myId) { if (m.paraImagen) { img = normalizeImageUrl(m.paraImagen); break; } }
-                                            else { if (m.deImagen) { img = normalizeImageUrl(m.deImagen); break; } }
-                                          }
-                                          return img ? <img src={img} alt={otherName} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : null;
-                                        })()}
-                                      </div>
-                                    </div>
-                                    <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
-                                      <div style={{ width: completado ? '100%' : (otroConfirmado ? '65%' : '25%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
-                                    </div>
-                                  </div>
-                                  <div style={{ display:'flex', alignItems:'center', gap: 12 }}>
-                                    <div title="Intercambio completado" style={{
-                                      width: 42, height: 42, borderRadius: '50%',
-                                      display:'flex', alignItems:'center', justifyContent:'center',
-                                      background: completado ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : '#e2e8f0',
-                                      color: completado ? '#fff' : '#64748b',
-                                      boxShadow: completado ? '0 4px 12px rgba(34,197,94,.35)' : 'none', fontSize: 20, fontWeight: 800
-                                    }}>★</div>
+                            <div className="stepper-card" style={{ marginBottom: 20 }}>
+                              {/* Línea de pasos */}
+                              <div style={{ display:'flex', alignItems:'center', gap: 12, justifyContent:'space-between' }}>
+                                {/* Paso 1: Propuesta */}
+                                <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
+                                  <div title="Propuesta enviada" style={{ width: 42, height: 42, borderRadius: '50%', display:'flex', alignItems:'center', justifyContent:'center', background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)', color:'#fff', boxShadow:'0 4px 12px rgba(16,185,129,.35)', fontSize: 20, fontWeight: 800 }}>⚡</div>
+                                  <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
+                                    <div style={{ width: yoConfirmado || otroConfirmado || completado ? '100%' : '35%', height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
                                   </div>
                                 </div>
-                                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap: 12, marginTop: 12 }}>
-                                  <div style={{ textAlign:'center' }}>
-                                    <div style={{ fontWeight: 700, color:'#0f172a' }}>Propuesta enviada</div>
-                                    <div style={{ fontSize: 12, color:'#64748b' }}>Tu</div>
+                                {/* Paso 2: Tu confirmación */}
+                                <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
+                                  <div title="Tu confirmación" style={{ position:'relative' }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: '50%', border: yoConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1', boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc' }}>
+                                      {userData?.imagen ? (<img src={normalizeImageUrl(userData.imagen)} alt="Tú" style={{ width:'100%', height:'100%', objectFit:'cover' }} />) : null}
+                                    </div>
                                   </div>
-                                  <div style={{ textAlign:'center' }}>
-                                    <div style={{ fontWeight: 700, color: yoConfirmado ? '#0f172a' : '#64748b' }}>Tu confirmación</div>
-                                    <div style={{ fontSize: 12, color:'#94a3b8' }}>{yoConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                  <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
+                                    <div style={{ width: otroConfirmado || completado ? '100%' : (yoConfirmado ? '55%' : '20%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
                                   </div>
-                                  <div style={{ textAlign:'center' }}>
-                                    <div style={{ fontWeight: 700, color: otroConfirmado ? '#0f172a' : '#64748b' }}>{`Confirmación de ${otherName}`}</div>
-                                    <div style={{ fontSize: 12, color:'#94a3b8' }}>{otroConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                </div>
+                                {/* Paso 3: Confirmación del otro usuario */}
+                                <div style={{ display:'flex', alignItems:'center', gap: 12, flex:1 }}>
+                                  <div title={`Confirmación de ${otherName}`} style={{ position:'relative' }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: '50%', border: otroConfirmado ? '2px solid #22c55e' : '2px solid #cbd5e1', boxShadow:'0 2px 8px rgba(0,0,0,.08)', overflow:'hidden', background:'#f8fafc' }}>
+                                      {(() => { const mensajesSel = chats[chatSeleccionado] || []; let img = ''; for (const m of mensajesSel) { if (m.deId === myId) { if (m.paraImagen) { img = normalizeImageUrl(m.paraImagen); break; } } else { if (m.deImagen) { img = normalizeImageUrl(m.deImagen); break; } } } return img ? <img src={img} alt={otherName} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : null; })()}
+                                    </div>
                                   </div>
-                                  <div style={{ textAlign:'center' }}>
-                                    <div style={{ fontWeight: 700, color: completado ? '#0f172a' : '#64748b' }}>Intercambio completado</div>
-                                    <div style={{ fontSize: 12, color:'#94a3b8' }}>{completado ? 'Listo' : 'En progreso'}</div>
+                                  <div style={{ flex: 1, height: 6, background:'#e2e8f0', borderRadius: 9999 }}>
+                                    <div style={{ width: completado ? '100%' : (otroConfirmado ? '65%' : '25%'), height: 6, borderRadius: 9999, background:'linear-gradient(135deg,#2d9cdb,#38a3e2)' }} />
                                   </div>
+                                </div>
+                                {/* Paso 4: Completado */}
+                                <div style={{ display:'flex', alignItems:'center', gap: 12 }}>
+                                  <div title="Intercambio completado" style={{ width: 42, height: 42, borderRadius: '50%', display:'flex', alignItems:'center', justifyContent:'center', background: completado ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : '#e2e8f0', color: completado ? '#fff' : '#64748b', boxShadow: completado ? '0 4px 12px rgba(34,197,94,.35)' : 'none', fontSize: 20, fontWeight: 800 }}>★</div>
                                 </div>
                               </div>
+
+                              {/* Etiquetas bajo los pasos */}
+                              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap: 12, marginTop: 12 }}>
+                                <div style={{ textAlign:'center' }}>
+                                  <div style={{ fontWeight: 700, color:'#0f172a' }}>Propuesta enviada</div>
+                                  <div style={{ fontSize: 12, color:'#64748b' }}>Tu</div>
+                                </div>
+                                <div style={{ textAlign:'center' }}>
+                                  <div style={{ fontWeight: 700, color: yoConfirmado ? '#0f172a' : '#64748b' }}>Tu confirmación</div>
+                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{yoConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                </div>
+                                <div style={{ textAlign:'center' }}>
+                                  <div style={{ fontWeight: 700, color: otroConfirmado ? '#0f172a' : '#64748b' }}>{`Confirmación de ${otherName}`}</div>
+                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{otroConfirmado ? 'Confirmado' : 'Pendiente'}</div>
+                                </div>
+                                <div style={{ textAlign:'center' }}>
+                                  <div style={{ fontWeight: 700, color: completado ? '#0f172a' : '#64748b' }}>Intercambio completado</div>
+                                  <div style={{ fontSize: 12, color:'#94a3b8' }}>{completado ? 'Listo' : 'En progreso'}</div>
+                                </div>
+                              </div>
+
+                              {/* Banda de estado: solo cuando esté completado */}
+                              {completado && (
+                                <div className="stepper-status" style={{ marginTop: 8 }}>
+                                  <span className="stepper-status-pill">Intercambio completado</span>
+                                </div>
+                              )}
+
+                              {/* CTA confirmar */}
                               {!completado && !yoConfirmado && (
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 18 }}>
                                   <button
-                                    onClick={() => handleConfirmExchange(mensajeIntercambio)}
+                                    onClick={() => handleConfirmExchange(anchor)}
                                     style={{
-                                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: 'white',
-                                      border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700,
-                                      boxShadow: '0 4px 12px rgba(34,197,94,.35)', cursor: 'pointer'
+                                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                      color: '#ffffff',
+                                      border: 'none',
+                                      borderRadius: 12,
+                                      padding: '12px 22px',
+                                      fontWeight: 800,
+                                      boxShadow: '0 6px 16px rgba(34,197,94,.35)',
+                                      cursor: 'pointer'
                                     }}
                                   >
                                     Confirmar intercambio
@@ -3937,51 +3978,28 @@ const loadDonaciones = async () => {
 
                         {/* Composer al final del chat */}
                         <div style={{ marginTop: 8 }}>
-                          <div style={{
-                            display:'flex', alignItems:'center', gap:12,
-                            width:'100%',
-                            padding: '10px 12px',
-                            borderRadius: 9999,
-                            background: 'linear-gradient(135deg, #eef6ff 0%, #f7fafe 100%)',
-                            border: '1.5px solid #e4ecf7',
-                            boxShadow: '0 10px 30px rgba(76, 97, 235, 0.15)'
-                          }}>
+                          <div className="chat-composer">
                             <button
                               type="button"
                               title="Adjuntar imagen"
-                              style={{
-                                width: 44, height: 44, borderRadius: '50%',
-                                border: '1px solid #dbeafe', background: '#ffffff',
-                                display:'flex', alignItems:'center', justifyContent:'center',
-                                color:'#64748b', boxShadow:'0 6px 18px rgba(79, 70, 229, 0.15)', cursor:'pointer'
-                              }}
+                              className="composer-attach-btn"
                               onClick={() => alert('Adjuntar imagen: pendiente de implementar')}
                             >
                               📷
                             </button>
                             <input
                               type="text"
+                              className="composer-input"
                               value={nuevoTexto}
                               onChange={(e) => setNuevoTexto(e.target.value)}
                               placeholder="Escribe un mensaje..."
-                              style={{
-                                flex:1, height: 44,
-                                border:'1px solid #dbeafe', borderRadius: 14,
-                                padding:'0 12px', outline:'none', background:'#fff', fontSize: 15
-                              }}
                               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEnviarMensaje(); }}}
                             />
                             <button
                               type="button"
+                              className="composer-send-btn"
                               onClick={handleEnviarMensaje}
                               title="Enviar"
-                              style={{
-                                width: 48, height: 48, borderRadius: '50%',
-                                border:'none',
-                                background: 'linear-gradient(135deg, #2d9cdb 0%, #38a3e2 100%)', color:'#fff',
-                                fontSize: 18, fontWeight: 800, cursor:'pointer',
-                                boxShadow:'0 10px 30px rgba(45,156,219,.35)'
-                              }}
                             >
                               ➤
                             </button>
@@ -4027,25 +4045,18 @@ const loadDonaciones = async () => {
                           return (
                             <>
                               <div style={{ marginTop: 12 }}>
-                                <div style={{
-                                  display:'flex', alignItems:'center', justifyContent:'space-between',
-                                  gap: 12,
-                                  background:'#f0fdf4',
-                                  border:'1px solid #bbf7d0',
-                                  color:'#14532d',
-                                  padding:'12px 16px',
-                                  borderRadius: 12,
-                                  boxShadow:'0 4px 12px rgba(0,0,0,.06)'
-                                }}>
-                                  <div style={{ fontWeight: 800 }}>
-                                    ¡Intercambio completado con éxito!<br/>
-                                    <span style={{ fontWeight: 600 }}>Calificá tu experiencia con {otherName}</span>
+                                <div className="rate-banner">
+                                  <div>
+                                    <div className="rate-text">¡Intercambio completado con éxito! 🎉</div>
+                                    <span className="rate-subtext">Calificá tu experiencia con <span className="rate-username">{otherName}</span></span>
                                   </div>
                                   <button
                                     type="button"
+                                    className="rate-cta"
+                                    style={{ color: '#ffffff' }}
                                     onClick={() => setShowRatingModal(true)}
                                   >
-                                    Calificar
+                                    ⭐ Calificar Ahora
                                   </button>
                                 </div>
                               </div>
